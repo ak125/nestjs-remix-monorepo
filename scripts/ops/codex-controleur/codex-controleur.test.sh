@@ -42,7 +42,8 @@ jq -n --arg a "${SHA[101]}" --arg b "${SHA[102]}" --arg c "${SHA[103]}" '[
 mkdir -p "$FIX/bin"
 # Faux gh fidèle au vrai sur la résolution du dépôt : sans -R ni GH_REPO, il lit le dépôt du
 # répertoire courant et échoue hors dépôt avec le message de gh 2.101.0 (mandat EF) ; avec -R, il
-# n'accepte que l'URL du remote origin du dépôt de travail.
+# n'accepte que l'URL du remote origin du dépôt de travail. « pr list » applique, comme le vrai,
+# le filtre de date « merged:>=<ISO> » de --search.
 cat > "$FIX/bin/gh" <<'EOF'
 #!/usr/bin/env bash
 echo "$*" >> "$FIX/gh.log"
@@ -54,7 +55,10 @@ elif [[ -z "${GH_REPO:-}" ]] && ! git rev-parse --git-dir > /dev/null 2>&1; then
   exit 1
 fi
 case "$1 $2" in
-  "pr list") cat "$FIX/prs.json" ;;
+  "pr list")
+    s=""; prev=""; for a in "$@"; do [[ "$prev" == "--search" ]] && s="$a"; prev="$a"; done
+    d=""; [[ "$s" != "merged:>="* ]] || d="${s#merged:>=}"
+    jq --arg d "$d" 'map(select(.mergedAt >= $d))' "$FIX/prs.json" ;;
   "pr view") jq -r --argjson n "$3" '.[]|select(.number==$n)|.mergedAt' "$FIX/prs.json" ;;
   *) exit 1 ;;
 esac
@@ -238,6 +242,87 @@ E4="$FIX/e4"
 check "checkout partagé refusé" "$(lance "$E4" quotidien)" 2
 contient "checkout partagé, message" "$E4.out" "dépôt refusé"
 check "checkout partagé, rien créé" "$([[ -e "$E4" ]] && echo oui || echo non)" non
+FAUX=()
+
+# 16. Fusion à deux parents (#2273) : diff contre le premier parent, --stat compris ; une PR dont le
+#     diff est vide (seuls des fichiers générés) n'est pas marquée relue.
+git -C "$FIX/depot" checkout -q -b cote
+echo "côté 104" > "$FIX/depot/b.txt"; git -C "$FIX/depot" add -A; git -C "$FIX/depot" commit -qm "feat: côté 104"
+git -C "$FIX/depot" checkout -q main
+echo "main avant 104" > "$FIX/depot/c.txt"; git -C "$FIX/depot" add -A; git -C "$FIX/depot" commit -qm "feat: main avant 104"
+git -C "$FIX/depot" merge -q --no-ff -m "Merge PR 104" cote
+SHA[104]="$(git -C "$FIX/depot" rev-parse HEAD)"
+echo '{"lock":"régénéré"}' > "$FIX/depot/package-lock.json"
+git -C "$FIX/depot" add -A; git -C "$FIX/depot" commit -qm "chore: PR 105, lock seul"
+SHA[105]="$(git -C "$FIX/depot" rev-parse HEAD)"
+git -C "$FIX/depot" push -q origin main 2> /dev/null
+check "fusion à deux parents (fixture)" "$(git -C "$FIX/depot" rev-list --parents -n1 "${SHA[104]}" | wc -w)" 3
+jq -n --arg a "${SHA[104]}" --arg b "${SHA[105]}" '[
+  {number:104, title:"PR 104", mergedAt:"2026-11-19T10:00:00Z", mergeCommit:{oid:$a}},
+  {number:105, title:"PR 105", mergedAt:"2026-11-19T11:00:00Z", mergeCommit:{oid:$b}}]' > "$FIX/prs.json"
+E5="$FIX/e5"; lance "$E5" init --depuis 2026-11-19T10:00:00Z > /dev/null; : > "$FIX/codex.log"
+check "deux parents, diff vide refusé" "$(lance "$E5" quotidien)" 1
+J5="$E5/bruts/$(date -u +%Y-%m-%d)"
+contient "deux parents, patch du côté fusionné" "$J5/pr104/entree.diff" "+côté 104"
+contient "deux parents, --stat" "$J5/pr104/entree.diff" "b.txt | 1 +"
+absent "deux parents, premier parent hors diff" "$J5/pr104/entree.diff" "main avant 104"
+contient "deux parents, diff transmis à Codex" "$FIX/codex.log" "+côté 104"
+contient "diff vide, message" "$E5.out" "diff vide pour #105"
+check "diff vide, PR en attente" "$(jq -c '[.faites[].pr]' "$E5/curseur.json")" "[104]"
+check "diff vide, depuis" "$(jq -r .depuis "$E5/curseur.json")" "2026-11-19T10:00:00Z"
+check "diff vide, rapport" "$(cron "$E5")" "error"
+absent "diff vide, Codex non lancé" "$FIX/codex.log" "=== objet 105"
+
+# 17. ignorer hors de l'ordre de fusion (#2275) : la PR ignorée entre dans .faites, .depuis ne
+#     dépasse pas la plus ancienne PR en attente, que la recherche « merged:>= » trouve encore.
+for n in 106 107; do
+  echo "pr $n" >> "$FIX/depot/a.txt"; git -C "$FIX/depot" add -A; git -C "$FIX/depot" commit -qm "feat: PR $n"
+  SHA[$n]="$(git -C "$FIX/depot" rev-parse HEAD)"
+done
+git -C "$FIX/depot" push -q origin main 2> /dev/null
+jq -n --arg a "${SHA[106]}" --arg b "${SHA[107]}" '[
+  {number:106, title:"PR 106", mergedAt:"2026-11-19T12:00:00Z", mergeCommit:{oid:$a}},
+  {number:107, title:"PR 107", mergedAt:"2026-11-19T13:00:00Z", mergeCommit:{oid:$b}}]' > "$FIX/prs.json"
+E6="$FIX/e6"; lance "$E6" init --depuis 2026-11-19T11:30:00Z > /dev/null; : > "$FIX/codex.log"
+check "ignorer la plus récente" "$(lance "$E6" ignorer --pr 107 --motif 'hors ordre')" 0
+check "ignorer, depuis intact" "$(jq -r .depuis "$E6/curseur.json")" "2026-11-19T11:30:00Z"
+check "ignorer, PR dans faites" "$(jq -r '.faites[]|select(.pr==107)|.statut' "$E6/curseur.json")" "ignoree"
+check "après ignorer, plus ancienne relue" "$(lance "$E6" quotidien)" 0
+check "après ignorer, curseur" "$(faites "$E6")" "[106]"
+contient "après ignorer, 106 transmise" "$FIX/codex.log" "=== objet 106"
+absent "après ignorer, 107 non relue" "$FIX/codex.log" "=== objet 107"
+check "après ignorer, depuis" "$(jq -r .depuis "$E6/curseur.json")" "2026-11-19T12:00:00Z"
+check "worktrees retirés (dépôt, fin)" "$(git -C "$FIX/depot" worktree list | wc -l)" 1
+
+# 18. Dépôt Git commun et dossier d'état (#2274). $FIX/partage tient lieu de checkout partagé
+#     (CODEX_CONTROLEUR_PROTEGE, qui s'ajoute à /opt/automecanik/app sans le retirer).
+git clone -q "$FIX/origine.git" "$FIX/partage" 2> /dev/null; chmod 755 "$FIX/partage"
+git -C "$FIX/partage" worktree add -q --detach "$FIX/wt-lie" 2> /dev/null
+git clone -q "$FIX/partage" "$FIX/clone-indep" 2> /dev/null
+ln -s "$FIX/partage" "$FIX/lien-partage"
+FAUX=(CODEX_CONTROLEUR_PROTEGE="$FIX/partage" CODEX_CONTROLEUR_DEPOT="$FIX/wt-lie")
+E7="$FIX/e7"
+check "worktree lié refusé" "$(lance "$E7" quotidien)" 2
+contient "worktree lié, message" "$E7.out" "worktree lié"
+check "worktree lié, rien créé" "$([[ -e "$E7" ]] && echo oui || echo non)" non
+check "worktree lié, worktrees du partage" "$(git -C "$FIX/partage" worktree list | wc -l)" 2
+FAUX=(CODEX_CONTROLEUR_PROTEGE="$FIX/partage" CODEX_CONTROLEUR_DEPOT="$FIX/clone-indep")
+E8="$FIX/e8"
+check "clone indépendant accepté" "$(lance "$E8" init --depuis 2026-11-19T00:00:00Z)" 0
+check "clone indépendant, curseur" "$(jq -r .depuis "$E8/curseur.json")" "2026-11-19T00:00:00Z"
+FAUX=(CODEX_CONTROLEUR_PROTEGE="$FIX/partage")
+check "état = checkout refusé" "$(lance "$FIX/partage" init --depuis 2026-11-19T00:00:00Z)" 2
+contient "état = checkout, message" "$FIX/partage.out" "dossier d'état refusé"
+check "état = checkout, droits préservés" "$(stat -c %a "$FIX/partage")" 755
+check "état = checkout, rien créé" "$([[ -e "$FIX/partage/bruts" || -e "$FIX/partage/curseur.json" ]] && echo oui || echo non)" non
+FAUX=(CODEX_CONTROLEUR_PROTEGE="$FIX/partage" CODEX_CONTROLEUR_ETAT="$FIX/partage/sous/etat")
+check "état sous le checkout refusé" "$(lance "$FIX/e9" init --depuis 2026-11-19T00:00:00Z)" 2
+check "état sous le checkout, rien créé" "$([[ -e "$FIX/partage/sous" ]] && echo oui || echo non)" non
+FAUX=(CODEX_CONTROLEUR_PROTEGE="$FIX/partage" CODEX_CONTROLEUR_ETAT="$FIX/lien-partage/etat")
+check "état par lien symbolique refusé" "$(lance "$FIX/e10" init --depuis 2026-11-19T00:00:00Z)" 2
+contient "état par lien, message" "$FIX/e10.out" "dossier d'état refusé"
+check "état par lien, rien créé" "$([[ -e "$FIX/partage/etat" ]] && echo oui || echo non)" non
+check "état par lien, droits préservés" "$(stat -c %a "$FIX/partage")" 755
 FAUX=()
 
 echo "codex-controleur : $ok vérifications réussies, $ko en échec"

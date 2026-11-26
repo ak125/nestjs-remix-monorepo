@@ -96,9 +96,27 @@ done
 [[ "$MAX_PR" =~ ^[1-9][0-9]*$ ]] || die "--max doit être un entier positif" 2
 
 # Clone dédié (décision de Marwane du 2026-11-19) : la routine fait fetch et worktree jetable dans
-# son propre clone (~/codex-controleur/app), jamais dans le checkout DEV partagé.
+# son propre clone (~/codex-controleur/app), jamais dans le checkout DEV partagé. Gardes posées
+# avant toute écriture. CODEX_CONTROLEUR_PROTEGE ajoute un checkout protégé (tests) ; il ne retire
+# jamais /opt/automecanik/app.
+PROTEGES=(/opt/automecanik/app)
+[[ -z "${CODEX_CONTROLEUR_PROTEGE:-}" ]] || PROTEGES+=("$CODEX_CONTROLEUR_PROTEGE")
 [[ "$(realpath -m "$DEPOT")" != "/opt/automecanik/app" ]] \
   || die "dépôt refusé : /opt/automecanik/app est le checkout partagé ; utiliser le clone dédié ~/codex-controleur/app" 2
+# Dépôt Git commun : un worktree lié du checkout partagé écrirait fetch et worktrees dans son .git.
+commun="$(git -C "$DEPOT" rev-parse --path-format=absolute --git-common-dir 2> /dev/null)" \
+  || die "dépôt refusé : $DEPOT n'est pas un dépôt Git lisible" 2
+commun="$(realpath -e "$commun")" || die "dépôt refusé : dépôt Git commun de $DEPOT introuvable" 2
+etat_canon="$(realpath -m "$ETAT")"
+for p in "${PROTEGES[@]}"; do
+  p="$(realpath -m "$p")"
+  pc="$(git -C "$p" rev-parse --path-format=absolute --git-common-dir 2> /dev/null || echo "$p/.git")"
+  [[ "$commun" != "$(realpath -m "$pc")" ]] \
+    || die "dépôt refusé : $DEPOT partage le dépôt Git de $p (worktree lié) ; utiliser le clone dédié ~/codex-controleur/app" 2
+  # Dossier d'état : mkdir et chmod 700 ne visent jamais le checkout partagé ni un de ses dossiers.
+  [[ "$etat_canon" != "$p" && "$etat_canon" != "$p/"* ]] \
+    || die "dossier d'état refusé : $ETAT est dans le checkout partagé $p" 2
+done
 
 CURSEUR="$ETAT/curseur.json"   # {"depuis": ISO, "faites": [{"pr": N, "fusion": ISO, "statut": ...}]}
 mkdir -p "$ETAT/bruts"
@@ -233,10 +251,14 @@ resumer() { # $1 = dossier du jour, $2 = fichier résumé
 }
 
 lire_curseur() { [[ -f "$CURSEUR" ]] || die "curseur absent ($CURSEUR) : lancer « init --depuis <ISO> »" 6; }
+# Seule une PR relue avance .depuis : quotidien les relit dans l'ordre de fusion, aucune PR plus
+# ancienne n'est donc en attente. Une PR ignorée peut être plus récente qu'une PR en attente :
+# elle entre dans .faites sans déplacer .depuis, que filtre la recherche « merged:>= ».
 marquer() { # pr fusion statut [motif]
   local tmp; tmp="$(mktemp "$ETAT/.curseur.XXXXXX")"
   jq --argjson pr "$1" --arg f "$2" --arg s "$3" --arg m "${4:-}" --arg t "$(horodate)" \
-    '.faites += [{pr:$pr, fusion:$f, statut:$s, motif:$m, le:$t}] | .depuis = ([.depuis, $f]|max)' \
+    '.faites += [{pr:$pr, fusion:$f, statut:$s, motif:$m, le:$t}]
+     | if $s == "relue" then .depuis = ([.depuis, $f]|max) else . end' \
     "$CURSEUR" > "$tmp" && mv -f "$tmp" "$CURSEUR"
 }
 
@@ -294,13 +316,23 @@ case "$CMD" in
       d="$jour/pr$n"
       git -C "$WT" merge-base --is-ancestor "$sha" HEAD 2> /dev/null \
         || { arret="commit de fusion de #$n absent de origin/$BRANCHE"; break; }
+      # Diff contre le premier parent : sur une fusion à deux parents, git show rend un diff
+      # combiné, vide pour une fusion propre ; le premier parent est l'état de main avant la PR.
+      parent="$(git -C "$WT" rev-parse -q --verify "$sha^1")" \
+        || { arret="commit de fusion de #$n sans premier parent"; break; }
       mkdir -p "$d"
-      git -C "$WT" show --format='commit %H%n%s%n' --stat --patch "$sha" -- . "${EXCLUS[@]}" > "$d/entree.diff"
-      note="Diff du commit de fusion joint en entrée standard (fichiers générés retirés : package-lock.json, audit/registry, audit/dependencies, REPO_MAP.md)."
-      if [[ "$(stat -c %s "$d/entree.diff")" -gt "$DIFF_MAX" ]]; then
-        git -C "$WT" show --format='commit %H%n%s%n' --stat "$sha" -- . "${EXCLUS[@]}" > "$d/entree.diff"
-        note="Diff trop long : seule la liste des fichiers est jointe ; lis les fichiers modifiés et \`git show $sha\` dans le worktree."
+      git -C "$WT" diff --stat --patch "$parent" "$sha" -- . "${EXCLUS[@]}" > "$d/diff.tmp"
+      if [[ ! -s "$d/diff.tmp" ]]; then
+        arret="diff vide pour #$n contre le premier parent (fichiers générés retirés) ; PR laissée en attente, la retirer par « ignorer --pr $n --motif … » si voulu"
+        break
       fi
+      note="Diff du commit de fusion contre son premier parent joint en entrée standard (fichiers générés retirés : package-lock.json, audit/registry, audit/dependencies, REPO_MAP.md)."
+      if [[ "$(stat -c %s "$d/diff.tmp")" -gt "$DIFF_MAX" ]]; then
+        git -C "$WT" diff --stat "$parent" "$sha" -- . "${EXCLUS[@]}" > "$d/diff.tmp"
+        note="Diff trop long : seule la liste des fichiers est jointe ; lis les fichiers modifiés et \`git diff $parent $sha\` dans le worktree."
+      fi
+      { git -C "$WT" log -1 --format='commit %H%n%s%n' "$sha"; cat "$d/diff.tmp"; } > "$d/entree.diff"
+      rm -f "$d/diff.tmp"
       objet="PR #$n fusionnée sur $BRANCHE le $f : « $titre ». Commit de fusion $sha. $note"
       rc=0; passage "$d" "$objet" "$d/entree.diff" || rc=$?
       if [[ "$rc" -eq 5 ]]; then arret="quota Codex épuisé à la PR #$n"; break; fi
