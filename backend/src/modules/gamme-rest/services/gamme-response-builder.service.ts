@@ -34,7 +34,13 @@ import {
   applyGuideLinkRuleToHtml,
   resolveGuideLink,
 } from '../../seo/services/r6-guide-link-policy.service';
-import { InternalLinkingService } from '../../seo';
+import {
+  InternalLinkingService,
+  R4ConsolidationPolicyService,
+  applyReferenceLinkRuleToHtml,
+  referenceLinkPath,
+  unlinkGammeAliasLinks,
+} from '../../seo';
 
 interface MotorizationRow {
   type_id: number;
@@ -92,6 +98,7 @@ export class GammeResponseBuilderService {
     private readonly chainFlags: SeoFeatureFlagRegistry,
     private readonly guideLinkPolicy: R6GuideLinkPolicyService,
     private readonly internalLinking: InternalLinkingService,
+    private readonly r4Consolidation: R4ConsolidationPolicyService,
   ) {}
 
   /**
@@ -349,7 +356,13 @@ export class GammeResponseBuilderService {
       : null;
     if (buyingGuideHref) guideLinkCtx.linkedPaths.add(buyingGuideHref);
     let guideLinksChanged = 0;
+    let gammeLinksDegraded = false;
     if (pageContent) {
+      // Liens vers une page gamme : adresse canonique d'une R1 indexable,
+      // sinon libellé sans lien (une cible sans identifiant répond 410).
+      const gammeLinks = await this.resolveR1GammeLinks(pageContent, pgIdNum);
+      pageContent = gammeLinks.html;
+      gammeLinksDegraded = gammeLinks.degraded;
       // Liens vers une page conseil : adresse servie, sinon libellé sans lien.
       // Avant la règle des guides, qui compte les liens conseils déjà présents.
       pageContent = await this.internalLinking.resolveConseilsLinks(
@@ -363,6 +376,21 @@ export class GammeResponseBuilderService {
       );
       pageContent = out.html;
       guideLinksChanged += out.changed;
+      // Liens vers les pages R4 redirigées (mandat ER) : vers leur page conseils.
+      // Garde en panne : même marqueur que les liens de gamme, réponse non cachée.
+      const r4Snapshot = await this.r4Consolidation.getSnapshot();
+      if (r4Snapshot.degraded) gammeLinksDegraded = true;
+      const r4Links = applyReferenceLinkRuleToHtml(
+        pageContent,
+        r4Snapshot,
+        guideLinkCtx.currentPath,
+      );
+      if (r4Links.changed > 0) {
+        pageContent = r4Links.html;
+        this.logger.log(
+          `[R4-LINKS] pg_id=${pgIdNum} contenu=${r4Links.changed} lien(s) modifié(s)`,
+        );
+      }
     }
     const countItems = (p: typeof relatedResources) =>
       p.blocks.reduce((n, b) => n + b.items.length, 0);
@@ -861,12 +889,21 @@ export class GammeResponseBuilderService {
     } | null = null;
     const ref = await referencePromise;
     if (ref && ref.definition) {
+      // Page R4 redirigée (mandat ER) : lien vers sa page conseils.
+      const r4Snapshot = await this.r4Consolidation.getSnapshot();
+      if (r4Snapshot.degraded) gammeLinksDegraded = true;
       referenceData = {
         slug: ref.slug,
         title: ref.title,
         definition: ref.definition,
         roleMecanique: ref.roleMecanique,
-        canonicalUrl: ref.canonicalUrl,
+        canonicalUrl: r4Snapshot.enabled
+          ? referenceLinkPath(
+              ref.slug,
+              r4Snapshot,
+              `/pieces/${pgAlias}-${pgIdNum}.html`,
+            )
+          : ref.canonicalUrl,
       };
     }
 
@@ -1081,8 +1118,37 @@ export class GammeResponseBuilderService {
         buying_guide_gate_reasons: antiWikiGate.ok
           ? null
           : antiWikiGate.reasons.join(','),
+        // 1 : liens de gamme non vérifiés (repli) ou garde R4 en panne —
+        // réponse à ne pas cacher.
+        gamme_links_degraded: gammeLinksDegraded ? 1 : 0,
       },
     };
+  }
+
+  /**
+   * Liens du texte R1 vers une page gamme (`resolveGammeAliasLinks`, cibles
+   * `indexable`). Si la lecture des gammes échoue, la page reste servie : les
+   * liens sans identifiant (qui répondent 410) perdent leur lien, le libellé
+   * reste, et `degraded` signale une réponse à ne pas mettre en cache.
+   */
+  private async resolveR1GammeLinks(
+    html: string,
+    pgId: number,
+  ): Promise<{ html: string; degraded: boolean }> {
+    try {
+      return {
+        html: await this.internalLinking.resolveGammeAliasLinks(
+          html,
+          'indexable',
+        ),
+        degraded: false,
+      };
+    } catch (e) {
+      this.logger.error(
+        `[R1-GAMME-LINKS] pg_id=${pgId} résolution en échec, liens sans identifiant servis sans lien, réponse non cachée : ${e}`,
+      );
+      return { html: unlinkGammeAliasLinks(html), degraded: true };
+    }
   }
 
   /**

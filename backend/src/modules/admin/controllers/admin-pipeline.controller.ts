@@ -65,7 +65,6 @@ export class AdminPipelineController {
    * @example
    * { "roleId": "R3_CONSEILS", "targetIds": ["1303", "415"], "dryRun": true }
    * { "roleId": "R8_VEHICLE", "targetIds": ["12345"] }
-   * { "roleId": "R2_PRODUCT", "targetIds": ["4"], "vehicleKey": "renault-clio-iii" }
    */
   @Post('execute')
   @RateLimitModerate()

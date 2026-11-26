@@ -1,0 +1,186 @@
+{
+ "route": "/pieces/filtre-a-huile-7.html",
+ "viewport": "1440x900",
+ "statut": 200,
+ "date": "2026-11-20T21:48:46.056Z",
+ "nav": {
+  "dcl": 392,
+  "load": 724
+ },
+ "shifts": [
+  [
+   394,
+   0.02259,
+   false
+  ]
+ ],
+ "points": [
+  {
+   "t": 276,
+   "etat": "loading",
+   "feuilles": 1,
+   "liens": 2,
+   "styles": 0,
+   "hauteur": 900,
+   "polices": "loaded",
+   "hydrate": false,
+   "image": null,
+   "imageCharge": null,
+   "carte1": null,
+   "carte3": null,
+   "nCartes": 0,
+   "main": null
+  },
+  {
+   "t": 393,
+   "etat": "interactive",
+   "feuilles": 3,
+   "liens": 3,
+   "styles": 0,
+   "hauteur": 7200,
+   "polices": "loading",
+   "hydrate": false,
+   "image": [
+    262,
+    205
+   ],
+   "imageCharge": true,
+   "carte1": null,
+   "carte3": null,
+   "nCartes": 0,
+   "main": [
+    113,
+    7087
+   ]
+  },
+  {
+   "t": 474,
+   "etat": "interactive",
+   "feuilles": 3,
+   "liens": 3,
+   "styles": 0,
+   "hauteur": 7200,
+   "polices": "loaded",
+   "hydrate": false,
+   "image": [
+    262,
+    205
+   ],
+   "imageCharge": true,
+   "carte1": null,
+   "carte3": null,
+   "nCartes": 0,
+   "main": [
+    113,
+    7087
+   ]
+  },
+  {
+   "t": 724,
+   "etat": "complete",
+   "feuilles": 3,
+   "liens": 3,
+   "styles": 0,
+   "hauteur": 7200,
+   "polices": "loaded",
+   "hydrate": true,
+   "image": [
+    262,
+    205
+   ],
+   "imageCharge": true,
+   "carte1": null,
+   "carte3": null,
+   "nCartes": 0,
+   "main": [
+    113,
+    7087
+   ]
+  },
+  {
+   "t": 1074,
+   "etat": "complete",
+   "feuilles": 2,
+   "liens": 2,
+   "styles": 0,
+   "hauteur": 6708,
+   "polices": "loaded",
+   "hydrate": true,
+   "image": [
+    262,
+    205
+   ],
+   "imageCharge": true,
+   "carte1": null,
+   "carte3": null,
+   "nCartes": 0,
+   "main": [
+    113,
+    6595
+   ]
+  },
+  {
+   "t": 1107,
+   "etat": "complete",
+   "feuilles": 2,
+   "liens": 2,
+   "styles": 0,
+   "hauteur": 7200,
+   "polices": "loaded",
+   "hydrate": true,
+   "image": [
+    262,
+    205
+   ],
+   "imageCharge": true,
+   "carte1": null,
+   "carte3": null,
+   "nCartes": 0,
+   "main": [
+    113,
+    7087
+   ]
+  },
+  {
+   "t": 1181,
+   "etat": "complete",
+   "feuilles": 3,
+   "liens": 2,
+   "styles": 1,
+   "hauteur": 7200,
+   "polices": "loaded",
+   "hydrate": true,
+   "image": [
+    262,
+    205
+   ],
+   "imageCharge": true,
+   "carte1": null,
+   "carte3": null,
+   "nCartes": 0,
+   "main": [
+    113,
+    7087
+   ]
+  }
+ ],
+ "fin": {
+  "images": [
+   {
+    "src": "https://www.automecanik.com/imgproxy/rs:fit:360/q:90/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/article",
+    "attrL": "360",
+    "attrH": "360",
+    "naturel": [
+     360,
+     240
+    ],
+    "rendu": [
+     278,
+     205
+    ]
+   }
+  ],
+  "hauteur": 7200
+ },
+ "nonGet": 3
+}

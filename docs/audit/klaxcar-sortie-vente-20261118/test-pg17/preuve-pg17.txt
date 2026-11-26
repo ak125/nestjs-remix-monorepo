@@ -1,0 +1,39 @@
+état avant sha256 eb9b86c9e8420fe3
+== migration 2026-11-19T00:01:17Z
+NOTICE:  pré-condition sortie de vente KLAXCAR : OK (8487 lignes, 8487 à l'état relevé, 0 déjà sorties)
+NOTICE:  sortie de vente KLAXCAR : 8487 ligne(s) écrite(s) maintenant (0 = rejeu), 8487/8487 à pri_dispo 0 et FROZEN
+   lot   | pri_dispo | pricing_state | lignes | sans_trace | vendables 
+---------+-----------+---------------+--------+------------+-----------
+ KLAXCAR | 0         | FROZEN        |   8487 |          0 |         0
+ témoin  | 0         | ACTIVE        |      7 |          7 |         0
+ témoin  | 1         | ACTIVE        |    292 |        154 |       225
+ témoin  | 2         | ACTIVE        |      1 |          0 |         1
+(4 rows)
+
+== rejeu 2026-11-19T00:01:18Z
+NOTICE:  pré-condition sortie de vente KLAXCAR : OK (8487 lignes, 0 à l'état relevé, 8487 déjà sorties)
+NOTICE:  sortie de vente KLAXCAR : 0 ligne(s) écrite(s) maintenant (0 = rejeu), 8487/8487 à pri_dispo 0 et FROZEN
+rejeu : état identique au premier passage
+300 lignes témoin (CAL hors KLAXCAR) identiques
+== exemple de ligne sortie
+1085866|0|FROZEN|owner-decision-2026-11-19-klaxcar|SORTIE_VENTE_MARQUE:2590:dispo_origine=1 | 2026-11-19 : marque KLAXCAR (pm_id 2590) sortie de la vente sur décision de Marwane ; pri_dispo d'origine ci-contre. Réversible par 20261119_pricing_klaxcar_sortie_vente.down.sql.
+== down 2026-11-19T00:01:20Z
+NOTICE:  rollback sortie de vente KLAXCAR : 8487 / 8487 ligne(s) remise(s) à l'état relevé ; 0 ligne(s) portent encore la source (modifiées depuis, conservées)
+ pri_dispo | pricing_state | lignes | sans_trace 
+-----------+---------------+--------+------------
+ 0         | ACTIVE        |     15 |         15
+ 1         | ACTIVE        |   8189 |       8189
+ 3         | ACTIVE        |    283 |        283
+(3 rows)
+
+down : état restauré identique octet pour octet (pieces_price complet, 8787 lignes)
+eb9b86c9e8420fe38e53ebd372b143a967c4c8db72356b1a61d4a148d368c723  avant.csv
+914e7ae052fdb902d14cdff30efa3a8c4c98f7340b5ae99d73dfd096615e0801  apres.csv
+eb9b86c9e8420fe38e53ebd372b143a967c4c8db72356b1a61d4a148d368c723  restaure.csv
+== colonnes différentes entre avant et après migration
+['pri_dispo', 'pricing_state', 'pricing_state_reason', 'pricing_updated_by', 'pricing_updated_source']
+== témoin négatif 1 : une ligne KLAXCAR passée à pri_dispo 2 entre-temps
+ERROR:  ABORT: dispo d'origine 1/3/0 = 8188/283/15, 8189/283/15 relevées : relever de nouveau
+== témoin négatif 2 : une ligne KLAXCAR portant déjà un motif
+ERROR:  ABORT: 1 ligne(s) ni dans l'état relevé ni sorties par ce fichier : la base a changé
+après les deux refus : état identique à l'état avant

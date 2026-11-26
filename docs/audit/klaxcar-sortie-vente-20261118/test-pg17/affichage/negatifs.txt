@@ -1,0 +1,15 @@
+== N1 (P9) : une pièce KLAXCAR masquée réaffichée entre le relevé et l'application
+psql:up.sql:254: ERROR:  ABORT P9: affichage KLAXCAR 8129 affichées / 1481 masquées, journal du lot 0 ligne(s) (0 conformes) : ni l'état relevé (8128 / 1482 / 0) ni l'état traité (0 / 9610 / 8128) ; relever de nouveau
+  refus : état inchangé (38da57ca51e17745)
+== N2 (P8) : une pièce KLAXCAR de plus
+psql:up.sql:254: ERROR:  ABORT P8: 9611 pièce(s) KLAXCAR, 9610 relevées : relever de nouveau
+  refus : état inchangé (3c8a56aef08ece30)
+== N3 (P9) : réapplication après la down (même lot)
+psql:up.sql:254: ERROR:  ABORT P9: lot cb9bd8ac-1e4e-4e94-9c6e-a660608795a3 déjà au journal (8128 ligne(s)) avec 8128 pièce(s) réaffichée(s) : retour déjà joué ; nouveau relevé et nouvel identifiant de lot requis
+  refus : état inchangé (1d977f3803df70be)
+== N4 (D3) : une pièce du lot réaffichée à la main après la migration, puis down
+psql:down.sql:122: ERROR:  ABORT D3: lot cb9bd8ac-1e4e-4e94-9c6e-a660608795a3 : 8127 pièce(s) masquée(s), 1 réaffichée(s) ; état modifié depuis la migration, relever de nouveau
+  refus : état inchangé, prix compris (c89253ff16ffdc53)
+== N5 (P2) : une ligne de prix dispo 1 ajoutée à une pièce KLAXCAR affichée (la rendrait non éligible à la quarantaine)
+psql:up.sql:200: ERROR:  ABORT P2: 8488 ligne(s) pour 8487 pièce(s) KLAXCAR, 8487 / 8487 relevées : relever de nouveau
+  refus : état inchangé (451530fc54f9537f)

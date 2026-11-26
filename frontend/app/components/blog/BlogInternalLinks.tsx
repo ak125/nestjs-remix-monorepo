@@ -128,21 +128,15 @@ export function BlogInternalLinks() {
                     Toutes les pièces auto
                   </Link>
                 </li>
+                {/* `/pieces/freinage` et `/pieces/embrayage` répondaient 410 :
+                    aucune gamme n'a ces alias. Libellés gardés, sans lien. */}
                 <li>
-                  <Link
-                    to="/pieces/freinage"
-                    className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
-                  >
+                  <span className="text-sm text-gray-600">
                     Pièces de freinage
-                  </Link>
+                  </span>
                 </li>
                 <li>
-                  <Link
-                    to="/pieces/embrayage"
-                    className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
-                  >
-                    Kits embrayage
-                  </Link>
+                  <span className="text-sm text-gray-600">Kits embrayage</span>
                 </li>
               </ul>
             </div>

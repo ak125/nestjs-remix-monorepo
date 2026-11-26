@@ -50,23 +50,13 @@ R5 (Diagnostic) pages help users identify the right part based on symptoms. This
 
 ## Design Tokens
 
-### Colors (Pack Diagnostic)
+### Colors
 
-```css
---r5-primary: #0F766E;
---r5-secondary: #14B8A6;
---r5-cta: #059669;
---r5-background: #F0FDFA;
---r5-accent: #0D9488;
-```
+Colors come from `packages/design-tokens/src/tokens.json`, by role, never as raw values (P44 of `.claude/governance/journal-des-principes.md`). Navy and orange are the brand colors. Orange marks the one primary action per screen, with navy text; other actions are outlined. Red is for errors and destructive actions only.
 
 ### Typography
 
-```css
---r5-heading: 'Poppins', sans-serif;
---r5-body: 'Work Sans', sans-serif;
---r5-mono: 'Inconsolata', monospace;
-```
+Outfit for headings, DM Sans for body text, Roboto Mono for codes the user copies, from the tokens (P46). Every weight used is loaded.
 
 ## Components
 
@@ -96,15 +86,15 @@ R5 (Diagnostic) pages help users identify the right part based on symptoms. This
 
 ## Effects
 
+Every effect below stops when the user asks for reduced motion (`prefers-reduced-motion: reduce`, P45). Durations and shadows come from the tokens (P46).
+
 ### Wizard Progress
 ```css
-animation: step-reveal 200ms ease-out;
+animation: step-reveal var(--transition-base) ease-out;
 ```
 
 ### Confidence Meter
-```css
-animation: progress-fill 500ms ease-out;
-```
+A fill animation, with its duration from the tokens.
 
 ## Performance Targets
 

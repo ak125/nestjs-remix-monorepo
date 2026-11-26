@@ -30,6 +30,7 @@ describe('GammeResponseBuilderService — guideAchat', () => {
       dummy, // SeoFeatureFlagRegistry
       dummy, // R6GuideLinkPolicyService
       dummy, // InternalLinkingService
+      dummy, // R4ConsolidationPolicyService
     );
     const helper = (service as never as { buildGuideAchat: BuildGuideAchat })
       .buildGuideAchat;

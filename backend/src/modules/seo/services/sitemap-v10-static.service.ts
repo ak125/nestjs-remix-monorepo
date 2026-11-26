@@ -4,7 +4,7 @@
  * 8 générateurs de sitemaps indépendants:
  * 1. Racine (homepage, 1 URL)
  * 2. Catégories/Gammes INDEX (~123 URLs)
- * 3. Véhicules fusionnés (~13.8k URLs)
+ * 3. Véhicules : pages R8 indexables (marques → sitemap-brands.xml)
  * 4. Véhicules par marque (~30 files)
  * 5. Blog (~109 URLs)
  * 6. Pages statiques (~9 URLs)
@@ -19,10 +19,19 @@ import * as path from 'path';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import { FeatureFlagsService } from '../../../config/feature-flags.service';
+import {
+  collectR8VehicleUrls,
+  filterR8ByServedRobots,
+} from '../helpers/r8-vehicle-selection.helper';
 import { isR6GuideAchatSurface } from '../types/page-role.types';
 import { SitemapV10DataService } from './sitemap-v10-data.service';
+import {
+  R4ConsolidationPolicyService,
+  withoutR4Redirected,
+} from './r4-consolidation-policy.service';
 import { SitemapV10XmlService } from './sitemap-v10-xml.service';
 import { type SitemapUrl, STATIC_PAGES } from './sitemap-v10.types';
+import { excludeR4NoindexReferences } from './r4-noindex.config';
 
 /**
  * Retire la surface R6 guide-achat (hub + pages détail) d'une liste d'URLs de
@@ -74,6 +83,7 @@ export class SitemapV10StaticService extends SupabaseBaseService {
     private readonly dataService: SitemapV10DataService,
     private readonly xmlService: SitemapV10XmlService,
     private readonly featureFlags: FeatureFlagsService,
+    private readonly r4Consolidation: R4ConsolidationPolicyService,
   ) {
     super(configService);
     this.rpcGate = rpcGate;
@@ -157,7 +167,10 @@ export class SitemapV10StaticService extends SupabaseBaseService {
   }
 
   /**
-   * 🚗 Génère sitemap-vehicules.xml (marques + modèles + motorisations)
+   * 🚗 Génère sitemap-vehicules.xml : pages R8 servies `index, follow`
+   * (sélection commune avec le hub constructeurs, puis règle robots de la
+   * page servie, voir `filterR8ByServedRobots`), plus les URLs de la vue
+   * `__sitemap_vehicules` non portées par sitemap-brands.xml.
    *
    * Les URLs marque appartiennent à sitemap-brands.xml : elles sont retirées
    * d'ici quand la même lecture les y place. `brandUrls` = résultat de
@@ -216,13 +229,14 @@ export class SitemapV10StaticService extends SupabaseBaseService {
         throw new Error(`liste absente ou vide pour count ${totalCount}`);
       }
 
-      const allUrls: SitemapUrl[] = vehicules.map((v) => ({
+      const viewUrls: SitemapUrl[] = vehicules.map((v) => ({
         url: v.url,
         page_type: 'vehicule',
         changefreq: v.changefreq || 'monthly',
         priority: v.priority.toString(),
         last_modified_at: null,
       }));
+      const allUrls = [...viewUrls, ...(await this.collectIndexableR8Urls())];
 
       // Source marque indisponible (≠ vide) : sitemap-brands.xml n'est pas
       // écrit pour ce run, les URLs marque restent donc déclarées ici
@@ -243,9 +257,14 @@ export class SitemapV10StaticService extends SupabaseBaseService {
       );
       // <loc> finale : une R7 absolue et un repli relatif peuvent coïncider ;
       // la première occurrence (ordre de collecte) est gardée.
-      const present = new Set(kept.map((u) => toLoc(u.url)));
+      const present = new Set<string>();
       urls = [
-        ...kept,
+        ...kept.filter((u) => {
+          const loc = toLoc(u.url);
+          if (present.has(loc)) return false;
+          present.add(loc);
+          return true;
+        }),
         ...unpublishedBrandUrls.filter((b) => {
           const loc = toLoc(b.url);
           if (present.has(loc)) return false;
@@ -294,6 +313,48 @@ export class SitemapV10StaticService extends SupabaseBaseService {
     await this.xmlService.writeStaticSitemapFile(filePath, urls);
     this.logger.log(`   ✅ sitemap-vehicules.xml: ${urls.length} URLs`);
     return filePath;
+  }
+
+  /**
+   * R8 de sitemap-vehicules.xml : sélection du hub constructeurs
+   * (`collectR8VehicleUrls`) gardée si la page est servie `index, follow`
+   * (`filterR8ByServedRobots`). Toute lecture en échec est levée (liste
+   * partielle jamais publiée). Sélection vide : avertissement explicite.
+   */
+  private async collectIndexableR8Urls(): Promise<SitemapUrl[]> {
+    const selection = await collectR8VehicleUrls(
+      this.supabase,
+      this.xmlService.BASE_URL,
+    );
+    if (selection.readError) {
+      throw new Error(
+        `__sitemap_p_link en erreur à l'offset ${selection.readError.offset} : ${selection.readError.message}`,
+      );
+    }
+    const { kept, excluded } = await filterR8ByServedRobots(
+      this.supabase,
+      selection.entries,
+    );
+    this.logger.log(
+      `   🚗 R8 : ${selection.entries.length} sélectionnée(s), ${kept.length} servie(s) index ; écartées : ${excluded.not_indexable} noindex (is_indexable), ${excluded.tecdoc_gate} release gate TecDoc, ${excluded.no_cache} sans cache page, ${excluded.stale_cache} cache périmé`,
+    );
+    if (excluded.no_cache + excluded.stale_cache > 0) {
+      this.logger.warn(
+        `   ⚠️ ${excluded.no_cache + excluded.stale_cache} R8 sans cache page frais : non déclarées (robots de la page non lisible)`,
+      );
+    }
+    if (kept.length === 0) {
+      this.logger.warn(
+        `   ⚠️ Sélection R8 vide (${selection.entries.length} lue(s), ${selection.scannedRows} ligne(s) de __sitemap_p_link) : aucune page R8 dans sitemap-vehicules.xml`,
+      );
+    }
+    return kept.map((e) => ({
+      url: e.url,
+      page_type: 'vehicule',
+      changefreq: 'monthly',
+      priority: '0.6',
+      last_modified_at: null,
+    }));
   }
 
   /**
@@ -538,7 +599,7 @@ export class SitemapV10StaticService extends SupabaseBaseService {
    */
   async generateReferenceSitemap(): Promise<string | null> {
     try {
-      const { data: references, error } = await this.supabase
+      const { data: publishedReferences, error } = await this.supabase
         .from('__seo_reference')
         .select('slug, updated_at')
         .eq('is_published', true)
@@ -551,12 +612,53 @@ export class SitemapV10StaticService extends SupabaseBaseService {
         return null;
       }
 
+      // Fiches R4 servies en `noindex, follow` (mandat EW) : hors sitemap.
+      let references = publishedReferences;
+      if (this.featureFlags.seoR4NoindexEnabled && publishedReferences) {
+        const { kept, excludedCount } =
+          excludeR4NoindexReferences(publishedReferences);
+        references = kept;
+        this.logger.log(
+          `   🔇 R4 noindex ON: ${excludedCount} URL(s) référence exclue(s) de sitemap-reference.xml`,
+        );
+      }
+
       if (!references || references.length === 0) {
         this.logger.warn('⚠️ No reference pages found for sitemap');
         return null;
       }
 
-      const urls: SitemapUrl[] = references.map(
+      const filePath = path.join(
+        this.xmlService.OUTPUT_DIR,
+        'sitemap-reference.xml',
+      );
+
+      // Pages redirigées vers leur page conseils (mandat ER) : hors sitemap.
+      const r4Snapshot = await this.r4Consolidation.getSnapshot();
+      if (r4Snapshot.degraded) {
+        // Garde en panne : rien n'est figé. Le dernier fichier reste servi et
+        // déclaré ; sans fichier, la liste publiée est écrite entière (ces
+        // pages répondent 200 tant que la garde est en panne).
+        const previous = await fs.stat(filePath).then(
+          (s) => (s.isFile() ? filePath : null),
+          () => null,
+        );
+        this.logger.warn(
+          `⚠️ sitemap-reference.xml : garde R4 non vérifiable, ${previous ? 'fichier existant gardé' : 'aucun fichier existant, liste publiée écrite sans exclusion'}`,
+        );
+        if (previous) return previous;
+      }
+      const { kept, excluded } = withoutR4Redirected(
+        references as { slug: string; updated_at: string }[],
+        r4Snapshot,
+      );
+      if (excluded > 0) {
+        this.logger.log(
+          `   🔀 R4 consolidation ON: ${excluded} URL(s) référence exclue(s) du sitemap (301 → conseils)`,
+        );
+      }
+
+      const urls: SitemapUrl[] = kept.map(
         (r: { slug: string; updated_at: string }) => ({
           url: `/reference-auto/${r.slug}`,
           page_type: 'reference',
@@ -566,10 +668,6 @@ export class SitemapV10StaticService extends SupabaseBaseService {
         }),
       );
 
-      const filePath = path.join(
-        this.xmlService.OUTPUT_DIR,
-        'sitemap-reference.xml',
-      );
       await this.xmlService.writeStaticSitemapFile(filePath, urls);
       this.logger.log(`   ✅ sitemap-reference.xml: ${urls.length} URLs (R4)`);
       return filePath;

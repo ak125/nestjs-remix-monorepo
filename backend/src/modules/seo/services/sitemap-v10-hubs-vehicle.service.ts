@@ -14,15 +14,8 @@ import * as path from 'path';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import { SITE_ORIGIN } from '../../../config/app.config';
-import {
-  normalizeAlias,
-  normalizeTypeAlias,
-  isMalformedSeoUrl,
-} from '../../../common/utils/url-builder.utils';
-import {
-  getTypeModelIndex,
-  sitemapLinkState,
-} from '../helpers/auto-type-valid-ids.helper';
+import { normalizeAlias } from '../../../common/utils/url-builder.utils';
+import { collectR8VehicleUrls } from '../helpers/r8-vehicle-selection.helper';
 import {
   HubGenerationResult,
   HubType,
@@ -187,80 +180,23 @@ ${links}
       // Format: /constructeurs/{marque}/{modele}/{type}.html (R8 — niveau-modèle 2-seg supprimé, ADR-084)
       // ⚠️ PAGINATION COMPLÈTE - récupérer TOUS les véhicules puis dédupliquer
       // Anti-404 : filtrer les orphelins TecDoc V1 (type_ids absents d'auto_type)
-      const typeModels = await getTypeModelIndex(this.supabase);
-      const PAGE_SIZE = 1000;
-      let offset = 0;
-      let hasMore = true;
-      let skippedOrphans = 0;
-      let skippedStaleModel = 0;
-      let skippedMalformed = 0;
-      const seen = new Set<string>();
-      const vehicleUrls: string[] = [];
-
+      // Sélection commune avec sitemap-vehicules.xml (helpers/r8-vehicle-selection.helper.ts)
       this.logger.log(`   Fetching ALL vehicle combinations (pagination)...`);
-
-      while (hasMore) {
-        const { data: vehicles, error } = await this.supabase
-          .from('__sitemap_p_link')
-          .select(
-            'map_marque_alias, map_marque_id, map_modele_alias, map_modele_id, map_type_alias, map_type_id',
-          )
-          .gt('map_has_item', 5)
-          .range(offset, offset + PAGE_SIZE - 1);
-
-        if (error) {
-          this.logger.warn(`   ⚠️ Error at offset ${offset}: ${error.message}`);
-          break;
-        }
-
-        if (vehicles && vehicles.length > 0) {
-          for (const v of vehicles) {
-            // Skip orphan type_ids (TecDoc V1 remap residue) and links whose
-            // model is no longer the type's model (the URL would answer 301)
-            const linkState = sitemapLinkState(v, typeModels);
-            if (linkState === 'orphan_type') {
-              skippedOrphans++;
-              continue;
-            }
-            if (linkState === 'stale_model') {
-              skippedStaleModel++;
-              continue;
-            }
-            const key = `${v.map_marque_id}-${v.map_modele_id}-${v.map_type_id}`;
-            if (
-              !seen.has(key) &&
-              v.map_marque_alias &&
-              v.map_modele_alias &&
-              v.map_type_alias
-            ) {
-              seen.add(key);
-              // ✅ FIX: Ajouter les IDs à chaque segment (vérifié 200 OK)
-              // Format: /constructeurs/{marque}-{id}/{modele}-{id}/{type}-{id}.html
-              const vehUrl = `${this.BASE_URL}/constructeurs/${normalizeAlias(v.map_marque_alias)}-${v.map_marque_id}/${normalizeAlias(v.map_modele_alias)}-${v.map_modele_id}/${normalizeAlias(normalizeTypeAlias(v.map_type_alias, null, v.map_type_id))}-${v.map_type_id}.html`;
-              if (isMalformedSeoUrl(vehUrl)) {
-                skippedMalformed++;
-              } else {
-                vehicleUrls.push(vehUrl);
-              }
-            }
-          }
-          offset += PAGE_SIZE;
-          hasMore = vehicles.length === PAGE_SIZE;
-
-          // Progress log
-          if (offset % 50000 < PAGE_SIZE) {
-            this.logger.log(
-              `   📊 Progress: ${offset.toLocaleString()} rows scanned, ${seen.size} unique vehicles`,
-            );
-          }
-        } else {
-          hasMore = false;
-        }
+      const selection = await collectR8VehicleUrls(
+        this.supabase,
+        this.BASE_URL,
+        this.logger,
+      );
+      const { skippedOrphans, skippedStaleModel, skippedMalformed } = selection;
+      if (selection.readError) {
+        this.logger.warn(
+          `   ⚠️ Error at offset ${selection.readError.offset}: ${selection.readError.message}`,
+        );
       }
 
-      urls.push(...vehicleUrls);
+      urls.push(...selection.entries.map((e) => e.url));
       this.logger.log(
-        `   Found ${seen.size} unique vehicle pages (scanned ${offset} rows)`,
+        `   Found ${selection.uniqueCount} unique vehicle pages (scanned ${selection.scannedRows} rows)`,
       );
       if (skippedOrphans > 0) {
         this.logger.warn(

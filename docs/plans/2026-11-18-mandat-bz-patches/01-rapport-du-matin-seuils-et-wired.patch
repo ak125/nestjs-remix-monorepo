@@ -1,0 +1,69 @@
+diff --git a/.github/scripts/morning-health-digest.sh b/.github/scripts/morning-health-digest.sh
+index 7146db5..f99d8f1 100755
+--- a/.github/scripts/morning-health-digest.sh
++++ b/.github/scripts/morning-health-digest.sh
+@@ -27,6 +27,9 @@
+ #   GARDE_PRIX_JSON      file, schema garde-prix.v1 (no producer as of 2026-11-16)
+ #   GMAIL_* , ALERT_EMAIL_TO, EMAIL_FROM  mail channel (report-mail.py); else declared
+ #                        « indisponible » in the issue and the run log.
++#   THRESHOLD_ISSUES_MODE  off | dry-run | write (mandate BZ, default dry-run): issues of
++#                        the registry thresholds, scripts/governance/registry-thresholds.sh;
++#                        its indicators need tsx + node_modules, else « non mesuré ».
+ #
+ # PUBLIC REPOSITORY: this body lands verbatim in a public issue and the run log is
+ # public. Only aggregates go out: rule names, counts, URL paths without query string,
+@@ -687,6 +690,17 @@ PY
+ DEPT_ISSUES=$(gh issue list --repo "$REPO" --state open --limit 3000 --json labels 2>/dev/null \
+   | jq -c '[.[].labels[]?.name | select(startswith("dept:"))] | group_by(.) | map({(.[0]): length}) | add // {}' 2>/dev/null || true)
+ 
++# ======================================================================
++# Registry functions and their thresholds (mandate BZ, decision 9)
++# ======================================================================
++# scripts/governance/registry-thresholds.sh: one line per department (functions by
++# status, « pas de mesure »), evaluable thresholds read from their declared producer,
++# one dept:NN issue per crossed threshold. THRESHOLD_ISSUES_MODE = off | dry-run | write,
++# dry-run by default (nothing written); write acts only with --publish. Never fails here.
++FN_SECTION=$(mktemp)
++REPO="$REPO" GITHUB_SERVER_URL="$GH_URL" PUBLISH="$( [ "$MODE" = "--publish" ] && echo 1 || echo 0 )" \
++  bash "$ROOT/scripts/governance/registry-thresholds.sh" "$FN_SECTION" || : > "$FN_SECTION"
++
+ # ======================================================================
+ # Owner's gestures, then the daily mail (decision 67)
+ # ======================================================================
+@@ -828,6 +842,14 @@ issue_list() { jq -r '.[] | "- [#\(.n)](\(.u)) \(.t | gsub("[`|\\[\\]<>\n\r]"; "
+         + (if $iss == null then "indisponible" else "[\($iss[$dep.label] // 0)](\($base)\($dep.label | @uri))" end) + " |"'
+   fi
+   echo ""
++  if [ -s "$FN_SECTION" ]; then
++    cat "$FN_SECTION"
++  else
++    echo "## Fonctions du registre et seuils"
++    echo ""
++    echo "_Section **indisponible** (\`scripts/governance/registry-thresholds.sh\` sans sortie) : aucun seuil évalué, aucune issue écrite._"
++  fi
++  echo ""
+   if [ -s "$DET" ]; then
+     echo "## Détail"
+     echo ""
+diff --git a/.spec/00-canon/ai-registry/agent-operating-map.yaml b/.spec/00-canon/ai-registry/agent-operating-map.yaml
+index d5cc2c1..df96f0b 100644
+--- a/.spec/00-canon/ai-registry/agent-operating-map.yaml
++++ b/.spec/00-canon/ai-registry/agent-operating-map.yaml
+@@ -298,7 +298,7 @@ departments:
+         threshold:
+           rule: "CRITICAL si aucune commande payée n'est gardée sur 30 jours ; WARNING si au moins une annulation après paiement (toPaymentsKeptKpi)"
+           issue_label: "dept:13-sales"
+-          wired: false
++          wired: true
+           eval: { indicator: cancelled_after_payment, field: status, operator: in, value: [WARNING, CRITICAL], window_days: 30 }
+         rights: { can_mutate: false, can_open_pr: false, can_trigger_pipeline: false }
+         uses:
+@@ -310,7 +310,7 @@ departments:
+           - { path: backend/src/modules/admin/controllers/command-center.controller.ts, lines: "98-115" }
+         decisions: [2, 72]
+         gaps:
+-          - "Seuil évaluable (threshold.eval, mandat BZ : verdict de toPaymentsKeptKpi, WARNING ou CRITICAL) mais non branché : son évaluation par le rapport du matin est le correctif 01 de docs/plans/2026-11-18-mandat-bz-patches/, réservé à l'owner (.github/**) ; il passe wired à true."
++          - "Seuil branché au rapport du matin (mandat BZ, scripts/governance/registry-thresholds.sh) : issues en mode à blanc tant que THRESHOLD_ISSUES_MODE n'est pas write (« oui » distinct de l'owner) ; la lecture demande les dépendances du producteur dans le job (correctif 02)."
+           - "Service en DEV, PREPROD ou PROD non observé par ce mandat : L3 non prouvé."
+       - id: sales.unpaid-watch
+         name: "Veille des commandes non payées et du tunnel de paiement (rapport du matin)"

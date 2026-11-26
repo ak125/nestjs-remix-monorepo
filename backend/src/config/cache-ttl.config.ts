@@ -240,6 +240,13 @@ export const CACHE_STRATEGIES = {
       description:
         'Guides d’achat publiés + gammes avec page conseils (règle des liens ADR-103 D5) — sans le drapeau, lu à chaque appel',
     },
+    R4_CONSOLIDATION: {
+      ttl: CacheTTL.TEN_MINUTES,
+      prefix: 'r4-consolidation:',
+      keyVersion: 'v1',
+      description:
+        'Pages R4 publiées de la liste close de consolidation R4 → R3 (slug, pg_id, alias de gamme) — lu seulement drapeau SEO_R4_CONSOLIDATION_ENABLED allumé',
+    },
   },
 
   // ═══════════════════════════════════════════════════════════════

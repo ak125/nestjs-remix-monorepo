@@ -16,13 +16,14 @@
  */
 
 import 'reflect-metadata';
-import { BadRequestException, Logger } from '@nestjs/common';
+import { BadRequestException, ConflictException, Logger } from '@nestjs/common';
 import { DomainConflictException, ErrorCodes } from '@common/exceptions';
 import { OrdersController } from '../../src/modules/orders/controllers/orders.controller';
 import {
   computeOrderFingerprint,
   type CreateOrderData,
 } from '../../src/modules/orders/services/orders.service';
+import { EMAIL_MAX_LENGTH } from '../../src/common/utils/email-validation.util';
 
 const ORDER_ID = 'ORD-1758000000000-7';
 const NEW_USER_ID = 'usr_guest_test';
@@ -100,12 +101,19 @@ function makeController(
     emailRegistered?: boolean;
     lookupError?: Error;
     supabase?: ReturnType<typeof makeSupabase>;
+    linesRefusal?: Error;
   } = {},
 ) {
   const supabase = opts.supabase ?? makeSupabase();
   const ordersService = {
     getSupabaseClient: jest.fn(() => supabase.client),
-    createOrder: jest.fn().mockResolvedValue(createdOrder()),
+    // Lignes vérifiées (article, quantité, tarif) avant la création du compte.
+    lignesAuTarifEnVigueur: opts.linesRefusal
+      ? jest.fn().mockRejectedValue(opts.linesRefusal)
+      : jest.fn().mockResolvedValue([]),
+    createOrder: opts.linesRefusal
+      ? jest.fn().mockRejectedValue(opts.linesRefusal)
+      : jest.fn().mockResolvedValue(createdOrder()),
     getOrderById: jest.fn().mockResolvedValue(createdOrder()),
   };
   const authService = {
@@ -272,6 +280,24 @@ describe('OrdersController.createGuestOrder', () => {
     expectNoSessionOpened(req);
   });
 
+  it('commande refusée (article, quantité ou tarif) → aucun compte créé', async () => {
+    // Un compte créé sans commande renverrait ce client vers la connexion à
+    // son essai suivant, avec un mot de passe qu'il ne connaît pas.
+    const refusal = new ConflictException('prix changé');
+    const { controller, authService, ordersService, mailService } =
+      makeController({ linesRefusal: refusal });
+    const req = guestRequest();
+
+    await expect(
+      controller.createGuestOrder(body(), req as never),
+    ).rejects.toBe(refusal);
+
+    expect(authService.register).not.toHaveBeenCalled();
+    expect(ordersService.createOrder).not.toHaveBeenCalled();
+    expect(mailService.sendGuestAccountActivation).not.toHaveBeenCalled();
+    expectNoSessionOpened(req);
+  });
+
   describe('nouvel email', () => {
     it('crée le compte et la commande sans ouvrir de session', async () => {
       const { controller, authService, ordersService, mailService } =
@@ -422,6 +448,29 @@ describe('OrdersController.createGuestOrder', () => {
       expect(authService.isEmailRegistered).not.toHaveBeenCalled();
     },
   );
+
+  it('adresse plus longue que la borne → 400, avant tout traitement', async () => {
+    const { controller, ordersService, authService, mailService, supabase } =
+      makeController();
+    const req = guestRequest();
+    const tooLong = `${'a'.repeat(EMAIL_MAX_LENGTH)}@example.test`;
+
+    const error = await controller
+      .createGuestOrder(body({ guestEmail: tooLong }), req as never)
+      .catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(BadRequestException);
+    expect((error as BadRequestException).getStatus()).toBe(400);
+    expect((error as BadRequestException).message).toBe(
+      'Adresse email invalide',
+    );
+    expect(supabase.calls).toHaveLength(0);
+    expect(authService.isEmailRegistered).not.toHaveBeenCalled();
+    expect(authService.register).not.toHaveBeenCalled();
+    expect(ordersService.createOrder).not.toHaveBeenCalled();
+    expect(mailService.sendGuestAccountActivation).not.toHaveBeenCalled();
+    expectNoSessionOpened(req);
+  });
 
   it('aucun log ne contient l’adresse email, quel que soit le parcours', async () => {
     const conflict = makeController({ emailRegistered: true });

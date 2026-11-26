@@ -33,6 +33,7 @@ import {
   R6GuideLinkPolicyService,
   type R6GuideLinkSnapshot,
 } from '../../seo/services/r6-guide-link-policy.service';
+import { R4_CONSOLIDATION_OFF, R4ConsolidationPolicyService } from '../../seo';
 
 interface CacheEntry {
   value: unknown;
@@ -139,6 +140,11 @@ function makeMocks() {
     cacheKeySegment: jest.fn().mockReturnValue('r6c0'),
     getSnapshot: jest.fn().mockResolvedValue(guideLinkSnapshot(false)),
   };
+  // Par défaut : drapeau R4 éteint (mandat ER), segment de clé inchangé.
+  const r4Consolidation = {
+    cacheKeySegment: jest.fn((base: string) => base),
+    getSnapshot: jest.fn().mockResolvedValue(R4_CONSOLIDATION_OFF),
+  };
   return {
     dataService,
     seoService,
@@ -146,6 +152,7 @@ function makeMocks() {
     internalLinkingService,
     projectionDecision,
     guideLinkPolicy,
+    r4Consolidation,
   };
 }
 
@@ -160,6 +167,7 @@ async function buildService(): Promise<{
   relationService: ReturnType<typeof makeMocks>['relationService'];
   projectionDecision: ReturnType<typeof makeMocks>['projectionDecision'];
   guideLinkPolicy: ReturnType<typeof makeMocks>['guideLinkPolicy'];
+  r4Consolidation: ReturnType<typeof makeMocks>['r4Consolidation'];
 }> {
   const cache = new InMemoryCacheServiceStub();
   const mocks = makeMocks();
@@ -180,6 +188,10 @@ async function buildService(): Promise<{
         useValue: mocks.projectionDecision,
       },
       { provide: R6GuideLinkPolicyService, useValue: mocks.guideLinkPolicy },
+      {
+        provide: R4ConsolidationPolicyService,
+        useValue: mocks.r4Consolidation,
+      },
     ],
   }).compile();
 
@@ -193,6 +205,7 @@ async function buildService(): Promise<{
     relationService: mocks.relationService,
     projectionDecision: mocks.projectionDecision,
     guideLinkPolicy: mocks.guideLinkPolicy,
+    r4Consolidation: mocks.r4Consolidation,
   };
 }
 
@@ -998,5 +1011,92 @@ describe("R3GuideService — liens vers les guides d'achat (ADR-103 D5)", () => 
 
     expect(await cache.get(`r3-guide:v3:r6c0:${PG_ALIAS}`)).toBeNull();
     expect(await cache.get(`r3-guide:v3:r6c1:${PG_ALIAS}`)).toBeNull();
+  });
+});
+
+/**
+ * Liens vers les pages R4 de la consolidation R4 → R3 (mandat ER) : drapeau
+ * allumé, un lien vers une page R4 redirigée vise sa page conseils, et disparaît
+ * (texte gardé) sur cette page conseils elle-même.
+ */
+describe('R3GuideService — liens vers les pages R4 redirigées (mandat ER)', () => {
+  const REF = (s: string) => `/reference-auto/${s}`;
+  const CONSEILS = (a: string) => `/blog-pieces-auto/conseils/${a}`;
+  const S2 = {
+    title: 'Section S2',
+    content: `<p>Voir <a href="${REF(PG_ALIAS)}">la définition</a>, <a href="${REF('thermostat')}">le thermostat</a> et <a href="${REF('alternateur')}">l'alternateur</a>.</p>`,
+    sectionType: 'S2',
+    order: 3,
+    qualityScore: null,
+    sources: [],
+  };
+  const r4On = () => ({
+    enabled: true,
+    redirects: new Map([
+      [PG_ALIAS, CONSEILS(PG_ALIAS)],
+      ['thermostat', CONSEILS('thermostat')],
+    ]),
+    degraded: false,
+  });
+
+  it('drapeau éteint : contenu et clé de cache inchangés', async () => {
+    const { service, seoService, cache } = await buildService();
+    seoService.getGammeConseil.mockResolvedValue([S2]);
+
+    const payload = await service.getR3GuidePayload(PG_ALIAS);
+
+    expect(payload?.bodySections[0].html).toBe(S2.content);
+    expect(await cache.get(`r3-guide:v3:r6c0:${PG_ALIAS}`)).not.toBeNull();
+  });
+
+  it('drapeau allumé : lien vers sa propre page R4 déplié, autre page redirigée → conseils, page non redirigée gardée', async () => {
+    const { service, seoService, r4Consolidation, cache } =
+      await buildService();
+    r4Consolidation.cacheKeySegment.mockImplementation(
+      (base: string) => `${base}.r4c1`,
+    );
+    r4Consolidation.getSnapshot.mockResolvedValue(r4On());
+    seoService.getGammeConseil.mockResolvedValue([S2]);
+
+    const payload = await service.getR3GuidePayload(PG_ALIAS);
+
+    expect(payload?.bodySections[0].html).toBe(
+      `<p>Voir la définition, <a href="${CONSEILS('thermostat')}">le thermostat</a> et <a href="${REF('alternateur')}">l'alternateur</a>.</p>`,
+    );
+    expect(await cache.get(`r3-guide:v3:r6c0.r4c1:${PG_ALIAS}`)).not.toBeNull();
+    expect(await cache.get(`r3-guide:v3:r6c0:${PG_ALIAS}`)).toBeNull();
+  });
+
+  it('drapeau allumé, garde en panne : page servie sans redirection de lien, rien en cache sous .r4c1', async () => {
+    const { service, seoService, r4Consolidation, cache } =
+      await buildService();
+    r4Consolidation.cacheKeySegment.mockImplementation(
+      (base: string) => `${base}.r4c1`,
+    );
+    r4Consolidation.getSnapshot.mockResolvedValue({
+      enabled: true,
+      redirects: new Map(),
+      degraded: true,
+    });
+    seoService.getGammeConseil.mockResolvedValue([S2]);
+
+    const payload = await service.getR3GuidePayload(PG_ALIAS);
+
+    expect(payload?.bodySections[0].html).toBe(S2.content);
+    expect(await cache.get(`r3-guide:v3:r6c0.r4c1:${PG_ALIAS}`)).toBeNull();
+    expect(await cache.get(`r3-guide:v3:r6c0:${PG_ALIAS}`)).toBeNull();
+  });
+
+  it('un événement article invalide aussi les clés drapeau R4 allumé', async () => {
+    const { service, cache } = await buildService();
+    for (const seg of ['r6c0', 'r6c1', 'r6c0.r4c1', 'r6c1.r4c1']) {
+      await cache.set(`r3-guide:v3:${seg}:${PG_ALIAS}`, { x: 1 }, 60);
+    }
+
+    await service.onArticleChanged({ pg_alias: PG_ALIAS });
+
+    for (const seg of ['r6c0', 'r6c1', 'r6c0.r4c1', 'r6c1.r4c1']) {
+      expect(await cache.get(`r3-guide:v3:${seg}:${PG_ALIAS}`)).toBeNull();
+    }
   });
 });

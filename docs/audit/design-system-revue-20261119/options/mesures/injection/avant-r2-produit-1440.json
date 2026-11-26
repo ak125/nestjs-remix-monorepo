@@ -1,0 +1,48 @@
+{
+ "variante": "avant",
+ "id": "r2-produit",
+ "route": "/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html",
+ "viewport": "1440x900",
+ "journal": [
+  {
+   "etape": "avant attente",
+   "variante": "avant",
+   "injectee": false
+  },
+  {
+   "etape": "après attente",
+   "variante": "avant",
+   "injectee": false
+  },
+  {
+   "etape": "avant attente",
+   "variante": "avant",
+   "injectee": false
+  },
+  {
+   "etape": "après attente",
+   "variante": "avant",
+   "injectee": false
+  },
+  {
+   "etape": "avant attente",
+   "variante": "avant",
+   "injectee": false
+  },
+  {
+   "etape": "après attente",
+   "variante": "avant",
+   "injectee": false
+  },
+  {
+   "etape": "avant attente",
+   "variante": "avant",
+   "injectee": false
+  },
+  {
+   "etape": "après attente",
+   "variante": "avant",
+   "injectee": false
+  }
+ ]
+}

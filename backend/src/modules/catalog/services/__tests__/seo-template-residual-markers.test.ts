@@ -86,6 +86,7 @@ function build(cached: unknown = null) {
     { record } as unknown as ConstructorParameters<
       typeof SeoTemplateService
     >[1],
+    {} as never,
   );
   return { svc, record, cache };
 }

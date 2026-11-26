@@ -49,6 +49,14 @@ export interface SearchRow {
   mrq: string | null;
   ean: string | null;
   prix: number | null;
+  /** data-Filtreprix — prix public HT (tarif avant remise). */
+  prixPublic?: number | null;
+  /** data-Filtreremise1 — remise principale, en %. */
+  remise1?: number | null;
+  /** data-Filtreremise2 — remise complémentaire, en %. */
+  remise2?: number | null;
+  /** data-Filtreprixachat — prix d'achat net HT du compte. */
+  prixAchat?: number | null;
   /** data-stock — kept for audit; NOT used for classification (noisy). */
   stockRaw: string | null;
   /** data-dispo-type lowercased — the decision signal. */
@@ -276,6 +284,10 @@ export function parseSearchHtml(html: string): SearchRow[] {
       mrq: attr(tag, 'data-Filtremrq'),
       ean: attr(tag, 'data-ean'),
       prix: numOrNull(attr(tag, 'data-prix')),
+      prixPublic: numOrNull(attr(tag, 'data-Filtreprix')),
+      remise1: numOrNull(attr(tag, 'data-Filtreremise1')),
+      remise2: numOrNull(attr(tag, 'data-Filtreremise2')),
+      prixAchat: numOrNull(attr(tag, 'data-Filtreprixachat')),
       stockRaw: attr(tag, 'data-stock'),
       dispoType: (attr(tag, 'data-dispo-type') ?? '').toLowerCase() || null,
       libelle: attr(tag, 'data-Filtrelibelle'),
@@ -295,6 +307,10 @@ export function parseSearchHtml(html: string): SearchRow[] {
       if (!prev.dispoType && row.dispoType) prev.dispoType = row.dispoType;
       if (!prev.ean && row.ean) prev.ean = row.ean;
       if (prev.prix == null && row.prix != null) prev.prix = row.prix;
+      prev.prixPublic ??= row.prixPublic;
+      prev.remise1 ??= row.remise1;
+      prev.remise2 ??= row.remise2;
+      prev.prixAchat ??= row.prixAchat;
     }
   }
   return [...byCode.values()];

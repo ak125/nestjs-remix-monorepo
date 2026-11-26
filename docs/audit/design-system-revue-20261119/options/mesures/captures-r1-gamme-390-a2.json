@@ -1,0 +1,163 @@
+{
+ "id": "r1-gamme",
+ "route": "/pieces/filtre-a-huile-7.html",
+ "viewport": "390x844",
+ "debut": "2026-11-20T10:26:22.415Z",
+ "variantes": {
+  "a2": {
+   "debut": "2026-11-20T10:26:22.485Z",
+   "statut": 200,
+   "injection": [
+    {
+     "variante": "a2",
+     "at": "2026-11-20T10:26:28.531Z",
+     "dejaPresente": false,
+     "presente": true,
+     "regles": 67,
+     "reinjectionsObservateur": 0
+    },
+    {
+     "etape": "avant captures",
+     "presente": true,
+     "variante": "a2",
+     "regles": 67
+    },
+    {
+     "etape": "fin",
+     "presente": true,
+     "variante": "a2",
+     "regles": 67
+    }
+   ],
+   "residus": {
+    "totalProprietes": 0,
+    "logoOrangeExclu": 1,
+    "parFamille": {},
+    "exemples": {},
+    "imagesVisibles": 26,
+    "stylesEnLigneCouleur": 0,
+    "svgCouleurEnDur": 0
+   },
+   "residusSurvol": {
+    "elementsForces": 236,
+    "totalProprietes": 0,
+    "logoOrangeExclu": 1,
+    "parFamille": {},
+    "exemples": {},
+    "imagesVisibles": 26,
+    "stylesEnLigneCouleur": 0,
+    "svgCouleurEnDur": 0
+   },
+   "boutons": [
+    {
+     "bouton": "Rechercher des pièces (sélecteur véhicule)",
+     "selecteur": "button[class~=\"bg-cta\"][class~=\"disabled:opacity-40\"]",
+     "etats": [
+      {
+       "etat": "désactivé (état réel servi, aucun véhicule choisi)",
+       "texte": "Rechercher des pièces",
+       "fond": "#FED7AA",
+       "texteCouleur": "#0F1E38",
+       "fondPage": "#FFFFFF",
+       "ratioTexte": 12.28,
+       "ratioBoutonPage": 1.35,
+       "opacite": "1",
+       "survol": false,
+       "focusVisible": false,
+       "desactive": true,
+       "capture": "bouton-r1-gamme-390-rechercher-a2-désactivé (état réel servi, aucun véhicule choisi).png"
+      },
+      {
+       "etat": "repos",
+       "texte": "Rechercher des pièces",
+       "fond": "#F97316",
+       "texteCouleur": "#0F1E38",
+       "fondPage": "#FFFFFF",
+       "ratioTexte": 5.93,
+       "ratioBoutonPage": 2.8,
+       "opacite": "1",
+       "survol": false,
+       "focusVisible": false,
+       "desactive": false,
+       "ombreOuAnneau": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0",
+       "capture": "bouton-r1-gamme-390-rechercher-a2-repos.png",
+       "note": "état actif simulé : attribut disabled retiré dans le DOM"
+      },
+      {
+       "etat": "survol",
+       "texte": "Rechercher des pièces",
+       "fond": "#EA580C",
+       "texteCouleur": "#0F1E38",
+       "fondPage": "#FFFFFF",
+       "ratioTexte": 4.67,
+       "ratioBoutonPage": 3.56,
+       "opacite": "1",
+       "survol": true,
+       "focusVisible": false,
+       "desactive": false,
+       "ombreOuAnneau": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0",
+       "capture": "bouton-r1-gamme-390-rechercher-a2-survol.png",
+       "note": "état actif simulé : attribut disabled retiré dans le DOM"
+      },
+      {
+       "etat": "focus",
+       "texte": "Rechercher des pièces",
+       "fond": "#F97316",
+       "texteCouleur": "#0F1E38",
+       "fondPage": "#FFFFFF",
+       "ratioTexte": 5.93,
+       "ratioBoutonPage": 2.8,
+       "opacite": "1",
+       "survol": false,
+       "focusVisible": true,
+       "desactive": false,
+       "anneau": "2px solid #0F1E38",
+       "ratioAnneauPage": 16.63,
+       "ratioAnneauBouton": 5.93,
+       "capture": "bouton-r1-gamme-390-rechercher-a2-focus.png",
+       "note": "état actif simulé : attribut disabled retiré dans le DOM"
+      },
+      {
+       "etat": "désactivé (simulé : attribut disabled posé dans le DOM)",
+       "texte": "Rechercher des pièces",
+       "fond": "#FED7AA",
+       "texteCouleur": "#0F1E38",
+       "fondPage": "#FFFFFF",
+       "ratioTexte": 12.28,
+       "ratioBoutonPage": 1.35,
+       "opacite": "1",
+       "survol": false,
+       "focusVisible": false,
+       "desactive": true,
+       "capture": "bouton-r1-gamme-390-rechercher-a2-désactivé (simulé : attribut disabled posé dans le DOM).png"
+      }
+     ]
+    }
+   ],
+   "fin": "2026-11-20T10:26:41.690Z"
+  }
+ },
+ "requetesAbandonnees": [
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/attribution/landing",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  }
+ ],
+ "fin": "2026-11-20T10:26:41.694Z"
+}

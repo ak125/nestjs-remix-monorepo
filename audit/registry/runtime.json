@@ -709,7 +709,6 @@
         "runtime:backend/src/modules/admin/services/quality-scoring-engine.service.ts",
         "runtime:backend/src/modules/admin/services/r1-image-prompt.service.ts",
         "runtime:backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
-        "runtime:backend/src/modules/admin/services/r2-enricher.service.ts",
         "runtime:backend/src/modules/admin/services/r3-image-prompt.service.ts",
         "runtime:backend/src/modules/admin/services/r4-content-enricher.service.ts",
         "runtime:backend/src/modules/admin/services/r4-lint-gates.service.ts",
@@ -1410,7 +1409,6 @@
     {
       "dependsOn": [
         "runtime:backend/src/modules/admin/services/buying-guide-enricher.service.ts",
-        "runtime:backend/src/modules/admin/services/r2-enricher.service.ts",
         "runtime:backend/src/modules/admin/services/r4-content-enricher.service.ts",
         "runtime:backend/src/modules/admin/services/r7-brand-enricher.service.ts",
         "runtime:backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
@@ -1543,17 +1541,6 @@
       "id": "runtime:backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "dependsOn": [
-        "runtime:backend/src/config/content-write-gate.service.ts"
-      ],
-      "id": "runtime:backend/src/modules/admin/services/r2-enricher.service.ts",
-      "kind": "nestjs-service",
-      "path": "backend/src/modules/admin/services/r2-enricher.service.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
@@ -2562,6 +2549,7 @@
         "runtime:backend/src/modules/catalog/services/homepage-rpc.service.ts",
         "runtime:backend/src/modules/catalog/services/oem-platform-mapping.service.ts",
         "runtime:backend/src/modules/catalog/services/popular-gammes.service.ts",
+        "runtime:backend/src/modules/catalog/services/r2-title-collision.service.ts",
         "runtime:backend/src/modules/catalog/services/seo-template.service.ts",
         "runtime:backend/src/modules/catalog/services/unified-page-data.service.ts",
         "runtime:backend/src/modules/catalog/services/vehicle-filtered-catalog-v4-hybrid.service.ts",
@@ -2802,7 +2790,17 @@
       "status": "LIVE"
     },
     {
+      "dependsOn": [],
+      "id": "runtime:backend/src/modules/catalog/services/r2-title-collision.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/catalog/services/r2-title-collision.service.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
       "dependsOn": [
+        "runtime:backend/src/modules/catalog/services/r2-title-collision.service.ts",
         "runtime:backend/src/modules/seo/services/seo-placeholder-events.service.ts"
       ],
       "id": "runtime:backend/src/modules/catalog/services/seo-template.service.ts",
@@ -4329,6 +4327,7 @@
         "runtime:backend/src/modules/orders/services/order-actions.service.ts",
         "runtime:backend/src/modules/orders/services/order-line-supplier.service.ts",
         "runtime:backend/src/modules/orders/services/orders.service.ts",
+        "runtime:backend/src/modules/orders/services/supplier-order-preparation.service.ts",
         "runtime:backend/src/services/mail.service.ts"
       ],
       "id": "runtime:backend/src/modules/orders/controllers/order-actions.controller.ts",
@@ -4412,6 +4411,7 @@
         "runtime:backend/src/modules/orders/services/order-line-supplier.service.ts",
         "runtime:backend/src/modules/orders/services/order-status.service.ts",
         "runtime:backend/src/modules/orders/services/orders.service.ts",
+        "runtime:backend/src/modules/orders/services/supplier-order-preparation.service.ts",
         "runtime:backend/src/modules/orders/services/tickets.service.ts",
         "runtime:backend/src/modules/shipping/shipping.module.ts",
         "runtime:backend/src/modules/supplier-truth/supplier-truth-read.module.ts"
@@ -4493,6 +4493,17 @@
       "id": "runtime:backend/src/modules/orders/services/orders.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/orders/services/orders.service.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/modules/orders/services/order-line-supplier.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/orders/services/supplier-order-preparation.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/orders/services/supplier-order-preparation.service.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
@@ -4710,7 +4721,8 @@
         "runtime:backend/src/modules/pricing/services/pricing-simulation.service.ts",
         "runtime:backend/src/modules/pricing/services/pricing-strategy.service.ts",
         "runtime:backend/src/modules/pricing/services/pricing.repository.ts",
-        "runtime:backend/src/modules/pricing/services/supplier-profile.service.ts"
+        "runtime:backend/src/modules/pricing/services/supplier-profile.service.ts",
+        "runtime:backend/src/modules/supplier-truth/supplier-truth-read.module.ts"
       ],
       "id": "runtime:backend/src/modules/pricing/pricing.module.ts",
       "kind": "nestjs-module",
@@ -6440,6 +6452,7 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
         "runtime:backend/src/modules/seo/validation/diagnostic.service.ts"
       ],
       "id": "runtime:backend/src/modules/seo/controllers/diagnostic.controller.ts",
@@ -6462,6 +6475,8 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/config/feature-flags.service.ts",
+        "runtime:backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
         "runtime:backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "runtime:backend/src/modules/seo/services/reference.service.ts",
         "runtime:backend/src/modules/seo/validation/diagnostic.service.ts"
@@ -7079,6 +7094,7 @@
         "runtime:backend/src/modules/seo/services/policies/seo-indexability-policy.service.ts",
         "runtime:backend/src/modules/seo/services/policies/seo-unavailable-policy.service.ts",
         "runtime:backend/src/modules/seo/services/product-image.service.ts",
+        "runtime:backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
         "runtime:backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "runtime:backend/src/modules/seo/services/reference.service.ts",
         "runtime:backend/src/modules/seo/services/risk-flags-engine.service.ts",
@@ -7288,6 +7304,18 @@
       "id": "runtime:backend/src/modules/seo/services/product-image.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/seo/services/product-image.service.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/config/feature-flags.service.ts",
+        "runtime:backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
@@ -7506,6 +7534,7 @@
     {
       "dependsOn": [
         "runtime:backend/src/config/feature-flags.service.ts",
+        "runtime:backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
         "runtime:backend/src/modules/seo/services/sitemap-v10-data.service.ts",
         "runtime:backend/src/modules/seo/services/sitemap-v10-xml.service.ts"
       ],
@@ -7764,6 +7793,26 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/modules/supplier-truth/supplier-card.repository.ts"
+      ],
+      "id": "runtime:backend/src/modules/supplier-truth/supplier-card.module.ts",
+      "kind": "nestjs-module",
+      "path": "backend/src/modules/supplier-truth/supplier-card.module.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
+      "id": "runtime:backend/src/modules/supplier-truth/supplier-card.repository.ts",
+      "kind": "other",
+      "path": "backend/src/modules/supplier-truth/supplier-card.repository.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
         "runtime:backend/src/modules/supplier-truth/supplier-sync.scheduler.ts"
       ],
       "id": "runtime:backend/src/modules/supplier-truth/supplier-sync.job.processor.ts",
@@ -7845,6 +7894,15 @@
       "status": "LIVE"
     },
     {
+      "dependsOn": [],
+      "id": "runtime:backend/src/modules/suppliers/supplier-card.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/suppliers/supplier-card.service.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
       "dependsOn": [
         "runtime:backend/src/modules/suppliers/suppliers.service.ts"
       ],
@@ -7857,6 +7915,7 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/modules/suppliers/supplier-card.service.ts",
         "runtime:backend/src/modules/suppliers/suppliers.service.ts"
       ],
       "id": "runtime:backend/src/modules/suppliers/suppliers.controller.ts",
@@ -7869,6 +7928,8 @@
     {
       "dependsOn": [
         "runtime:backend/src/database/database.module.ts",
+        "runtime:backend/src/modules/supplier-truth/supplier-card.module.ts",
+        "runtime:backend/src/modules/suppliers/supplier-card.service.ts",
         "runtime:backend/src/modules/suppliers/suppliers-modern.controller.ts",
         "runtime:backend/src/modules/suppliers/suppliers.controller.ts",
         "runtime:backend/src/modules/suppliers/suppliers.service.ts"
@@ -10102,17 +10163,6 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [
-        "runtime:frontend/app/routes/admin.suppliers.tsx"
-      ],
-      "id": "runtime:frontend/app/routes/admin.suppliers.$id.edit.tsx",
-      "kind": "remix-route",
-      "path": "frontend/app/routes/admin.suppliers.$id.edit.tsx",
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
       "dependsOn": [],
       "id": "runtime:frontend/app/routes/admin.suppliers.$id.tsx",
       "kind": "remix-route",
@@ -10123,9 +10173,36 @@
     },
     {
       "dependsOn": [],
+      "id": "runtime:frontend/app/routes/admin.suppliers.$id_.edit.tsx",
+      "kind": "remix-route",
+      "path": "frontend/app/routes/admin.suppliers.$id_.edit.tsx",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
       "id": "runtime:frontend/app/routes/admin.suppliers._index.tsx",
       "kind": "remix-route",
       "path": "frontend/app/routes/admin.suppliers._index.tsx",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
+      "id": "runtime:frontend/app/routes/admin.suppliers.marques.$pmId.tsx",
+      "kind": "remix-route",
+      "path": "frontend/app/routes/admin.suppliers.marques.$pmId.tsx",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
+      "id": "runtime:frontend/app/routes/admin.suppliers.new.tsx",
+      "kind": "remix-route",
+      "path": "frontend/app/routes/admin.suppliers.new.tsx",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"

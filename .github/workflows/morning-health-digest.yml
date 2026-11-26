@@ -17,12 +17,33 @@ name: 🌅 Morning health digest
 #     read-only PostgREST counts, else database signals « indisponible ».
 #   GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN, GMAIL_USER_EMAIL,
 #   ALERT_EMAIL_TO, EMAIL_FROM  same names as scripts/monitoring/check-payment-tunnel.sh;
-#     to be created as repository secrets by the owner, else the mail is written
+#     environment secrets of report-mail (branch main only), set by the owner, else the mail is written
 #     « canal indisponible » in the issue and the run log.
 # Repository variables (optional, empty if unset):
 #   REPORT_CONFIG_PATH  path in the repo of a report-config.v1 JSON file (hook for
 #     the department contracts, mandat AR). Unset → the script defaults, declared.
-#   GARDE_PRIX_JSON_PATH  path of a garde-prix.v1 file (no producer yet).
+#   GARDE_PRIX_JSON_PATH  path of a garde-prix.v1 file; overrides the file of the
+#     producer below (mandat EI). Unset → the producer's file.
+#   THRESHOLD_ISSUES_MODE  off | dry-run | write (mandate BZ, decision 9): issues of
+#     the registry thresholds (scripts/governance/registry-thresholds.sh). Unset →
+#     dry-run: the report lists the issues it would open, nothing is written.
+#     write = a separate « oui » of the owner.
+#
+# Registry thresholds read their indicator from the producer declared in the
+# registry (backend service, through tsx): the npm install below runs only in the
+# daily window (7-10 h Europe/Paris) or on workflow_dispatch, never on the
+# 15-minute urgent runs. Outside it the indicators are written « non mesuré ».
+# The backend imports internal packages (@repo/*) through their dist/: npm ci
+# --ignore-scripts does not build them, so the step after the install builds the
+# backend's workspace dependencies (frontend excluded). Without it the reader
+# reports « MODULE_NOT_FOUND @repo/… » (mandate BZ, complement BZ-3).
+#
+# Price guard-rail (mandat EI, decisions 51 and 67): scripts/ops/garde-prix-read.ts
+# reads price_import_batches and pieces_price (read-only, ~426 pages) on the runs of
+# the daily window above, or on workflow_dispatch, and writes garde-prix.v1 inside
+# the job only: no cache, no artifact (public repository, the keys name a supplier
+# or a brand). The other runs, or a failed read, give the report a missing file:
+# « indisponible », open incidents kept, no mail repeated.
 #
 # Cron granularity: GitHub may start a scheduled run late; the 15-minute cadence
 # bounds the delay of the 7 h report and of an urgent mail to one or two slots.
@@ -47,12 +68,76 @@ jobs:
   digest:
     name: Urgent checks, daily report on the standing issue
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
+    # Mail secrets live in the report-mail environment (main only), not at repository
+    # level; deployment: false = no deployment record per 15-minute run.
+    environment:
+      name: report-mail
+      deployment: false
     steps:
       - name: Checkout (shallow)
         uses: actions/checkout@v7
         with:
           fetch-depth: 1
+
+      - name: Daily window (producer dependencies of the registry thresholds)
+        id: window
+        env:
+          EVENT: ${{ github.event_name }}
+          TMODE: ${{ vars.THRESHOLD_ISSUES_MODE }}
+        run: |
+          h=$((10#$(TZ=Europe/Paris date +%H)))
+          if [ "$TMODE" != off ] && { [ "$EVENT" = workflow_dispatch ] || { [ "$h" -ge 7 ] && [ "$h" -lt 10 ]; }; }; then
+            echo "deps=1" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Node (registry thresholds)
+        if: steps.window.outputs.deps == '1'
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install (no scripts, ADR-030; registry thresholds)
+        if: steps.window.outputs.deps == '1'
+        continue-on-error: true
+        run: npm ci --ignore-scripts
+
+      - name: Build backend workspace packages (registry thresholds)
+        if: steps.window.outputs.deps == '1'
+        continue-on-error: true
+        run: npx --no-install turbo run build --filter='@fafa/backend^...' --filter='!@fafa/frontend'
+
+      - name: Read the price guard-rail (daily window, mandat EI)
+        id: garde_prix
+        if: steps.window.outputs.deps == '1'
+        continue-on-error: true
+        timeout-minutes: 10
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          OUT: ${{ runner.temp }}/garde-prix.json
+        run: |
+          cd backend
+          timeout 540 ../node_modules/.bin/tsx ../scripts/ops/garde-prix-read.ts "$OUT"
+          echo "path=$OUT" >> "$GITHUB_OUTPUT"
+
+      - name: Price guard-rail input of the report (mandat EI)
+        id: garde_prix_input
+        env:
+          FORCED: ${{ vars.GARDE_PRIX_JSON_PATH }}
+          READ: ${{ steps.garde_prix.outputs.path }}
+          DEPS: ${{ steps.window.outputs.deps }}
+        run: |
+          if [ -n "$FORCED" ]; then p=$FORCED
+          elif [ -n "$READ" ] && [ -s "$READ" ]; then p=$READ
+          else
+            # Out of the window or read failed: a path that does not exist, so the
+            # report says « indisponible » and carries the open incidents over.
+            [ "$DEPS" = 1 ] && echo "::warning::garde-prix : lecture du jour en échec, rapport « indisponible »"
+            p=$RUNNER_TEMP/garde-prix.absent
+          fi
+          echo "path=$p" >> "$GITHUB_OUTPUT"
 
       - name: Collect signals and update the standing digest issue
         id: collect
@@ -68,7 +153,8 @@ jobs:
           ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
           EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
           REPORT_CONFIG: ${{ vars.REPORT_CONFIG_PATH }}
-          GARDE_PRIX_JSON: ${{ vars.GARDE_PRIX_JSON_PATH }}
+          GARDE_PRIX_JSON: ${{ steps.garde_prix_input.outputs.path }}
+          THRESHOLD_ISSUES_MODE: ${{ vars.THRESHOLD_ISSUES_MODE || 'dry-run' }}
           EVENT: ${{ github.event_name }}
         run: |
           if [ "$EVENT" = "workflow_dispatch" ]; then

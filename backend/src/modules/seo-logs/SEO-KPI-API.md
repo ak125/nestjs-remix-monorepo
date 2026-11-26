@@ -6,6 +6,23 @@ L'API SEO KPI expose les métriques de crawl analysées à partir des logs Caddy
 
 **Base URL:** `/seo-logs/kpi`
 
+### Validation des paramètres
+
+Chaque paramètre de requête est validé avant l'entrée dans la route
+(`dto/seo-logs-query.schema.ts`) :
+
+- `timeWindow` appartient à une liste fermée : `24h`, `72h`, `7d`, `30d` ;
+- `limit` est un entier décimal borné (bornes par route, ci-dessous) ;
+- un paramètre absent prend le défaut de la route ;
+- toute autre valeur (vide, répétée, hors liste, hors borne, autre écriture)
+  reçoit une réponse **400** `{ "message": "Validation failed", "errors": [...] }`.
+  Il n'y a pas de repli silencieux sur le défaut.
+
+Les routes appellent Loki et le sitemap par HTTP natif, avec un délai borné
+(30 s pour Loki, 15 s pour le sitemap) et sans suivre de redirection. Une
+réponse hors 2xx de l'une de ces deux cibles donne `"success": false` avec la
+cause dans `error`, jamais un KPI à zéro.
+
 ---
 
 ## Endpoints
@@ -20,7 +37,7 @@ Calcule le pourcentage d'URLs du sitemap crawlées par les bots dans une fenêtr
 
 | Param | Type | Défaut | Description |
 |-------|------|--------|-------------|
-| `timeWindow` | string | `72h` | Fenêtre de temps (ex: `24h`, `72h`, `7d`, `30d`) |
+| `timeWindow` | string | `72h` | Fenêtre de temps : `24h`, `72h`, `7d` ou `30d` |
 
 #### Exemple de requête
 
@@ -75,8 +92,8 @@ Liste les bots qui crawlent le plus activement votre site.
 
 | Param | Type | Défaut | Description |
 |-------|------|--------|-------------|
-| `timeWindow` | string | `72h` | Fenêtre de temps |
-| `limit` | number | `10` | Nombre de bots à retourner (max 50) |
+| `timeWindow` | string | `72h` | Fenêtre de temps : `24h`, `72h`, `7d` ou `30d` |
+| `limit` | number | `10` | Nombre de bots à retourner (entier de 1 à 50) |
 
 #### Exemple de requête
 
@@ -141,8 +158,8 @@ Identifie les pages qui attirent le plus l'attention des crawlers.
 
 | Param | Type | Défaut | Description |
 |-------|------|--------|-------------|
-| `timeWindow` | string | `72h` | Fenêtre de temps |
-| `limit` | number | `20` | Nombre d'URLs à retourner |
+| `timeWindow` | string | `72h` | Fenêtre de temps : `24h`, `72h`, `7d` ou `30d` |
+| `limit` | number | `20` | Nombre d'URLs à retourner (entier de 1 à 100) |
 
 #### Exemple de requête
 
@@ -271,9 +288,10 @@ curl -G http://localhost:3100/loki/api/v1/query \
   --data-urlencode 'query={job="caddy-access"}' | jq
 ```
 
-### Erreur: "Sitemap inaccessible"
+### Erreur: "Sitemap : réponse HTTP …" ou délai dépassé
 
-**Cause:** URL du sitemap incorrecte ou site down
+**Cause:** URL du sitemap incorrecte, site down, ou `SITEMAP_URL` qui répond
+par une redirection (elle n'est pas suivie : renseigner l'URL finale)
 
 **Solution:**
 ```bash
@@ -283,6 +301,11 @@ curl -I https://automecanik.fr/sitemap.xml
 # Override temporaire
 export SITEMAP_URL=https://example.com/sitemap.xml
 ```
+
+### Réponse 400 "Validation failed"
+
+**Cause:** un paramètre de requête est hors contrat (voir « Validation des
+paramètres »). Le champ fautif est nommé dans `errors[].field`.
 
 ### Crawl rate = 0%
 

@@ -8,6 +8,7 @@ import {
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { NotificationService } from './notification.service';
 import { MailService } from '../../../services/mail.service';
+import { isValidEmail } from '@common/utils/email-validation.util';
 import { quoteFilterValue } from '@common/utils/postgrest-filter.util';
 
 export interface ContactRequest {
@@ -564,7 +565,7 @@ export class ContactService extends SupabaseBaseService {
       );
     }
 
-    if (!data.email || !this.isValidEmail(data.email)) {
+    if (!isValidEmail(data.email)) {
       throw new BadRequestException('Email invalide');
     }
 
@@ -583,11 +584,6 @@ export class ContactService extends SupabaseBaseService {
     if (data.phone && !this.isValidPhone(data.phone)) {
       throw new BadRequestException('Numéro de téléphone invalide');
     }
-  }
-
-  private isValidEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
   }
 
   private isValidPhone(phone: string): boolean {

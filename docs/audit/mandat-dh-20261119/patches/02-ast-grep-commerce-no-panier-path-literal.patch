@@ -1,0 +1,70 @@
+diff --git a/.ast-grep/rules/commerce-no-panier-path-literal.yml b/.ast-grep/rules/commerce-no-panier-path-literal.yml
+new file mode 100644
+index 000000000..2ebf41af9
+--- /dev/null
++++ b/.ast-grep/rules/commerce-no-panier-path-literal.yml
+@@ -0,0 +1,64 @@
++id: commerce-no-panier-path-literal
++language: typescript
++severity: warning
++message: |
++  Littéral `/panier` ou `/panier?…` : aucune route `/panier` n'existe. La page
++  du panier est servie sur `/cart` (`frontend/app/routes/cart.tsx`) ; seule
++  `/panier/recover/:token` existe sous ce préfixe. Une redirection ou un lien
++  vers `/panier` rend une page 404 au client (constat D19 de l'essai Codex,
++  mandat DH).
++
++  Utiliser `/cart`. Un test de préfixe (`path.startsWith("/panier")`) reste
++  permis.
++
++  Voir :
++    - frontend/app/routes/panier.recover.$token.tsx (CART_PATH)
++    - frontend/tests/unit/panier-recover-redirect.test.ts
++files:
++  - backend/src/**/*.ts
++  - frontend/app/**/*.ts
++ignores:
++  - '**/*.test.ts'
++  - '**/*.test.tsx'
++rule:
++  kind: string_fragment
++  regex: '^/panier([?#].*)?$'
++  not:
++    inside:
++      kind: call_expression
++      stopBy: end
++      has:
++        field: function
++        regex: '\.startsWith$'
++---
++id: commerce-no-panier-path-literal-tsx
++language: tsx
++severity: warning
++message: |
++  Littéral `/panier` ou `/panier?…` : aucune route `/panier` n'existe. La page
++  du panier est servie sur `/cart` (`frontend/app/routes/cart.tsx`) ; seule
++  `/panier/recover/:token` existe sous ce préfixe. Une redirection ou un lien
++  vers `/panier` rend une page 404 au client (constat D19 de l'essai Codex,
++  mandat DH).
++
++  Utiliser `/cart`. Un test de préfixe (`path.startsWith("/panier")`) reste
++  permis.
++
++  Voir :
++    - frontend/app/routes/panier.recover.$token.tsx (CART_PATH)
++    - frontend/tests/unit/panier-recover-redirect.test.ts
++files:
++  - frontend/app/**/*.tsx
++ignores:
++  - '**/*.test.ts'
++  - '**/*.test.tsx'
++rule:
++  kind: string_fragment
++  regex: '^/panier([?#].*)?$'
++  not:
++    inside:
++      kind: call_expression
++      stopBy: end
++      has:
++        field: function
++        regex: '\.startsWith$'

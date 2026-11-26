@@ -706,3 +706,87 @@ test('authority timeout is observable and bounded', (t) => {
   assert.equal(result.wikiAdmission.reason,'WIKI_AUTHORITY_UNAVAILABLE');
   assert.equal(result.claimsReady,false);
 });
+
+// Brand gate G3, Fafa signature (canon personas/fafa.md, Amendement du 17 nov. 2026; decisions 145 and 147).
+const filtreHuile = path.join(workspace, 'scripts/draft/fafa-filtre-huile-001');
+const fafaIssues = (gate) => (gate.triggerItems ?? []).filter((item) => /^(ancienne_signature|ai_notice)/.test(item.issue));
+
+test('brand gate G3 accepts the oil filter draft: new spoken phrase, continuous AI notice', () => {
+  // The whole dossier still stops at INVALID_claim-table (claims awaiting human validation, recorded in
+  // approval.json), so its two brand inputs are replayed through the same gate.
+  require('ts-node').register({ project: path.join(root, 'backend/tsconfig.json'), transpileOnly: true });
+  const { VideoGatesService } = require(path.join(root, 'backend/src/modules/media-factory/services/video-gates.service.ts'));
+  const script = read(path.join(filtreHuile, 'script.json'));
+  assert.match(script.script_voice, /^Moi, c'est Fafa, le mécano expert automobile d'AutoMecanik\./);
+  const gate = new VideoGatesService().runBrandGate({ brief: { mode: read(path.join(filtreHuile, 'brief.json')).mode.toLowerCase() },
+    scriptText: script.script_voice, disclaimerPlan: read(path.join(filtreHuile, 'disclaimer.json')), persona: 'fafa' });
+  assert.equal(gate.verdict, 'PASS', JSON.stringify(gate));
+  assert.deepEqual(fafaIssues(gate), []);
+});
+
+test('brand gate G3 accepts the brake pad draft through the dossier evaluator', () => {
+  const { evaluateDossier } = require('./fafa-pilot-governance.cjs');
+  const result = evaluateDossier(pilot);
+  assert.equal(result.brandGate.verdict, 'PASS', JSON.stringify(result.brandGate));
+  assert.deepEqual(fafaIssues(result.brandGate), []);
+  assert.equal(result.readiness, 'NOT_READY'); // G1 claims, unchanged
+});
+
+function readyDossier(t) {
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'fafa-brand-'));
+  t.after(() => fs.rmSync(temp, { recursive: true, force: true }));
+  fs.cpSync(pilot, temp, { recursive: true });
+  fs.mkdirSync(path.join(temp, 'extracts'));
+  const bytes = Buffer.from('[{"id":"fixture-only","value":"synthetic"}]\n');
+  fs.writeFileSync(path.join(temp, 'extracts/test.json'), bytes);
+  const claims = read(path.join(temp, 'claims.json'));
+  claims.claims.forEach((c) => { c.source_status = 'verified'; });
+  fs.writeFileSync(path.join(temp, 'claims.json'), JSON.stringify(claims));
+  const evidence = read(path.join(temp, 'evidence.json'));
+  evidence.evidence = evidence.historical_traces.map((trace) => ({
+    ...trace, source_url: null, excerpt: 'Synthetic fixture only; no real catalogue query.',
+    data_reference: { table: 'fixture_only', key: { id: 'fixture-only' }, query: 'SELECT id, value FROM fixture_only', extract_sha256: crypto.createHash('sha256').update(bytes).digest('hex'), extract_path: 'extracts/test.json' },
+  }));
+  evidence.historical_traces = [];
+  fs.writeFileSync(path.join(temp, 'evidence.json'), JSON.stringify(evidence));
+  return temp;
+}
+
+test('dossier with supported claims stays CLAIMS_ONLY when the brand gate passes', (t) => {
+  const { evaluateDossier } = require('./fafa-pilot-governance.cjs');
+  const result = evaluateDossier(readyDossier(t));
+  assert.equal(result.brandGate.verdict, 'PASS');
+  assert.equal(result.readiness, 'CLAIMS_ONLY');
+});
+
+test('dossier is refused when Fafa says « mécano IA » in script_voice', (t) => {
+  const { evaluateDossier } = require('./fafa-pilot-governance.cjs');
+  const dir = readyDossier(t);
+  const script = read(path.join(dir, 'script.json'));
+  script.script_voice = `Moi c'est Fafa, le mécano IA d'AutoMecanik. ${script.script_voice}`;
+  fs.writeFileSync(path.join(dir, 'script.json'), JSON.stringify(script));
+  const result = evaluateDossier(dir);
+  assert.equal(result.claimsReady, true);
+  assert.equal(result.brandGate.verdict, 'FAIL');
+  assert.match(fafaIssues(result.brandGate)[0].issue, /^ancienne_signature/);
+  assert.equal(result.readiness, 'NOT_READY');
+  assert.equal(result.canPublishEligible, false);
+  assert.match(result.reason, /Brand gate G3/);
+});
+
+for (const [name, change, issue] of [
+  ['AI notice removed', (doc) => { doc.disclaimers = doc.disclaimers.filter((d) => d.type !== 'ai_generated_notice'); }, /^ai_notice_absent/],
+  ['AI notice moved to the outro', (doc) => { doc.disclaimers.find((d) => d.type === 'ai_generated_notice').position = 'outro'; }, /^ai_notice_not_continuous/],
+]) {
+  test(`dossier is refused when its ${name}`, (t) => {
+    const { evaluateDossier } = require('./fafa-pilot-governance.cjs');
+    const dir = readyDossier(t);
+    const disclaimer = read(path.join(dir, 'disclaimer.json'));
+    change(disclaimer);
+    fs.writeFileSync(path.join(dir, 'disclaimer.json'), JSON.stringify(disclaimer));
+    const result = evaluateDossier(dir);
+    assert.equal(result.brandGate.verdict, 'FAIL');
+    assert.match(fafaIssues(result.brandGate)[0].issue, issue);
+    assert.equal(result.readiness, 'NOT_READY');
+  });
+}

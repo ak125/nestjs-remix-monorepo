@@ -573,6 +573,12 @@ jobs:
           node scripts/governance/validate-agent-operating-map.js --contracts
           node scripts/governance/validate-agent-operating-map.js --self-test
 
+      - name: 🧾 Seuils des fonctions du registre (tests, mandat BZ)
+        run: bash scripts/governance/registry-thresholds.test.sh
+
+      - name: 🌅 Gestes du rapport du matin (tests, mandat CJ)
+        run: bash scripts/ops/morning-health-digest.test.sh
+
       - name: 🚦 Classeur des circuits de fusion (tests)
         run: node --test scripts/ci/merge-circuit.test.mjs
 
@@ -681,6 +687,20 @@ jobs:
     # containing the literal text "DROP TABLE". Governance trail : ADR-064.
     name: 🗄️ Migration Safety
     runs-on: ubuntu-latest
+    # PostgreSQL éphémère, même version majeure que la production (17), sans
+    # aucune donnée : il ne sert qu'à compiler les blocs DO (step plus bas).
+    services:
+      pg17:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: ci-ephemeral
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 2s
+          --health-timeout 2s
+          --health-retries 30
     steps:
       - name: Check out code
         uses: actions/checkout@v7
@@ -699,6 +719,8 @@ jobs:
           # Pre-filter `.down.sql` here (defense-in-depth with `.squawk.toml`
           # `excluded_paths`) because squawk hard-errors with "Failed to find
           # files" if every explicit path is excluded by config.
+          # Les `.down.sql` restent hors squawk mais sont compilés (step PL/pgSQL).
+          echo "all_files=$(printf '%s' "$raw" | tr '\n' ' ' | sed 's/ *$//')" >> "$GITHUB_OUTPUT"
           files=$(printf '%s\n' "$raw" | grep -v '\.down\.sql$' || true)
           files=$(printf '%s' "$files" | tr '\n' ' ' | sed 's/ *$//')
           if [ -z "$files" ]; then
@@ -759,6 +781,30 @@ jobs:
       - name: Reconcile @non_transactional marker with statements
         if: steps.changed-sql.outputs.files != ''
         run: python3 scripts/ci/apply-supabase-migration.py --lint-markers ${{ steps.changed-sql.outputs.files }}
+
+      # squawk lit un DO comme une chaîne opaque et le dry-run du moteur ne fait
+      # que lister : une erreur de syntaxe PL/pgSQL n'apparaissait qu'à
+      # l'application réelle (run 44334611333, lot F1, `IF … CASE … THEN`).
+      # Chaque corps de DO est compilé en fonction pg_temp, check_function_bodies
+      # = on, transaction terminée par ROLLBACK : aucun schéma ni donnée requis.
+      # Le témoin négatif prouve que la garde voit encore le motif de l'incident.
+      - name: Compilation PL/pgSQL des blocs DO (PostgreSQL 17 éphémère)
+        if: steps.changed-sql.outputs.all_files != ''
+        env:
+          PGHOST: localhost
+          PGUSER: postgres
+          PGPASSWORD: ci-ephemeral
+        run: |
+          set -euo pipefail
+          python3 scripts/ci/check-plpgsql-compile.test.py
+          psql_ci() { docker run --rm -i --network host -e PGHOST -e PGUSER -e PGPASSWORD postgres:17 psql -X -q -v ON_ERROR_STOP=1; }
+          temoin="$RUNNER_TEMP/temoin-negatif.sql"
+          printf 'DO $t$ BEGIN IF 1 IS DISTINCT FROM CASE 1 WHEN 1 THEN 1 ELSE 2 END THEN NULL; END IF; END $t$;\n' > "$temoin"
+          if python3 scripts/ci/check-plpgsql-compile.py "$temoin" | psql_ci; then
+            echo "::error::témoin négatif compilé sans erreur : la garde ne détecte plus le motif du run 44334611333"
+            exit 1
+          fi
+          python3 scripts/ci/check-plpgsql-compile.py ${{ steps.changed-sql.outputs.all_files }} | psql_ci
 
       # Surface DEFINER/anon : ratchet sur les privilèges d'exécution, pas sur la
       # syntaxe — c'est pourquoi squawk ne le porte pas. Supabase octroie

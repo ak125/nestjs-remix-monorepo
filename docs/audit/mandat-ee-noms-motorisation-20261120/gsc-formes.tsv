@@ -1,0 +1,36 @@
+statut	paire	req_brute	imp_brute	clics_brute	req_affichee	imp_affichee	clics_affichee	derniere_date
+erreur	Ford TDDi/TDCi→TDi	68	411	0	0	0	0	2026-11-16
+erreur	Jeep CRD→CRDi	7	168	0	0	0	0	2026-11-16
+erreur	Fiat D Multijet→JTD	34	128	2	9	30	0	2026-11-16
+erreur	Mini Cooper S→SX	13	75	0	0	0	0	2026-11-16
+erreur	Toyota VVTi→VTi	7	75	3	0	0	0	2026-11-16
+erreur	Audi TDI→DI	11	24	0	0	0	0	2026-11-16
+erreur	Hyundai CRDi→CDi	7	16	1	0	0	0	2026-11-16
+erreur	Ford EcoBoost→Econetic	2	12	0	1	2	0	2026-11-16
+erreur	BMW 320d→328d	6	11	0	0	0	0	2026-11-16
+erreur	Audi TFSI→TSI	4	8	0	0	0	0	2026-11-16
+erreur	BMW 530d→535d	1	3	0	0	0	0	2026-11-16
+erreur	Citroën THP→VTi	2	2	0	0	0	0	2026-11-16
+erreur	Lancia D Multijet→JTD	1	1	0	1	1	0	2026-11-16
+erreur	Alfa TJet/MultiAir→TB	0	0	0	0	0	0	2026-11-16
+erreur	BMW 520→523	0	0	0	0	0	0	2026-11-16
+erreur	BMW X3 20d→28d	0	0	0	0	0	0	2026-11-16
+erreur	BMW X5 30d→35d	0	0	0	0	0	0	2026-11-16
+erreur	Citroën/Peugeot BlueHDi→HDi	0	0	0	179	983	5	2026-11-16
+erreur	Mazda MZR→MRZ	0	0	0	0	0	0	2026-11-16
+erreur	Mercedes C 200d↔220d	0	0	0	0	0	0	2026-11-16
+erreur	Mercedes CLA 250→260	0	0	0	0	0	0	2026-11-16
+erreur	Mercedes GLC 220d→200d	0	0	0	0	0	0	2026-11-16
+erreur	Mercedes GLE 250d→300d	0	0	0	0	0	0	2026-11-16
+erreur	Mercedes Sprinter 311→313	0	0	0	3	4	0	2026-11-16
+erreur	Renault dTi→TDi	0	0	0	0	0	0	2026-11-16
+incertain	16V ajouté (Opel, Nissan, Dacia, Toyota)	0	0	0	9	44	0	2026-11-16
+incertain	Alfa Quadrifoglio ajouté	0	0	0	0	0	0	2026-11-16
+incertain	Citroën D→D12	0	0	0	0	0	0	2026-11-16
+incertain	Mazda Skyaktiv (sic) ajouté	0	0	0	0	0	0	2026-11-16
+incertain	Mercedes CGI ajouté	0	0	0	0	0	0	2026-11-16
+incertain	Mini SD→SDX	0	0	0	0	0	0	2026-11-16
+incertain	Opel DGI→Direct	0	0	0	0	0	0	2026-11-16
+incertain	Renault TD RT→RTdT	0	0	0	0	0	0	2026-11-16
+incertain	Toyota D-4D ajouté	0	0	0	2	9	0	2026-11-16
+incertain	Toyota VTi ajouté	0	0	0	0	0	0	2026-11-16

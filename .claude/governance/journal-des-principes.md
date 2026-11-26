@@ -90,6 +90,15 @@ depuis porte sa date : celles du 2026-11-17 sont relevées sur `main` `03ffd4f1e
   Application : L1 pour l'allocateur
   (`backend/supabase/migrations/20260615_massdoc_type_id_allocator.sql`). Son usage n'est imposé
   par aucun appelant, contrainte ou trigger : intention seulement. État de la base non vérifié.
+- **P32.** Importer un tarif, activer une pièce (la rendre vendable) et l'afficher au catalogue
+  sont trois étapes distinctes. Source : ADR-084 « écriture du tarif » (PR vault #315, jamais
+  fusionnée).
+  Application : L3 pour les tests (check requis `🧪 Backend Tests`, relevé vert sur `main` le
+  2026-11-17). Trois services de `backend/src/modules/pricing/services/` :
+  `price-import.service.ts` écrit le coût et laisse la disponibilité inchangée par défaut ;
+  `price-activation.service.ts` ne change que `pri_dispo` ; `catalog-display-activation.service.ts`
+  ne change que `piece_display`, pour des pièces déjà vendables. Écart : l'option `activate` de
+  l'import, fermée par défaut, rend vendable dans le même commit. Usage en service non observé.
 
 ## Paiement et chaîne logicielle
 
@@ -165,6 +174,23 @@ depuis porte sa date : celles du 2026-11-17 sont relevées sur `main` `03ffd4f1e
   Application : L2 pour R2 (migration `20260516_seo_r2_v2_cqrs_snapshot.sql`,
   `pr-2e-readiness-gate.yml`). Pour les autres rôles, la lecture des projections est sous drapeau
   `SEO_PROJECTION_READ_V1`, éteint par défaut. État servi non vérifié.
+- **P41.** Aucune signature publique ne nomme une IA comme auteur. L'auteur affiché est
+  AutoMecanik. Source : décision 137 de l'owner (2026-11-17), qui retient ce texte mot pour mot ;
+  position de l'owner du 2026-11-14, visant toute signature (article, vidéo, publication sociale).
+  Origine du texte : ADR-132 R2, PR ak125/governance-vault#414, ouverte et non fusionnée.
+  Application (relevé du 2026-11-17, `main` `fc470e41a`) : L1 pour les pages du site, sans test ni
+  contrôle. Le code écrit l'organisation comme auteur : balise `meta author` dans neuf fichiers
+  de `frontend/app` et `frontend/public`, champ `author` de type `Organization` des données
+  structurées dans cinq fichiers de `frontend/app` et dans
+  `backend/src/modules/layout/services/meta-tags.service.ts`. Aucun test, aucune règle ast-grep,
+  aucun contrôle CI ne refuse une autre valeur ; deux chemins prennent une valeur variable (ce
+  service, et `frontend/app/utils/seo.server.ts`, sans appelant). Observé en PROD le 2026-11-17 à
+  14:21 UTC sur deux pages du blog : l'auteur déclaré est l'organisation, sous les graphies
+  « Automecanik » et « Automecanik - Experts Automobile ». Vidéo et publication sociale :
+  intention seulement, aucune publication vérifiée. Signalé, non tranché ici : le canon de la
+  persona Fafa admet la signature « Moi c'est Fafa, le mécano IA d'AutoMecanik. »
+  (`workspaces/marketing/.claude/skills/fafa-persona-canon/SKILL.md`), et le gabarit
+  `design-system/roles/R3-blog.md` donne un auteur de type `Person`.
 
 ## Diagnostic
 
@@ -175,6 +201,107 @@ depuis porte sa date : celles du 2026-11-17 sont relevées sur `main` `03ffd4f1e
   Application : L2 (migration `20261012_diag_projection_requires_review.sql`, contrainte
   `CHECK (reviewed)` ; `scripts/wiki/validate-gamme-diagnostic-relations.py` et son test). Les
   drapeaux de projection sont éteints par défaut.
+
+## Interface et design system
+
+Décisions de l'owner du 20 nov. 2026, heure de Paris, prises sur l'audit de la PR #2215
+(`docs/audit/design-system-revue-20261119/`, en brouillon et non fusionnée au relevé, tête
+`89ad601b6`) et ratifiées par « oui » à 22:53. Ordre d'application retenu à 22:44 : « journal,
+puis tokens, puis composants et pages ». Les chiffres de rendu cités sont ceux de cet audit ; les
+comptes tirés du code sont relevés le 2026-11-20 sur `main` `1210455cd`, dans `frontend/app`
+hors admin sauf mention.
+
+- **P44.** Couleurs. Sur les pages publiques, une couleur s'emploie par son rôle, jamais par une
+  valeur brute. Le navy et l'orange sont les couleurs de la marque. L'orange signale l'action
+  principale : une seule par écran, avec un texte navy ; les autres actions sont en contour. Le
+  rouge est réservé à l'erreur et à l'action destructive. Il n'y a ni violet, indigo, rose ou
+  fuchsia, ni couleur par famille de pièces, ni thème sombre.
+  Source : décisions de l'owner du 20 nov. 2026 (option A3 retenue à 17:29 ; thème sombre
+  retiré à 21:56 ; rouge réservé à l'erreur à 21:58 ; violets retirés à 22:29 ; couleur par
+  famille retirée à 22:31), ratifiées à 22:53. Audit de la PR #2215, non fusionnée, option A3
+  (`options/README.md`, l. 448-461).
+  Application (relevé du 2026-11-20, `main` `1210455cd`) : L2. Rôles de couleur dans
+  `packages/design-tokens/src/tokens.json` (groupes `navy`, `cta`, `semantic`) ; contrat Zod
+  `packages/design-tokens/scripts/tokens-schema.mjs` (rampes `cta` et `navy`) et tests
+  `packages/design-tokens/tests/tokens.test.mjs`, lancés par le job « 🎨 Design-tokens gate »
+  (`.github/workflows/ci.yml`, l. 150-158). Le ratchet `.github/workflows/impeccable-ratchet.yml`
+  bloque un nouveau constat (`audit/impeccable/baseline.json` : 9, dont `ai-color-palette` 1).
+  Écarts : 223 emplois de `violet|indigo|pink|fuchsia|purple-NNN` dans 60 fichiers (le mandat
+  cite 213 hors admin ; chiffre absent de l'audit #2215) ; jeton `color.accent.persianIndigo`
+  `#350B60` ; `frontend/app/utils/family-theme.ts` (couleur par famille, 11 fichiers l'emploient) ;
+  57 classes `dark:` dans 6 fichiers, 50 hors admin (le mandat cite 62 ; absent de l'audit) ;
+  clés `dark` et `shadcnDark` de `tokens.json`, exigées par `tokens-schema.mjs`.
+- **P45.** Lisibilité. Un texte a un contraste d'au moins 4,5:1 (3:1 pour un grand texte) et une
+  taille d'au moins 12 px ; un champ de saisie fait 16 px sur mobile. Le bord d'un champ ou d'un
+  contrôle atteint 3:1. Le focus au clavier est toujours visible et n'est jamais couvert par un
+  élément collant. Une cible tactile fait au moins 44 px. Les animations s'arrêtent quand
+  l'utilisateur demande moins de mouvement.
+  Source : décisions de l'owner du 20 nov. 2026 (option A3 à 17:29 ; 12 px minimum à 22:02),
+  ratifiées à 22:53. WCAG 2.2, critères 1.4.3, 1.4.11, 2.4.7, 2.4.11, 2.5.8 et 2.3.3. Audit de
+  la PR #2215, non fusionnée (`options/README.md`, l. 79 ; `README.md`, §f et §g).
+  Application (relevé du 2026-11-20, `main` `1210455cd`) : L1. Contrastes des paires de tokens
+  calculés dans `packages/design-tokens/tests/tokens.test.mjs` ; arrêt des animations CSS dans
+  `frontend/app/styles/animations.css` (l. 175-182, chargé par `frontend/app/root.tsx`, l. 418-425)
+  et `frontend/app/global.css` (l. 920-925). Cibles de 44 px et débordement contrôlés par
+  `frontend/tests/e2e/mobile-audit-complete.spec.ts`, absent du jeu e2e de la CI.
+  `@axe-core/playwright` est déclaré dans `frontend/package.json` sans test qui l'emploie.
+  Écarts, mesurés par l'audit #2215 sur dix passages : 466 textes sous le seuil de contraste,
+  61 bords sous 3:1, 75 focus invisibles ou couverts ; textes de 10 px dans la barre du bas (§f).
+  Le mandat cite 111 textes sous 12 px hors admin, chiffre absent de l'audit ; le code compte
+  113 classes `text-[6px]` à `text-[11px]` dans 54 fichiers. `focus:ring-blue-500` : 175 emplois,
+  admin compris. `frontend/app/hooks/useScrollBehavior.ts` (l. 15) impose le défilement doux sans
+  condition.
+- **P46.** Valeurs. Toute valeur d'interface vient des tokens, dont la source unique est
+  `packages/design-tokens/src/tokens.json`, sans valeur en double. Trois rayons à rôle fixe
+  (8 px champs et boutons, 12 px cartes, 16 px grands blocs) et la pilule ; trois ombres ; trois
+  polices (Outfit pour les titres, DM Sans pour le texte, Roboto Mono pour les codes qu'on
+  recopie). Toute graisse employée est chargée. Aucune taille, couleur, espacement, rayon ni
+  ombre n'est écrit en dur.
+  Source : décisions de l'owner du 20 nov. 2026 (rayons 8/12/16 et trois ombres à 22:05 ; Roboto
+  Mono pour les codes à 22:14), ratifiées à 22:53. Audit de la PR #2215, non fusionnée
+  (`README.md`, §f).
+  Application (relevé du 2026-11-20, `main` `1210455cd`) : L2. Source unique `tokens.json`,
+  sorties générées vérifiées octet pour octet (`build:check`) et contrat `tokens-schema.mjs` dans
+  le job « 🎨 Design-tokens gate » (`.github/workflows/ci.yml`, l. 150-158). Aucune règle ne
+  refuse une valeur en dur : `frontend/eslint.config.js` (l. 22-38) ne vise que `w-screen` et
+  `hidden`, et `.ast-grep/rules/` n'a aucune règle d'interface. Écarts :
+  `borderRadius` a 9 valeurs et `shadows` 8 ; `fontWeight` va de 100 à 900 alors que
+  `frontend/app/global.css` (l. 24-52) charge Outfit 400 à 800, DM Sans 400 à 700 et Roboto Mono
+  400 (audit §f : Outfit 900 et DM Sans 800-900 employés, non chargés ; `font-black` 13 emplois et
+  `font-extrabold` 25, admin compris) ; la pile `mono` place Roboto Mono en quatrième. Le mandat
+  cite 22 groupes de valeurs en double, chiffre absent de l'audit ; un regroupement par groupe et
+  par valeur en donne 38 (dont `color.primary.*` égal à `color.navy.*`). 37 `rounded-[…]` et
+  48 `shadow-[…]` en valeur arbitraire.
+- **P47.** Composants. Un bouton, un champ ou une icône vient du composant partagé et de la
+  bibliothèque d'icônes unique. Aucun n'est refait à la main dans une page.
+  Source : décisions de l'owner du 20 nov. 2026, ratifiées à 22:53. Audit de la PR #2215, non
+  fusionnée.
+  Application (relevé du 2026-11-20, `main` `1210455cd`) : L0. `.claude/rules/frontend.md` (l. 20)
+  prescrit `~/components/ui/` et `lucide-react` ; aucune garde. `lucide-react` est la seule
+  bibliothèque d'icônes de `frontend/package.json`. Écarts, hors `components/ui` : 307 `<button`
+  et 143 `<input` natifs, 189 `<svg` écrits en ligne dans 50 fichiers.
+- **P48.** Stabilité et mesure. Le décalage de mise en page (CLS) ne dépasse pas 0,1, au
+  chargement et après défilement, sur chaque type de page. Une image déclare ses dimensions. Les
+  mesures se font à 390 px (référence) et 1440 px ; aucune page ne déborde à 360 px ni à 320 px.
+  Source : décisions de l'owner du 20 nov. 2026 (CLS à 0,1 à 22:18 ; largeurs 390, 360 et 320 à
+  22:21), ratifiées à 22:53. Core Web Vitals : un CLS de 0,1 ou moins est « bon ». Audit de la PR
+  #2215, non fusionnée (`README.md`, §h).
+  Application (relevé du 2026-11-20, `main` `1210455cd`) : L1. `scripts/lighthouse-cron.sh`
+  (l. 28) fixe `THRESH_CLS=0.1`, planification non vérifiée. `.github/workflows/visual-gate.yml`
+  (déclenchement manuel) mesure à 390 × 844 et 1920 × 1080 ;
+  `frontend/tests/e2e/mobile-audit-complete.spec.ts` contrôle le débordement à 320 px, hors CI.
+  Écarts : les CLS après défilement de l'audit #2215 (§h : 0,9179 et 0,5814 sur la page produit,
+  0,4103 sur la gamme) sont un artefact de mesure : la sonde force puis retire
+  `content-visibility` (`scripts/mesure-dz.cjs`, l. 256 et 269). À la molette, aucune des cinq
+  pages ne dépasse 0,0177 après défilement (`options/mesures/cls-causes-dz.md`, PR #2215, tête
+  `8d7ba709c`, non fusionnée). Restent deux décalages réels au chargement, sous 0,1 : gamme
+  0,0175 à 390 px et 0,0226 à 1440 px, image du haut déclarée carrée et servie en 3:2
+  (`GammeHero.tsx`, l. 107-112) ; page produit 0,0199 à 0,0602 à 390 px et 0 à 0,0247 à 1440 px,
+  cartes à réserve de 360 px rendues visibles par un glissement (`PiecesGroupedDisplay.tsx`,
+  l. 197 ; `global.css`, l. 411-414). 55 `<img>` sur 108 sans dimensions (audit, §h) ;
+  `frontend/lighthouse-budget.json` (l. 9) admet un CLS de 0,25 ; aucune mesure à 360 px trouvée.
+  La méthode de mesure du CLS reste à fixer avant tout contrôle bloquant : session à part,
+  défilement à la molette, plus grande fenêtre de session.
 
 ## Changements, revue et fusion
 
@@ -244,6 +371,47 @@ depuis porte sa date : celles du 2026-11-17 sont relevées sur `main` `03ffd4f1e
   Application : L2 (`automation-registry-validate.yml`, `cron-schedulemodule-guard.yml`). Trois
   décorateurs `@Cron(` subsistent dans `backend/src` alors que `ScheduleModule` est désactivé. Le
   module `command-center-orchestrator` existe sous drapeau éteint (ADR-087).
+- **P42.** Un incident a une fiche : une issue du monorepo, au label `incident`. Aucun autre
+  registre d'incidents n'est tenu. La fiche a trois rubriques obligatoires : ce qui s'est passé,
+  pourquoi, ce qui l'empêche de revenir. Elle ne se ferme que lorsque la troisième désigne, avec
+  son lien, le test ou le contrôle automatique qui empêche le retour de l'incident. Si aucun
+  contrôle n'est possible, la fiche le dit et reste ouverte jusqu'à la décision de l'owner. Le
+  dépôt est public : une fiche ne porte ni secret, ni détail qui aiderait une attaque, ni donnée
+  de client. Un compte rendu d'incident resté dans le vault y reste lisible, sans être recopié.
+  Source : décision 138 de l'owner, 17 nov. 2026. À 16:51, heure de Paris, sur la fiche par
+  incident : « oui mais il faut que cela sert de memoire pour ne plus avoir les meme incident ».
+  À 17:18, à la question « D'accord pour cette règle : une fiche d'incident ne peut être fermée
+  que lorsqu'elle indique ce qui empêche désormais son retour (un test ou un contrôle
+  automatique), avec le lien ? » : « oui ».
+  Application, relevé du 2026-11-17 sur `main` `a9bd755d6` : L0. Rien ne porte encore la règle en
+  service. `scripts/ci/incident-issue-gate.mjs` rend le verdict d'une fiche fermée (`evaluate`,
+  l. 201) et rédige le commentaire de réouverture (`renderComment`, l. 247), mais aucun workflow
+  ne le lance et son test n'est pas dans le dépôt. Le gabarit `.github/ISSUE_TEMPLATE/incident.yml`,
+  le workflow `.github/workflows/incident-issue-gate.yml`, le test et son étape dans `audit.yml`
+  sont dans un patch réservé à l'owner
+  (`docs/audit/mandat-bd-20261116/complement-4-incidents/`). Ce patch fusionné : L2. L3 à la
+  première réouverture observée. Limites du contrôle : un lien est admis s'il désigne une PR
+  fusionnée de ce dépôt ou un fichier présent sur `main` ; le contrôle ne juge pas si le test cité
+  couvre la cause. Retirer le label `incident` sort la fiche du contrôle. Écarts, relevé du
+  2026-11-17 à 20:47 UTC sur `main` `705dc2c1e` : deux issues portent le label `incident`, #264 et
+  #2144, toutes deux ouvertes. #264 n'a aucune des trois rubriques ; #2144 a les trois, mais la
+  première sous le titre « Ce qui se passe », qui n'est pas celui du gabarit. Deux comptes rendus
+  antérieurs sont des fichiers (`.spec/incidents/2026-02-configservice-crash.md`,
+  `.spec/reports/incident-2026-04-14-payments-sev1.md`). Une fiche ouverte figure dans la liste
+  que lit la routine de P24 (`scripts/ops/pilote-file.sh`, l. 58), qui liste toutes les issues
+  ouvertes. À relever à nouveau à la fusion.
+- **P33.** Un test de la Definition of Done nomme une mesure qui existe et dit ce qu'elle compare.
+  Ce qui n'est pas mesuré est écrit comme tel dans la preuve, sans être retiré de l'exigence.
+  Source : ADR-134 (PR vault #415, jamais fusionnée).
+  Application : L0 pour le texte, appliqué à DoD5. La Definition of Done est dans ce dépôt
+  (`.spec/00-canon/canon-distribution/rules-engineering-definition-of-done.md`, version 1.4.0,
+  décision 139, PR #2142 fusionnée le 2026-11-17) : les tests 1 à 4 de DoD5 nomment chacun un
+  contrôle et ce qu'il compare, et sa section « Non mesuré » liste ce qu'aucun contrôle ne vérifie.
+  L3 pour deux de ces mesures, relevées vertes sur `main` le 2026-11-19
+  (`migration-ledger-freshness.yml`, `registry-fresh.yml`). Écart : les sections « Escape hatch »
+  et « Enforcement automatique » de la DoD citent `weekly-vault-lint.yml` et `vault-governance.yml`,
+  absents de ce dépôt (question D19). Aucune garde ne vérifie qu'un test de la DoD nomme une
+  mesure existante : intention seulement.
 
 ## Méthode
 
@@ -316,6 +484,28 @@ depuis porte sa date : celles du 2026-11-17 sont relevées sur `main` `03ffd4f1e
   (l. 72-74). Écarts : le job reste en avertissement seul (`continue-on-error: true`, l. 49).
   Seul `.claude/skills/` de la racine est contrôlé. Aucun skill tiers n'est installé : rien n'est
   servi. À relever à nouveau à la fusion.
+- **P43.** Aucun plugin Claude Code qui injecte au démarrage d'une session un contexte tiré
+  d'autres sessions, sans relecture (hook `SessionStart`), n'est actif dans une session du dépôt.
+  Les plugins exclus se déclarent dans `.claude/settings.json` (`enabledPlugins`, à `false`).
+  Source : demandes de l'owner dans le chat de pilotage. Le 15 nov. 2026 vers 15:13, heure de
+  Tunis : « Fait le » (désactiver `remember` dans les réglages utilisateur du DEV, fait à
+  14:13:55 UTC). Le 17 nov. 2026 à 21:50, heure de Paris : « utilise meilleure approche » (pour
+  faire durer cette désactivation). Origine : note
+  `ledger/knowledge/claude-code-plugin-enablement-policy-20260504.md` du vault, PR
+  ak125/governance-vault#419, fusionnée le 2026-11-15, en archive.
+  Application, relevé du 2026-11-17 sur la branche de cette PR (base `main` `705dc2c1e`) : L1.
+  `.claude/settings.json` met `remember@claude-plugins-official` et
+  `goodmem@claude-plugins-official` à `false`. Le réglage du projet prime sur celui de
+  l'utilisateur : essai du 2026-11-17 à 20:55 UTC, Claude Code 2.1.326, dossier de configuration
+  isolé où l'utilisateur active les deux plugins ; `claude plugin list --json` les donne activés
+  hors du dépôt et désactivés dans le dépôt. La documentation de Claude Code pose la règle
+  générale (une clé posée à un niveau plus haut l'emporte) sans traiter ce cas. `remember`
+  (0.43.1) porte un hook `SessionStart` qui injecte ses fichiers de mémoire ; `goodmem` (0.1.0)
+  n'en porte pas : il est exclu par la demande de l'owner, non par ce critère. Écarts :
+  `.claude/settings.local.json`, l'option `--settings` et les réglages gérés priment sur ce
+  fichier, et rien ne refuse un `true` qui y serait posé ; aucun contrôle ne lit
+  `.claude/settings.json` ; un autre plugin du même type n'est exclu que s'il y est déclaré.
+  Aucune session du dépôt n'a été observée sous ce réglage : à relever après la fusion.
 
 ## Règles en service entrées au journal
 

@@ -16,6 +16,7 @@ import path from 'node:path';
 import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { SupabaseStorageService } from '../../upload/services/supabase-storage.service';
+import { resolveConfinedPath } from '../utils/rag-paths.util';
 
 const VALID_TARGETS = ['pg_pic', 'pg_img', 'pg_wall', 'r3_slot'] as const;
 type AssignTarget = (typeof VALID_TARGETS)[number];
@@ -449,8 +450,21 @@ export class RagImageManagementService extends SupabaseBaseService {
     let updated = 0;
     const skipped: string[] = [];
 
+    if (
+      !Array.isArray(hashes) ||
+      !hashes.every((hash) => /^[a-f0-9]{16}$/.test(hash))
+    ) {
+      throw new BadRequestException(
+        'Invalid hash format (expected 16 hex chars)',
+      );
+    }
+
     for (const hash of hashes) {
-      const promptPath = path.join(imgDir, `${hash}.prompt.md`);
+      const promptPath = resolveConfinedPath(imgDir, `${hash}.prompt.md`);
+      if (!promptPath) {
+        skipped.push(hash);
+        continue;
+      }
       try {
         let content = readFileSync(promptPath, 'utf-8');
         const pattern = `gamme: "${fromGamme}"`;

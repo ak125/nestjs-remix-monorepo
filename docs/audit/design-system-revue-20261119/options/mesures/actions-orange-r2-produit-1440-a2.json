@@ -1,0 +1,433 @@
+{
+ "id": "r2-produit",
+ "route": "/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html",
+ "viewport": "1440x900",
+ "variante": "a2",
+ "debut": "2026-11-20T10:37:23.291Z",
+ "critere": "bouton ou lien visible, fond calculé orange (teinte 15°–45°, saturation ≥ 0,45, luminosité 0,3–0,9), non recouvert en son centre",
+ "ecrans": [
+  {
+   "ecran": 0,
+   "scrollY": 0,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 1,
+   "scrollY": 890,
+   "entieres": 3,
+   "partielles": 0,
+   "textes": [
+    "Ajouter #F97316",
+    "Ajouter #F97316",
+    "Ajouter #F97316"
+   ]
+  },
+  {
+   "ecran": 2,
+   "scrollY": 1800,
+   "entieres": 3,
+   "partielles": 0,
+   "textes": [
+    "Ajouter #F97316",
+    "Ajouter #F97316",
+    "Ajouter #F97316"
+   ]
+  },
+  {
+   "ecran": 3,
+   "scrollY": 2700,
+   "entieres": 3,
+   "partielles": 0,
+   "textes": [
+    "Ajouter #F97316",
+    "Ajouter #F97316",
+    "Ajouter #F97316"
+   ]
+  },
+  {
+   "ecran": 4,
+   "scrollY": 3600,
+   "entieres": 2,
+   "partielles": 0,
+   "textes": [
+    "Ajouter #F97316",
+    "Ajouter #F97316"
+   ]
+  },
+  {
+   "ecran": 5,
+   "scrollY": 4500,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 6,
+   "scrollY": 5400,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 7,
+   "scrollY": 6300,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 8,
+   "scrollY": 7200,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 9,
+   "scrollY": 8100,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 10,
+   "scrollY": 8918,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 11,
+   "scrollY": 8918,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  }
+ ],
+ "statut": 200,
+ "injection": [
+  {
+   "variante": "a2",
+   "at": "2026-11-20T10:37:29.212Z",
+   "dejaPresente": false,
+   "presente": true,
+   "regles": 67,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "fin",
+   "presente": true,
+   "variante": "a2",
+   "regles": 67
+  }
+ ],
+ "toutePage": {
+  "nombre": 20,
+  "actions": [
+   {
+    "texte": "Ajouter",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     625,
+     1348,
+     98,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     931,
+     1348,
+     98,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     1236,
+     1348,
+     98,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     625,
+     1813,
+     98,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     931,
+     1813,
+     98,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     1236,
+     1813,
+     98,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     625,
+     2278,
+     98,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     931,
+     2278,
+     98,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     1236,
+     2278,
+     98,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter Filtre à huile au panier",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     625,
+     2742,
+     98,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter Filtre à huile au panier",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     931,
+     2742,
+     98,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter Filtre à huile au panier",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     1236,
+     2742,
+     98,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter Filtre à huile au panier",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     625,
+     3207,
+     98,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter Filtre à huile au panier",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     931,
+     3207,
+     98,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter Filtre à huile au panier",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     1236,
+     3207,
+     98,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter Filtre à huile au panier",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     625,
+     3672,
+     98,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter Filtre à huile au panier",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     931,
+     3672,
+     98,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter Filtre à huile au panier",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     1236,
+     3672,
+     98,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter Filtre à huile au panier",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     625,
+     4137,
+     98,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter Filtre à huile au panier",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     931,
+     4137,
+     98,
+     44
+    ]
+   }
+  ]
+ },
+ "premierEcran": {
+  "ecran": 0,
+  "scrollY": 0,
+  "entieres": 0,
+  "partielles": 0,
+  "textes": []
+ },
+ "ecransAPlusieurs": 4,
+ "maxParEcran": 3,
+ "requetesAbandonnees": [
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/funnel/event",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/attribution/landing",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/track-impression",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/track-impression",
+   "raison": "non GET"
+  }
+ ],
+ "fin": "2026-11-20T10:37:39.350Z"
+}

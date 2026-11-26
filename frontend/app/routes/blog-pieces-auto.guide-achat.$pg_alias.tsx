@@ -104,13 +104,15 @@ async function fetchR4Reference(
 ): Promise<R4Ref | null> {
   try {
     if (!pgId) return null;
+    // `from` : page où le lien est affiché (mandat ER, règle unique des liens R4).
+    const from = new URL(request.url).pathname;
     const byGammeUrl = getInternalApiUrlFromRequest(
-      `/api/seo/reference/by-gamme/${pgId}`,
+      `/api/seo/reference/by-gamme/${pgId}?from=${encodeURIComponent(from)}`,
       request,
     );
     const byGammeRes = await fetch(byGammeUrl);
     if (!byGammeRes.ok) return null;
-    const { slug } = await byGammeRes.json();
+    const { slug, url } = await byGammeRes.json();
     if (!slug) return null;
 
     const refUrl = getInternalApiUrlFromRequest(
@@ -126,7 +128,8 @@ async function fetchR4Reference(
       title: ref.title ?? "",
       definition: ref.definition ?? "",
       roleMecanique: ref.roleMecanique ?? ref.role_mecanique ?? null,
-      canonicalUrl: `/reference-auto/${slug}`,
+      canonicalUrl:
+        url === undefined ? `/reference-auto/${slug}` : (url ?? null),
     };
   } catch {
     return null;
@@ -679,7 +682,7 @@ export default function R6GuidePage() {
                   <Card className="border-indigo-200 bg-muted/50">
                     <div className="p-4">
                       <Link
-                        to={`/reference-auto/${r4Reference.slug}`}
+                        to={r4Reference.canonicalUrl ?? "/reference-auto"}
                         className="flex items-start gap-3 group"
                       >
                         <div className="p-2 bg-muted rounded-lg shrink-0">

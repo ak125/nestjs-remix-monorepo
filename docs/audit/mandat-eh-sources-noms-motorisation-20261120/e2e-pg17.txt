@@ -1,0 +1,44 @@
+== 2026-11-20T11:08:23Z PostgreSQL 17.11 (Debian 17.11-1.pgdg13+2) jetable
+fixtures : 900 types (classement.tsv), mark_stale_with_followup_rebuild 20260425, reconstruction simulée
+colonnes : étape | types | empreinte (type_id, type_name, type_name_meta) | reconstructions cumulées | pages périmées
+0-initial | 900 | b303d6f77de2491b82bc5fed1368c8a9 | 0 | 0
+-- 1. application EE (type_name_meta)
+NOTICE:  INC-2026-007: marked 163 rows stale (reason: mandat EE 2026-11-20 : correction de auto_type.type_name_meta (cas confirmés par sources extérieures, mandat EH)), rebuilt 163 synchronously
+NOTICE:  mandat EE : 163 valeurs écrites, 163 pages R8 invalidées et reconstruites
+1-apres-ee | 900 | b6eaa905b7166fd604f315e82f6af551 | 163 | 0
+écarts au contrôle 07 (attendu 0) : 0
+-- 2. application EH (type_name)
+NOTICE:  INC-2026-007: marked 5 rows stale (reason: mandat EH 2026-11-20 : correction de auto_type.type_name (nom d'origine faux, sources extérieures)), rebuilt 5 synchronously
+NOTICE:  mandat EH : 5 types corrigés, 5 pages R8 invalidées et reconstruites
+2-apres-eh | 900 | 16486c1cc651fb1c10e137deaddcd0a9 | 168 | 0
+écarts au contrôle 13 (attendu 0) : 0
+-- 3. rejeu des deux
+NOTICE:  mandat EE : déjà appliqué, 0 ligne écrite
+NOTICE:  mandat EH : déjà appliqué, 0 ligne écrite
+3-apres-rejeu | 900 | 16486c1cc651fb1c10e137deaddcd0a9 | 168 | 0
+-- 4. retour EH puis EE
+NOTICE:  INC-2026-007: marked 5 rows stale (reason: retour du mandat EH 2026-11-20 : type_name et type_name_meta d'origine remis), rebuilt 5 synchronously
+NOTICE:  mandat EH : 5 types corrigés, 5 pages R8 invalidées et reconstruites
+NOTICE:  INC-2026-007: marked 163 rows stale (reason: retour du mandat EE 2026-11-20 : type_name_meta d'origine remis), rebuilt 163 synchronously
+NOTICE:  mandat EE : 163 valeurs écrites, 163 pages R8 invalidées et reconstruites
+4-apres-retours | 900 | b303d6f77de2491b82bc5fed1368c8a9 | 336 | 0
+empreinte initiale retrouvée : oui
+-- 5. rejeu des retours
+NOTICE:  mandat EH : déjà appliqué, 0 ligne écrite
+NOTICE:  mandat EE : déjà appliqué, 0 ligne écrite
+5-apres-rejeu-retours | 900 | b303d6f77de2491b82bc5fed1368c8a9 | 336 | 0
+-- 6. garde EH : type_name du type 33063 modifié entre-temps
+6-avant | 900 | 36b24b24decc443e1f08feeffc244195 | 336 | 0
+ERROR:  mandat EH : valeur actuelle différente de la valeur relevée, rien n'est écrit. 33063 : '320 CDI 4-Matic X' / '320 CDI 350 BlueTEC 4Matic'
+CONTEXT:  PL/pgSQL function inline_code_block line 38 at RAISE
+6-apres-refus | 900 | 36b24b24decc443e1f08feeffc244195 | 336 | 0
+-- 7. garde EH : type_name_meta du type 33063 modifié entre-temps
+7-avant | 900 | ede3ab53d42a2a7f0506c27d9cb75f74 | 336 | 0
+ERROR:  mandat EH : valeur actuelle différente de la valeur relevée, rien n'est écrit. 33063 : '320 CDI 4-Matic' / '320 CDI 350 BlueTEC 4Matic X'
+CONTEXT:  PL/pgSQL function inline_code_block line 38 at RAISE
+7-apres-refus | 900 | ede3ab53d42a2a7f0506c27d9cb75f74 | 336 | 0
+-- 8. garde EH : type 33063 absent
+8-avant | 899 | ff21411e292c234ca55b90c281aa89eb | 336 | 0
+ERROR:  mandat EH : valeur actuelle différente de la valeur relevée, rien n'est écrit. 33063 : '<type absent>' / '<NULL>'
+CONTEXT:  PL/pgSQL function inline_code_block line 38 at RAISE
+8-apres-refus | 899 | ff21411e292c234ca55b90c281aa89eb | 336 | 0

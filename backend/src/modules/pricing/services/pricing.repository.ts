@@ -6,7 +6,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
-import { DISPOS_VENDABLES } from '@database/services/vendable';
+import { DISPOS_VENDABLES, ETAT_TARIF_GELE } from '@database/services/vendable';
 import { eurToCents } from './pricing-formula.service';
 import { normalizeSupplierReference } from '../utils/normalize-supplier-reference';
 import type { CatalogPiece, ExistingPriceRow } from './price-import.dry-run';
@@ -17,8 +17,42 @@ import type { CostBucketAggregate } from './pricing-simulation.core';
 const PAGE = 1000; // supabase-js caps a single select at 1000 rows → paginate
 const SCOPE_CHUNK = 200; // ids per `.in()` so a multi-row scope stays under PAGE
 
+/**
+ * Valeur de clé de pagination insérée dans un filtre `or` PostgREST. Les clés de
+ * pieces_price sont des chiffres (0 valeur atypique au 2026-11-20) : toute autre
+ * forme est refusée plutôt qu'échappée, pour qu'aucune valeur ne modifie le filtre.
+ */
+function keysetValue(v: string): string {
+  if (!/^[A-Za-z0-9_-]{1,64}$/.test(v)) {
+    throw new Error(
+      'clé de pagination pieces_price inattendue : parcours arrêté',
+    );
+  }
+  return `"${v}"`;
+}
+
 /** `price_import_batches.operation` marker of a dispo-withdrawal batch. */
 export const DISPO_DEACTIVATION_OPERATION = 'DISPO_DEACTIVATION';
+
+/**
+ * Ligne de `price_import_batches` lue par le producteur garde-prix
+ * (price-guard-signal.core.ts, qui dépend de ce dépôt et non l'inverse).
+ */
+export interface GuardBatchRow {
+  batch_id: string;
+  supplier_id: string | null;
+  operation: string | null;
+  status: string;
+  failed_rows: number | null;
+  started_at: string | null;
+  completed_at: string | null;
+}
+
+/** Lignes vendables à perte, par marque (`pri_pm_id`). */
+export interface SellAtLossScan {
+  scanned: number;
+  byBrand: Map<string, number>;
+}
 
 /** One pieces_price row in a withdrawal scope (see resolveDeactivationRows). */
 export interface DeactivationScopeRow {
@@ -60,6 +94,17 @@ export interface CommitRowPayload {
   marge: number;
   vente_ht: number;
   vente_ttc: number;
+  /**
+   * Real supplier of the tariff (`___xtr_supplier.spl_name`, e.g. 'DCA'), written
+   * to `pieces_price.pri_frs` on the committed row only.
+   */
+  frs: string;
+  /**
+   * Tariff effective date, ISO `YYYY-MM-DDT00:00:00.000Z` (format of the
+   * historical `pieces_price.pri_date_from` text values), written on the
+   * committed row only.
+   */
+  date_from: string;
 }
 
 @Injectable()
@@ -133,6 +178,95 @@ export class PricingRepository extends SupabaseBaseService {
       .update({ status, ...extra })
       .eq('batch_id', batchId);
     if (error) throw error;
+  }
+
+  /**
+   * Garde-fou des prix (mandat EI) : toutes les lignes de price_import_batches,
+   * par pages sous le plafond de 1000 lignes. Une page en erreur rejette.
+   */
+  async listBatchesForGuardSignal(): Promise<GuardBatchRow[]> {
+    const out: GuardBatchRow[] = [];
+    for (let from = 0; ; from += PAGE) {
+      const { data, error } = await this.supabase
+        .from('price_import_batches')
+        .select(
+          'batch_id, supplier_id, operation, status, failed_rows, started_at, completed_at',
+        )
+        .order('started_at', { ascending: true })
+        .order('batch_id', { ascending: true })
+        .range(from, from + PAGE - 1);
+      if (error) throw error;
+      const rows = (data ?? []) as GuardBatchRow[];
+      out.push(...rows);
+      if (rows.length < PAGE) return out;
+    }
+  }
+
+  /**
+   * Garde-fou des prix (mandat EI) : lignes vendables dont la vente HT est
+   * inférieure à l'achat HT (ou absente), comptées par marque. Vendable = les
+   * colonnes de pieces_price de `estVendable` (DISPOS_VENDABLES, non gelée, vente
+   * TTC > 0) ; `pieces.piece_display` n'est pas lu, le compte est donc un
+   * sur-ensemble (jamais un vert de trop). PostgREST ne compare pas deux colonnes :
+   * parcours complet par pages, clé de pagination = clé primaire
+   * (pri_piece_id, pri_type), comparaison faite ici. Environ 426 pages au
+   * 2026-11-20 : à lancer une fois par jour, jamais à chaque requête.
+   */
+  async scanSellableAtLoss(): Promise<SellAtLossScan> {
+    const byBrand = new Map<string, number>();
+    let scanned = 0;
+    let cursor: { id: string; type: string } | null = null;
+    for (;;) {
+      let q = this.supabase
+        .from('pieces_price')
+        .select(
+          'pri_piece_id, pri_type, pri_pm_id, pri_achat_ht_n, pri_vente_ht_n, pri_vente_ttc_n, pricing_state',
+        )
+        .in('pri_dispo', [...DISPOS_VENDABLES])
+        .gt('pri_achat_ht_n', 0);
+      if (cursor) {
+        const id = keysetValue(cursor.id);
+        const type = keysetValue(cursor.type);
+        // gte = condition d'index (pieces_price_pkey) ; sans elle le OR seul est
+        // un filtre et chaque page reparcourt l'index depuis le début
+        // (EXPLAIN 2026-11-20 : ~285 ms par page au lieu de 1 à 5 ms).
+        q = q
+          // Valeur brute : keysetValue l'a validée, sans caractère réservé à
+          // PostgREST ; les guillemets ne servent qu'à l'intérieur du or().
+          .gte('pri_piece_id', cursor.id)
+          .or(
+            `pri_piece_id.gt.${id},and(pri_piece_id.eq.${id},pri_type.gt.${type})`,
+          );
+      }
+      const { data, error } = await q
+        .order('pri_piece_id', { ascending: true })
+        .order('pri_type', { ascending: true })
+        .limit(PAGE);
+      if (error) throw error;
+      const rows = (data ?? []) as Array<{
+        pri_piece_id: string;
+        pri_type: string;
+        pri_pm_id: string | null;
+        pri_achat_ht_n: number | string | null;
+        pri_vente_ht_n: number | string | null;
+        pri_vente_ttc_n: number | string | null;
+        pricing_state: string | null;
+      }>;
+      for (const r of rows) {
+        if (r.pricing_state === ETAT_TARIF_GELE) continue;
+        if (!(Number(r.pri_vente_ttc_n) > 0)) continue;
+        scanned++;
+        const achat = Number(r.pri_achat_ht_n);
+        const vente = r.pri_vente_ht_n == null ? NaN : Number(r.pri_vente_ht_n);
+        if (!(achat > 0)) continue;
+        if (Number.isFinite(vente) && vente >= achat) continue;
+        const pm = r.pri_pm_id ? String(r.pri_pm_id) : 'inconnue';
+        byBrand.set(pm, (byBrand.get(pm) ?? 0) + 1);
+      }
+      if (rows.length < PAGE) return { scanned, byBrand };
+      const last = rows[rows.length - 1];
+      cursor = { id: String(last.pri_piece_id), type: String(last.pri_type) };
+    }
   }
 
   async createChunk(
@@ -774,10 +908,14 @@ export class PricingRepository extends SupabaseBaseService {
   }
 
   async fetchProfiles(supplierId: string): Promise<SupplierPriceProfile[]> {
+    // Profils d'import seulement : une condition de remise de la fiche
+    // fournisseur (profile_kind 'condition', complément CH-3) n'est jamais
+    // un profil d'import.
     const { data, error } = await this.supabase
       .from('supplier_price_profiles')
       .select('*')
       .eq('supplier_id', supplierId)
+      .eq('profile_kind', 'import')
       .eq('active', true);
     if (error) throw error;
     return (data ?? []).map((r) => ({

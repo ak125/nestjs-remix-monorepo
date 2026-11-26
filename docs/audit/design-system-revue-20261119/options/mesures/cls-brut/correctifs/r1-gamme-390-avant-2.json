@@ -1,0 +1,242 @@
+{
+ "id": "r1-gamme",
+ "route": "/pieces/filtre-a-huile-7.html",
+ "viewport": "390x844",
+ "variante": "avant",
+ "methode": "molette",
+ "correctif": null,
+ "debut": "2026-11-20T21:53:13.995Z",
+ "fin": "2026-11-20T21:53:50.376Z",
+ "statut": 200,
+ "injection": {
+  "variante": "avant",
+  "injectee": false
+ },
+ "deroule": {
+  "pasDescente": 170,
+  "pasRemontee": 170
+ },
+ "cls": {
+  "total": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 1
+  },
+  "horsInjection": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 1
+  },
+  "chargement": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 1
+  },
+  "defilement": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "parPhase": {
+   "chargement": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 1
+   },
+   "molette-descente": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "molette-remontee": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "fin": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   }
+  }
+ },
+ "shifts": [
+  {
+   "t": 503.8,
+   "v": 0.01747,
+   "input": true,
+   "phase": "chargement",
+   "y": 0,
+   "yRappel": 0,
+   "etat": "interactive",
+   "feuilles": 3,
+   "hydrate": false,
+   "sources": [
+    {
+     "sel": "div.flex.flex-col > div.flex-1.flex > div.relative > div.relative.border",
+     "texte": "Sélectionnez votre véhicule Véhicule Type Mine Marque Sélect",
+     "trace": [
+      "div.relative.rounded-[28px].border.border-white/60.bg-white/95.p-2.5",
+      "div.relative.lg:hidden",
+      "div.flex-1.flex.flex-col",
+      "div.flex.flex-col.lg:flex-row.lg:items-stretch.lg:gap-8",
+      "div.max-w-7xl.mx-auto.px-page.pb-5.lg:pb-8"
+     ],
+     "position": "relative",
+     "avant": [
+      0,
+      527,
+      390,
+      317
+     ],
+     "apres": [
+      0,
+      492,
+      390,
+      352
+     ]
+    },
+    {
+     "sel": "div.space-y-3 > div.grid.grid-cols-2 > label.block > select.w-full.h-12",
+     "texte": "Sélectionner",
+     "trace": [
+      "select.w-full.h-12.rounded-2xl.border.px-3.text-[15px]",
+      "label.block",
+      "div.grid.grid-cols-2.gap-2.5",
+      "div.space-y-3",
+      "div.rounded-[24px].border.border-slate-200.bg-white.px-4.pb-4"
+     ],
+     "position": "static",
+     "avant": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "apres": [
+      37,
+      811,
+      156,
+      33
+     ]
+    },
+    {
+     "sel": "div.space-y-3 > div.grid.grid-cols-2 > label.block > select.w-full.h-12",
+     "texte": "Sélectionner",
+     "trace": [
+      "select.w-full.h-12.rounded-2xl.border.px-3.text-[15px]",
+      "label.block",
+      "div.grid.grid-cols-2.gap-2.5",
+      "div.space-y-3",
+      "div.rounded-[24px].border.border-slate-200.bg-white.px-4.pb-4"
+     ],
+     "position": "static",
+     "avant": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "apres": [
+      197,
+      811,
+      156,
+      33
+     ]
+    }
+   ],
+   "poussoirs": [],
+   "poussoirsTotal": 0
+  }
+ ],
+ "phases": [
+  {
+   "p": "chargement",
+   "t": 0,
+   "y": 0
+  },
+  {
+   "p": "molette-descente",
+   "t": 5249.6,
+   "y": 0
+  },
+  {
+   "p": "molette-remontee",
+   "t": 20703.1,
+   "y": 15480
+  },
+  {
+   "p": "fin",
+   "t": 34682.7,
+   "y": 0
+  }
+ ],
+ "scrollDebut": [
+  [
+   5296.7,
+   100
+  ],
+  [
+   5380.1,
+   200
+  ],
+  [
+   5463.7,
+   300
+  ],
+  [
+   5547.4,
+   400
+  ],
+  [
+   5631.1,
+   500
+  ],
+  [
+   5714.2,
+   600
+  ],
+  [
+   5797.3,
+   700
+  ],
+  [
+   5880.6,
+   800
+  ]
+ ],
+ "navigation": {
+  "domContentLoaded": 503,
+  "load": 731
+ },
+ "fonts": [
+  {
+   "t": 522.9,
+   "polices": [
+    "Outfit 400 800",
+    "DM Sans 400 700"
+   ]
+  },
+  {
+   "t": 1222.3,
+   "polices": [
+    "DM Sans 400 700"
+   ]
+  }
+ ],
+ "imgs": 0,
+ "imgsSansDims": [],
+ "nScroll": 310,
+ "scrollHeight": 16322,
+ "erreurObs": null,
+ "requetesAbandonnees": 3,
+ "nonGet": 3
+}

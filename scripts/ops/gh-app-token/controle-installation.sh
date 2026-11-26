@@ -5,7 +5,8 @@
 #
 #   bash scripts/ops/gh-app-token/controle-installation.sh
 #
-# Code de sortie : 0 si les quatre fichiers installés sont identiques à la source, 1 sinon.
+# Code de sortie : 0 si les quatre fichiers installés sont identiques à la source et si le minuteur
+# s'est déclenché il y a 25 min au plus, 1 sinon.
 set -euo pipefail
 
 ICI="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
@@ -40,5 +41,24 @@ else
   echo "rapport  : aucun ($ETAT) — wrapper antérieur à la source versionnée, ou jamais lancé"
 fi
 
+# Fraîcheur du minuteur : le jeton vit 1 h et le minuteur le renouvelle toutes les 20 min. Plus de
+# 25 min sans déclenchement = minuteur arrêté, ou non reparti avec le gestionnaire (18/11/2026).
+SEUIL_MIN=25
+alerte=0
+dernier=$(LC_ALL=C systemctl --user show automecanik-gh-app-token-refresh.timer -p LastTriggerUSec --value 2>/dev/null || true)
+if [ -z "$dernier" ] || [ "$dernier" = n/a ]; then
+  echo "ALERTE   minuteur : aucun déclenchement connu (absent, ou pas déclenché depuis le démarrage du gestionnaire)"
+  alerte=1
+elif ! t=$(date -d "$dernier" +%s 2>/dev/null); then
+  echo "ALERTE   minuteur : dernier déclenchement illisible ($dernier)"
+  alerte=1
+elif age=$((($(date +%s) - t) / 60)) && [ "$age" -gt "$SEUIL_MIN" ]; then
+  echo "ALERTE   minuteur : dernier déclenchement il y a $age min (> $SEUIL_MIN min), jeton expiré ou sur le point de l'être"
+  alerte=1
+else
+  echo "fraîcheur: dernier déclenchement il y a $age min (seuil $SEUIL_MIN min)"
+fi
+
 [ "$ecarts" -eq 0 ] || { echo "$ecarts fichier(s) installé(s) différent(s) de la source : voir README.md, « Installer ou mettre à jour »"; exit 1; }
-echo "installation identique à la source"
+[ "$alerte" -eq 0 ] || { echo "minuteur en retard : voir README.md, « Échec du renouvellement : où le lire »"; exit 1; }
+echo "installation identique à la source, minuteur déclenché il y a $age min"

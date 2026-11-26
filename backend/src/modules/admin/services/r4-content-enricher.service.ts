@@ -4,7 +4,7 @@
  * No content is generated here: R4 content comes from the WIKI through the
  * seo-content-loop (RAW → WIKI → projection). This service provides:
  * - Section audit (identifies what needs improvement)
- * - RAG + KW loading (data preparation)
+ * - KW loading (data preparation)
  * - Lint gates (post-write quality validation)
  * - DB write with anti-regression guards
  *
@@ -20,9 +20,6 @@ import {
   R4_CONTENT_TABLE,
   type R4ContentSection,
 } from '../../../config/r4-keyword-plan.constants';
-import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 
 // ── Types ──
 
@@ -40,8 +37,6 @@ export interface R4EnrichResult {
   durationMs: number;
   error?: string;
   kpMode: 'full' | 'skip_kp';
-  /** RAG content available for the skill (true if .md file exists) */
-  ragAvailable?: boolean;
   /** Target keywords from KP */
   targetKeywords?: string[];
 }
@@ -116,7 +111,6 @@ export class R4ContentEnricherService extends SupabaseBaseService {
         });
       }
 
-      const ragContent = this.loadRagFile(pgAlias);
       const kpMode = await this.detectKpMode(existing.pg_id);
       const targetKeywords =
         kpMode === 'full' ? await this.loadTargetKeywords(existing.pg_id) : [];
@@ -160,7 +154,6 @@ export class R4ContentEnricherService extends SupabaseBaseService {
         kpMode,
         sectionsAudited: audits.map((a) => a.sectionId),
         sectionsToImprove: sectionsToImprove.map((s) => s.sectionId),
-        ragAvailable: ragContent.length > 0,
         targetKeywords,
         providerUsed: 'skill:content-gen',
       });
@@ -205,14 +198,6 @@ export class R4ContentEnricherService extends SupabaseBaseService {
       .single();
 
     return data as unknown as ExistingR4Row | null;
-  }
-
-  private loadRagFile(pgAlias: string): string {
-    const filePath = join(RAG_KNOWLEDGE_PATH, 'gammes', `${pgAlias}.md`);
-    if (existsSync(filePath)) {
-      return readFileSync(filePath, 'utf-8');
-    }
-    return '';
   }
 
   private async detectKpMode(pgId: number): Promise<'full' | 'skip_kp'> {
@@ -526,7 +511,6 @@ export class R4ContentEnricherService extends SupabaseBaseService {
       durationMs: Date.now() - startMs,
       error: extra.error,
       kpMode: extra.kpMode ?? 'skip_kp',
-      ragAvailable: extra.ragAvailable,
       targetKeywords: extra.targetKeywords,
     };
   }

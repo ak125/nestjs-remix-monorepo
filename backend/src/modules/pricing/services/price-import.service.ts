@@ -27,6 +27,8 @@ import {
   type PricingRule,
 } from './pricing-strategy.service';
 import { PricingRepository, type CommitRowPayload } from './pricing.repository';
+import { countInvariantRejections } from './price-guard-signal.core';
+import { SupplierTruthRepository } from '../../supplier-truth';
 
 const CHUNK_SIZE = 5000;
 
@@ -46,13 +48,101 @@ export interface ImportRequest {
    * See supplier-brand-price-load-procedure.md §Garde-fou storefront.
    */
   activate?: boolean;
+  /**
+   * Effective date of the supplier tariff (`YYYY-MM-DD`). Required by
+   * {@link PriceImportService.commit}: it is written to `pieces_price.pri_date_from`
+   * on each committed row, with the real supplier (`pri_frs`). Rows outside the
+   * commit are not touched. Ignored by the dry-run.
+   */
+  tariffDate?: string;
+}
+
+const TARIFF_DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
+
+/**
+ * `YYYY-MM-DD` → `YYYY-MM-DDT00:00:00.000Z` (format of the historical
+ * `pri_date_from` values). Throws on a missing or impossible date: the commit
+ * never invents a tariff date.
+ */
+export function toPriDateFrom(tariffDate: string | undefined): string {
+  const m = TARIFF_DATE_RE.exec((tariffDate ?? '').trim());
+  if (!m) {
+    throw new BadRequestException(
+      'tariffDate (YYYY-MM-DD) is required to commit an import',
+    );
+  }
+  const iso = `${m[1]}-${m[2]}-${m[3]}T00:00:00.000Z`;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime()) || d.toISOString() !== iso) {
+    throw new BadRequestException(
+      `tariffDate ${tariffDate} is not a valid date`,
+    );
+  }
+  return iso;
+}
+
+/**
+ * Pure: committable dry-run rows → RPC payloads, each stamped with the tariff's
+ * real supplier and date. Rejected, unmatched and state-skipped rows are left out.
+ */
+export function buildCommitPayloads(
+  report: DryRunReport,
+  linesByKey: ReadonlyMap<string, ImportLine>,
+  brandPmId: string,
+  stamp: { frs: string; dateFrom: string },
+): CommitRowPayload[] {
+  const payloads: CommitRowPayload[] = [];
+  for (const r of report.rows) {
+    if (
+      !r.matched ||
+      r.rejected ||
+      r.skippedState ||
+      r.newVenteHtCents == null ||
+      r.operation == null
+    )
+      continue;
+    const line = linesByKey.get(r.key);
+    if (!line || r.priPieceIdI == null) continue;
+    payloads.push({
+      piece_id_i: r.priPieceIdI,
+      pri_type: '0',
+      operation: r.operation,
+      pm_id: brandPmId,
+      gros_ht: centsToEur(line.grosHtCents ?? 0),
+      remise: line.remisePct ?? 0,
+      achat_ht: centsToEur(line.achatHtCents),
+      marge: r.appliedMargePct ?? 0,
+      vente_ht: centsToEur(r.newVenteHtCents),
+      vente_ttc: centsToEur(r.newVenteTtcCents ?? 0),
+      frs: stamp.frs,
+      date_from: stamp.dateFrom,
+    });
+  }
+  return payloads;
 }
 
 @Injectable()
 export class PriceImportService {
   private readonly logger = new Logger(PriceImportService.name);
 
-  constructor(private readonly repo: PricingRepository) {}
+  constructor(
+    private readonly repo: PricingRepository,
+    /** Only reader of `___xtr_supplier` (ast-grep commerce-no-direct-supplier-read). */
+    private readonly supplierTruth: SupplierTruthRepository,
+  ) {}
+
+  /**
+   * Label written to `pieces_price.pri_frs` (`___xtr_supplier.spl_name` of
+   * `spl_id = supplierId`), via the supplier directory of SupplierTruthModule.
+   * Null when the id is unknown: the commit is refused, no default label.
+   */
+  private async supplierLabel(supplierId: string): Promise<string | null> {
+    const directory = await this.supplierTruth.getSupplierDirectory();
+    for (const entry of directory.values()) {
+      if (entry.splId === supplierId.trim()) return entry.nom;
+    }
+    return null;
+  }
 
   private hashRows(rows: Record<string, string>[]): string {
     return createHash('sha256').update(JSON.stringify(rows)).digest('hex');
@@ -152,8 +242,11 @@ export class PriceImportService {
       operator: req.operator ?? null,
     });
     const report = await this.computeReport(req, lines);
+    // failed_rows = lignes refusées par le garde-fou des prix : état lu par le
+    // producteur du rapport du matin (price-guard-signal.core, mandat EI).
     await this.repo.setBatchStatus(batchId, 'DRY_RUN_OK', {
       checksum: sourceHash,
+      failed_rows: countInvariantRejections(report),
     });
     this.logger.log(
       `[PRICING_IMPORT] dry-run batchId=${batchId} rawId=${rawId} matched=${report.matchedCount} ` +
@@ -169,35 +262,24 @@ export class PriceImportService {
     batchId: string,
     req: ImportRequest,
   ): Promise<{ committed: number; skipped: number; missing: number }> {
+    // Tariff date and real supplier are written on every committed row: refuse
+    // the commit before any write when either is missing (no default value).
+    const dateFrom = toPriDateFrom(req.tariffDate);
+    const frs = await this.supplierLabel(req.supplierId);
+    if (!frs) {
+      throw new BadRequestException(
+        `supplier ${req.supplierId} has no label in ___xtr_supplier: commit refused`,
+      );
+    }
+
     const lines = await this.buildLines(req);
     const linesByKey = new Map(lines.map((l) => [l.key, l]));
     const report = await this.computeReport(req, lines);
 
-    const payloads: CommitRowPayload[] = [];
-    for (const r of report.rows) {
-      if (
-        !r.matched ||
-        r.rejected ||
-        r.skippedState ||
-        r.newVenteHtCents == null ||
-        r.operation == null
-      )
-        continue;
-      const line = linesByKey.get(r.key);
-      if (!line || r.priPieceIdI == null) continue;
-      payloads.push({
-        piece_id_i: r.priPieceIdI,
-        pri_type: '0',
-        operation: r.operation,
-        pm_id: req.brandPmId,
-        gros_ht: centsToEur(line.grosHtCents ?? 0),
-        remise: line.remisePct ?? 0,
-        achat_ht: centsToEur(line.achatHtCents),
-        marge: r.appliedMargePct ?? 0,
-        vente_ht: centsToEur(r.newVenteHtCents),
-        vente_ttc: centsToEur(r.newVenteTtcCents ?? 0),
-      });
-    }
+    const payloads = buildCommitPayloads(report, linesByKey, req.brandPmId, {
+      frs,
+      dateFrom,
+    });
 
     // Acquire the per-supplier mutex (partial unique index rejects a concurrent one).
     await this.repo.setBatchStatus(batchId, 'COMMITTING');
@@ -225,10 +307,11 @@ export class PriceImportService {
       }
       await this.repo.setBatchStatus(batchId, 'COMMITTED', {
         committed_rows: totals.committed,
+        failed_rows: countInvariantRejections(report),
         completed_at: new Date().toISOString(),
       });
       this.logger.log(
-        `[PRICING_IMPORT] commit batchId=${batchId} committed=${totals.committed} skipped=${totals.skipped} missing=${totals.missing}`,
+        `[PRICING_IMPORT] commit batchId=${batchId} frs=${frs} dateFrom=${dateFrom} committed=${totals.committed} skipped=${totals.skipped} missing=${totals.missing}`,
       );
     } catch (e) {
       await this.repo.setBatchStatus(batchId, 'FAILED', {
