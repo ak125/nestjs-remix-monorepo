@@ -6,12 +6,13 @@ description: >-
   (content_blocks), P4 Micro-Specs, P5 QA Gatekeeper. 20 sections, 8 intents, 12
   media slots, selective regeneration, anti-footprint, 11 quality gates. Ecrit
   dans __seo_r2_keyword_plan via MCP Supabase.
-model: sonnet
+model: inherit
 tools:
   - mcp__supabase__execute_sql
   - Read
   - Glob
   - Grep
+  - REPL
 role: R2_PRODUCT
 ---
 

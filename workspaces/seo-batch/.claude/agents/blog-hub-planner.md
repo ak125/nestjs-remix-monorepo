@@ -3,12 +3,13 @@ name: blog-hub-planner
 description: >-
   Blog Hub SEO Planner v3. Audite /blog-pieces-auto : intent coverage,
   anti-cannibalisation, content gaps. Rapport MD + JSON inline.
-model: sonnet
+model: inherit
 tools:
   - mcp__supabase__execute_sql
   - Read
   - Glob
   - Grep
+  - REPL
 role: FOUNDATION
 ---
 
