@@ -1,0 +1,64 @@
+name: 🔎 R4 servi — contrôle en lecture
+
+# Lit les pages R4 servies par PREPROD ou PROD et compare leur posture aux
+# drapeaux SEO_R4_CONSOLIDATION_ENABLED et SEO_R4_NOINDEX_ENABLED lus dans le
+# conteneur (mandat FD ; contrôles d'ER et d'EW). Lecture seule : requêtes GET
+# à l'origine de l'application, dans son conteneur, une à la fois avec une
+# pause (250 ms en preprod, 500 ms en prod, plafond de 450 requêtes) ; aucune
+# écriture, aucune régénération de sitemap, aucun secret. Seules les deux
+# lignes des drapeaux sortent de docker inspect. Lancement manuel uniquement.
+# Sort en échec si la posture servie ne correspond pas aux drapeaux lus.
+
+on:
+  workflow_dispatch:
+    inputs:
+      cible:
+        description: "Cible lue : preprod (défaut) ou prod"
+        required: true
+        default: preprod
+        type: choice
+        options:
+          - preprod
+          - prod
+
+permissions:
+  contents: read
+
+concurrency:
+  group: r4-served-checks
+  cancel-in-progress: false
+
+jobs:
+  r4-served-checks:
+    name: 🔎 R4 servi (${{ inputs.cible }})
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: 🧪 Tests du contrôle (serveur de simulation local)
+        run: node --test scripts/ci/r4-served-checks.test.mjs
+
+      - name: 🔎 Posture servie contre drapeaux lus
+        env:
+          CIBLE: ${{ inputs.cible }}
+        run: |
+          node scripts/ci/r4-served-checks.mjs \
+            --target "$CIBLE" \
+            --summary "$GITHUB_STEP_SUMMARY" \
+            --csv "$RUNNER_TEMP/r4-served-checks-$CIBLE.csv" \
+            --fetch-served-revision
+
+      - name: 📎 Détail par URL (CSV)
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: r4-served-checks-${{ inputs.cible }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/r4-served-checks-${{ inputs.cible }}.csv
+          if-no-files-found: warn
+          retention-days: 14

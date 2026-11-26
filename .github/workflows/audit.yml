@@ -157,6 +157,13 @@ jobs:
         # prevents its return. This runs the proof of the verdicts that workflow acts on.
         run: node --test scripts/ci/incident-issue-gate.test.mjs
 
+      - name: 🔎 R4 served-posture check — verdicts vs a local mock site (BLOCKING)
+        # r4-served-checks.mjs runs ONLY on demand (r4-served-checks.yml, workflow_dispatch
+        # on the PROD host), so a broken verdict would surface on the day it is needed.
+        # This drives it against a local mock site and a stubbed docker: each posture of
+        # the 43 redirects and the 62 noindex pages, and exit 1 on a mismatch.
+        run: node --test scripts/ci/r4-served-checks.test.mjs
+
       - name: 📦 Initial-load size verifier — fails on the states it exists to catch (BLOCKING)
         # The npm script existed; no workflow called it.
         run: npm run size:verify-paths:test
