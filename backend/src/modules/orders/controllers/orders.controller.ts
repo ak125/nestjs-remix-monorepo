@@ -48,6 +48,7 @@ import {
 } from '@nestjs/swagger';
 import { AuthenticatedGuard } from '@auth/authenticated.guard';
 import { IsAdminGuard } from '@auth/is-admin.guard';
+import { isValidEmail } from '@common/utils/email-validation.util';
 import { OptionalAuthGuard } from '../../../auth/guards/optional-auth.guard';
 import { AuthService } from '../../../auth/auth.service';
 import { MailService } from '../../../services/mail.service';
@@ -534,7 +535,7 @@ export class OrdersController {
           ? rawGuestEmail.trim().toLowerCase()
           : '';
 
-      if (!guestEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail)) {
+      if (!isValidEmail(guestEmail)) {
         throw new BadRequestException('Adresse email invalide');
       }
 

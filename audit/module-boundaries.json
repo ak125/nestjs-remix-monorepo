@@ -171,8 +171,8 @@
         "backend/src/common/schemas",
         "backend/src/common/utils"
       ],
-      "files_count": 43,
-      "loc_total": 1931,
+      "files_count": 45,
+      "loc_total": 2044,
       "has_barrel": true
     },
     "config": {
@@ -504,7 +504,7 @@
         "backend/src/modules/orders/types"
       ],
       "files_count": 30,
-      "loc_total": 8842,
+      "loc_total": 8843,
       "has_barrel": true
     },
     "payments": {
@@ -903,8 +903,8 @@
         "backend/src/modules/support/services/__tests__",
         "backend/src/modules/support/types"
       ],
-      "files_count": 32,
-      "loc_total": 10487,
+      "files_count": 34,
+      "loc_total": 10685,
       "has_barrel": true
     },
     "system": {
@@ -971,7 +971,7 @@
         "tests/registry"
       ],
       "files_count": 444,
-      "loc_total": 88489,
+      "loc_total": 88513,
       "has_barrel": true
     },
     "upload": {
