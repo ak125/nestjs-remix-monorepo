@@ -2,8 +2,14 @@
  * GAMME V-LEVEL SERVICE v5.0
  *
  * Recalculates V-Level classification for a gamme.
- * Rules: see .spec/features/g-v-classification.md
  *
+ * Règle remplacée par la décision 192 — calculateur non raccordé.
+ * La définition en vigueur des V1 à V6 est dans .spec/features/g-v-classification.md.
+ * Ce service applique encore l'ancienne règle ci-dessous, faute des données d'entrée
+ * de la décision 192 : écart « d192-calculateur-recalcul-admin » de V_LEVEL_KNOWN_GAPS
+ * (@repo/seo-roles).
+ *
+ * Ancienne règle appliquée ici :
  * V3 = champion per [model+energy] group (highest volume, or first if all zero)
  * V4 = rest of CSV keywords in same group
  * V2 = top 10 V3 promoted by volume (dedup by [model+energy])

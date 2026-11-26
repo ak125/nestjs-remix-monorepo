@@ -1,6 +1,13 @@
 /**
  * Insert/Update keywords from Google Ads CSV into __seo_keywords
- * V-Level v5.0 Algorithm:
+ *
+ * Règle remplacée par la décision 192 — calculateur non raccordé.
+ * La définition en vigueur des V1 à V6 est dans .spec/features/g-v-classification.md.
+ * Ce script applique encore l'ancienne règle ci-dessous, faute des données d'entrée
+ * de la décision 192 : écart « d192-calculateur-import-csv » de V_LEVEL_KNOWN_GAPS
+ * (@repo/seo-roles).
+ *
+ * Ancienne règle appliquée ici — V-Level v5.0 Algorithm:
  *
  *   V1 = top V2 inter-gammes (calculated after multiple gammes)
  *   V2 = top 10 V3 de la gamme (promoted from V3), dedup par [model+energy]
