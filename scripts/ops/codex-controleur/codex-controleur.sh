@@ -51,7 +51,9 @@ BRANCHE="${CODEX_CONTROLEUR_BRANCHE:-main}"
 JOB="codex-controleur"
 # Fichiers générés retirés du diff joint (Codex peut toujours les lire dans le worktree).
 EXCLUS=(':(exclude)package-lock.json' ':(exclude)**/package-lock.json' ':(exclude)audit/registry/**'
-        ':(exclude).claude/knowledge/REPO_MAP.md' ':(exclude)audit/dependencies/**')
+        ':(exclude).claude/knowledge/REPO_MAP.md' ':(exclude)audit/dependencies/**'
+        ':(exclude)audit/cleanup/pr-8-controlled-cleanup-candidates.json'
+        ':(exclude)audit/cleanup/pr-8-deletion-proof.md' ':(exclude)audit/module-boundaries.json')
 # Codes d'erreur de Codex qui signalent la fin du quota ou une limite de débit (relevés dans le
 # binaire 0.170.0) : arrêt propre, reprise au passage suivant.
 QUOTA_RE='usage_limit_(reached|exceeded)|usage limit|quota_exceeded|quota exceeded|credits_depleted|rate_limit_exceeded|spend_limit_exceeded'
@@ -326,7 +328,7 @@ case "$CMD" in
         arret="diff vide pour #$n contre le premier parent (fichiers générés retirés) ; PR laissée en attente, la retirer par « ignorer --pr $n --motif … » si voulu"
         break
       fi
-      note="Diff du commit de fusion contre son premier parent joint en entrée standard (fichiers générés retirés : package-lock.json, audit/registry, audit/dependencies, REPO_MAP.md)."
+      note="Diff du commit de fusion contre son premier parent joint en entrée standard (fichiers générés retirés : package-lock.json, audit/registry, audit/dependencies, REPO_MAP.md, audit/cleanup/pr-8-controlled-cleanup-candidates.json, audit/cleanup/pr-8-deletion-proof.md, audit/module-boundaries.json)."
       if [[ "$(stat -c %s "$d/diff.tmp")" -gt "$DIFF_MAX" ]]; then
         git -C "$WT" diff --stat "$parent" "$sha" -- . "${EXCLUS[@]}" > "$d/diff.tmp"
         note="Diff trop long : seule la liste des fichiers est jointe ; lis les fichiers modifiés et \`git diff $parent $sha\` dans le worktree."

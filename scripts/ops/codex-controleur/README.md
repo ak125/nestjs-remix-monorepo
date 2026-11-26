@@ -29,7 +29,10 @@ partagé `/opt/automecanik/app` (décision de Marwane du 2026-11-19).
    `origin/main`, sous le dossier d'état ; il est retiré à la sortie, quelle qu'elle soit.
 4. Pour chaque PR, dans l'ordre : diff du commit de fusion contre son premier parent
    (`git diff <sha>^1 <sha>`, `--stat` compris : une fusion à deux parents est jugée sur ce
-   qu'elle apporte à `main` ; fichiers générés retirés ; au-delà de 400 000 octets, la seule
+   qu'elle apporte à `main` ; fichiers générés retirés : `package-lock.json`, `audit/registry/`,
+   `audit/dependencies/`, `.claude/knowledge/REPO_MAP.md`,
+   `audit/cleanup/pr-8-controlled-cleanup-candidates.json`, `audit/cleanup/pr-8-deletion-proof.md`
+   et `audit/module-boundaries.json` ; au-delà de 400 000 octets, la seule
    liste des fichiers), puis un passage `codex exec` en lecture seule. Un diff vide (seuls des
    fichiers générés) est un échec (code 1) : la PR reste en attente. Une PR n'est marquée relue
    que si la sortie est présente et conforme au schéma.
@@ -137,7 +140,9 @@ EF) et applique le filtre `merged:>=` de la recherche. Mandat FG : fusion à deu
 contre le premier parent, `--stat` compris), diff vide refusé (PR en attente), `ignorer` d'une
 PR plus récente sans perte de la plus ancienne, worktree lié refusé, clone indépendant accepté,
 dossier d'état dans le checkout protégé refusé (chemin exact, sous-dossier, lien symbolique ;
-droits préservés). Résultat au 2026-11-26 : 127 contrôles, 0 en échec.
+droits préservés). Complément 1 : projections `audit/cleanup/pr-8-*` et
+`audit/module-boundaries.json` retirées du diff, un diff ordinaire passe sous la limite malgré une
+projection plus grosse qu'elle. Résultat au 2026-11-26 : 135 contrôles, 0 en échec.
 
 ## Installer et activer
 

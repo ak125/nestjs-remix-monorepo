@@ -325,5 +325,30 @@ check "état par lien, rien créé" "$([[ -e "$FIX/partage/etat" ]] && echo oui 
 check "état par lien, droits préservés" "$(stat -c %a "$FIX/partage")" 755
 FAUX=()
 
+# 19. Projections générées d'audit retirées du diff (complément 1) : un commit qui touche un fichier
+#     ordinaire et une projection plus grosse que DIFF_MAX garde le diff du fichier ordinaire.
+mkdir -p "$FIX/depot/audit/cleanup"
+printf '{"candidats":"%s"}' "$(head -c 6000 /dev/zero | tr '\0' x)" \
+  > "$FIX/depot/audit/cleanup/pr-8-controlled-cleanup-candidates.json"
+echo "# preuve projection 108" > "$FIX/depot/audit/cleanup/pr-8-deletion-proof.md"
+echo '{"frontieres":"projection 108"}' > "$FIX/depot/audit/module-boundaries.json"
+echo "pr 108" >> "$FIX/depot/a.txt"; git -C "$FIX/depot" add -A; git -C "$FIX/depot" commit -qm "feat: PR 108"
+SHA[108]="$(git -C "$FIX/depot" rev-parse HEAD)"
+git -C "$FIX/depot" push -q origin main 2> /dev/null
+check "projection plus grosse que DIFF_MAX (fixture)" \
+  "$([[ "$(stat -c %s "$FIX/depot/audit/cleanup/pr-8-controlled-cleanup-candidates.json")" -gt 4000 ]] && echo oui || echo non)" oui
+jq -n --arg a "${SHA[108]}" '[{number:108, title:"PR 108", mergedAt:"2026-11-19T14:00:00Z", mergeCommit:{oid:$a}}]' > "$FIX/prs.json"
+E11="$FIX/e11"; lance "$E11" init --depuis 2026-11-19T14:00:00Z > /dev/null; : > "$FIX/codex.log"
+FAUX=(CODEX_CONTROLEUR_DIFF_MAX=4000)
+check "projections retirées, passage" "$(lance "$E11" quotidien)" 0
+FAUX=()
+J11="$E11/bruts/$(date -u +%Y-%m-%d)/pr108/entree.diff"
+contient "projections retirées, patch ordinaire" "$J11" "+pr 108"
+contient "projections retirées, en-tête du patch" "$J11" "diff --git a/a.txt b/a.txt"
+absent "projections retirées, candidats" "$J11" "pr-8-controlled-cleanup-candidates.json"
+absent "projections retirées, preuve" "$J11" "pr-8-deletion-proof.md"
+absent "projections retirées, frontières" "$J11" "module-boundaries.json"
+check "projections retirées, curseur" "$(faites "$E11")" "[108]"
+
 echo "codex-controleur : $ok vérifications réussies, $ko en échec"
 [[ "$ko" -eq 0 ]]
