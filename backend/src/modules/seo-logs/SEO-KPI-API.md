@@ -53,7 +53,7 @@ curl http://localhost:3001/seo-logs/kpi/crawl-rate?timeWindow=72h
   "data": {
     "timeWindow": "72h",
     "sitemap": {
-      "url": "https://automecanik.fr/sitemap.xml",
+      "url": "https://www.automecanik.com/sitemap.xml",
       "totalUrls": 5420
     },
     "crawl": {
@@ -207,7 +207,7 @@ curl http://localhost:3001/seo-logs/kpi/most-crawled-urls?timeWindow=24h&limit=1
 LOKI_URL=http://loki:3100
 
 # URL du sitemap (requis pour crawl-rate)
-SITEMAP_URL=https://automecanik.fr/sitemap.xml
+SITEMAP_URL=https://www.automecanik.com/sitemap.xml
 ```
 
 ### Dépendances
@@ -296,7 +296,7 @@ par une redirection (elle n'est pas suivie : renseigner l'URL finale)
 **Solution:**
 ```bash
 # Vérifier le sitemap
-curl -I https://automecanik.fr/sitemap.xml
+curl -I https://www.automecanik.com/sitemap.xml
 
 # Override temporaire
 export SITEMAP_URL=https://example.com/sitemap.xml
