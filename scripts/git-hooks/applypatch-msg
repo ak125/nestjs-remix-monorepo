@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+# Lanceur du hook git de même nom : voir scripts/git-hooks/run.sh.
+exec sh "$(dirname "$0")/run.sh" "$(basename "$0")" "$@"
