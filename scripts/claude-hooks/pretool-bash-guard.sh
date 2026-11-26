@@ -126,7 +126,8 @@ fi
 # owner's login, so the command would run with the owner's rights. Covers:
 # - gh pr merge in every form (--auto, --squash, --merge, --rebase, --admin, no option);
 #   gh api writes to .../pulls/<n>/merge; graphql mergePullRequest,
-#   enablePullRequestAutoMerge, enqueuePullRequest;
+#   enablePullRequestAutoMerge, enqueuePullRequest (query in a field, a here-document or
+#   a pipe);
 # - gh pr review --approve / -a; gh api writes to .../pulls/<n>/reviews with event=APPROVE
 #   (field, here-document or pipe); graphql add/submitPullRequestReview with APPROVE.
 # Allowed: reads (gh pr view|list|checks|diff|status, GET on the same endpoints), comments
@@ -134,8 +135,9 @@ fi
 # a branch push, and disarming (gh pr merge --disable-auto, disablePullRequestAutoMerge).
 # It cannot see: a command built indirectly (variable, script file, gh alias or extension),
 # a body or a query read from a file (--input f.json, -F query=@f.graphql), another HTTP
-# client (curl), the branch merge API (POST .../merges, mergeBranch). A message that only
-# quotes such a command (commit, PR body) is read as the command: write it to a file.
+# client (curl), the branch merge API (POST .../merges, mergeBranch), a word whose letters
+# are split by quotes or escapes (mer''ge, as ta''g above). A message that only quotes
+# such a command (commit, PR body) is read as the command: write it to a file.
 # Fail closed: no python3, a non-zero exit, or a command it cannot read = block.
 if { grep -qE '\b(git|gh)\b' <<<"$COMMAND" \
      && grep -qE '\b(tag|push|release|api|workflow)\b' <<<"$COMMAND"; } \

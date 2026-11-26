@@ -19,7 +19,8 @@ a pipe can hand any of them to a shell. When such a word cannot be read, the com
 complete before the error are still analysed, as bash would run them. A command built from variables or a script file stays
 out of reach. So do, for merge and approve: a gh alias or extension, a request body or a
 GraphQL query read from a file (--input f.json, -F query=@f.graphql), another HTTP client
-(curl), and the branch merge API (POST .../merges, mergeBranch).
+(curl), the branch merge API (POST .../merges, mergeBranch), and a word whose letters are
+split by quotes or escapes (mer''ge): the text filter then no longer sees it.
 """
 import re
 import sys
@@ -30,6 +31,7 @@ PROD = r"(release|deploy)[- ]prod|417610500|224452325"
 PREFILTER = ((re.compile(r"\b(git|gh)\b"), re.compile(r"\b(tag|push|release|api|workflow)\b")),
              (re.compile(r"\bgh\b"), re.compile(r"\b(merge|review)\b")))
 REVIEW = "review?"  # internal: a review written without a readable event, settled in analyse
+GRAPHQL = "graphql?"  # internal: a graphql call, its query may be outside its words, same
 
 
 class Unparsable(ValueError):
@@ -276,19 +278,19 @@ def gh_api(a):
     graphql = any(re.search(r"(^|/)graphql/?$", t) for t in a)
     if write and any(re.search(r"pulls/[^/]+/merge\b", t) for t in a):
         found.add("merge")
-    if graphql and any(re.search(r"\b(mergePullRequest|enablePullRequestAutoMerge|enqueuePullRequest)\b", t)
-                       for t in a):
-        found.add("merge")
+    if graphql:
+        # The query may be a field, a here-document or a pipe (--input -): its mutations
+        # are looked for in the whole text by analyse.
+        found.add(GRAPHQL)
     if write and any(re.search(r"pulls/[^/]+/reviews\b", t) for t in a):
-        # event=... given as a field decides; without it the event is in a body this
-        # command does not show (--input), looked for in the whole text by analyse.
+        # event=... given as a field decides; without it, or with --input (the body then
+        # comes from the input, not from the fields), the event is looked for in the
+        # whole text by analyse.
         events = [m.group(1) for t in a for m in [re.search(r"(?:^|=|^-[fF])event=(.*)", t)] if m]
-        if not events:
+        if not events or any(re.match(r"--input(=|$)", t) for t in a):
             found.add(REVIEW)
         elif any(e.upper() == "APPROVE" for e in events):
             found.add("approve")
-    if graphql and any(re.search(r"\b(add|submit)PullRequestReview\b", t) for t in a):
-        found.add(REVIEW)
     return found
 
 
@@ -386,11 +388,18 @@ def analyse(s, depth=0):
         for w in nested:
             if w != s:
                 found |= analyse(w, depth + 1)
-    if depth == 0 and REVIEW in found:
-        # The event may come from anywhere in the command (here-document, pipe, query).
-        found.discard(REVIEW)
-        if re.search(r"\bAPPROVE\b", s) or re.search(r"event\W{1,6}approve\b", s, re.I):
+    if depth == 0:
+        # A query or an event may come from anywhere in the command (field, here-document,
+        # pipe): the whole text is searched.
+        if GRAPHQL in found:
+            if re.search(r"\b(mergePullRequest|enablePullRequestAutoMerge|enqueuePullRequest)\b", s):
+                found.add("merge")
+            if re.search(r"\b(add|submit)PullRequestReview\b", s):
+                found.add(REVIEW)
+        if REVIEW in found and (re.search(r"\bAPPROVE\b", s)
+                                or re.search(r"event\W{1,6}approve\b", s, re.I)):
             found.add("approve")
+        found -= {GRAPHQL, REVIEW}
     return found
 
 
