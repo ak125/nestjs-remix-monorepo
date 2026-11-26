@@ -1,6 +1,6 @@
 {
   "compliantCount": 18,
-  "generatedAt": "2026-11-17T17:34:10.462Z",
+  "generatedAt": "2026-11-26T20:44:51.327Z",
   "issues": [],
   "schemaPath": ".spec/00-canon/ai-registry/skill.schema.json",
   "schemaVersion": "1.0.0",
@@ -317,7 +317,7 @@
       "type": "technique"
     },
     {
-      "checksum": "sha256:da80af6880c05d59e652d8e55904cf9e04a39986d59b0b75df3edf1a036848fb",
+      "checksum": "sha256:8e4b05addfd209c65e449e830677bf10cdf68cd31792d133e2027d4c2d935418",
       "domain": "D15",
       "last_verified": "2026-05-18",
       "llm_safe": true,
@@ -332,7 +332,7 @@
       "path": ".claude/skills/session-log/SKILL.md",
       "runtime_class": "mutating",
       "spec_compliant": true,
-      "status": "stable",
+      "status": "deprecated",
       "tags": [
         "audit-trail",
         "logging",

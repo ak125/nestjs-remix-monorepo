@@ -2,7 +2,7 @@
 name: session-log
 description: Use when the current Claude Code session has produced commits or PRs and needs to be appended as a 3-4 line curated entry in log.md at the monorepo root. Format strict, no secrets, append-only. Triggers — "log session", "/log-session", "record this work", or auto-suggested by Stop hook when git activity is detected.
 type: technique
-status: stable
+status: deprecated
 owners: ['@ak125']
 domain: D15
 runtime_class: mutating
@@ -15,6 +15,8 @@ metadata:
   version: "1.1"
   spec: agentskills.io/specification v1
 ---
+
+Déprécié : log.md est figé depuis le 2026-10-26 (CLAUDE.md, Reprise) ; ne plus y ajouter d'entrée.
 
 # session-log
 
