@@ -1091,6 +1091,7 @@ assert_exit "bash-guard: gh api --method=PUT pulls/<n>/merge → BLOCK" "2" "$(r
 assert_exit "bash-guard: gh api graphql mergePullRequest → BLOCK"  "2" "$(run_bash_guard_cmd 'gh api graphql -f query="mutation{mergePullRequest(input:{pullRequestId:\"x\"}){clientMutationId}}"')"
 assert_exit "bash-guard: gh api graphql enablePullRequestAutoMerge → BLOCK" "2" "$(run_bash_guard_cmd 'gh api graphql -f query="mutation{enablePullRequestAutoMerge(input:{pullRequestId:\"x\"}){clientMutationId}}"')"
 assert_exit "bash-guard: gh api graphql enqueuePullRequest → BLOCK" "2" "$(run_bash_guard_cmd 'gh api graphql -f query="mutation{enqueuePullRequest(input:{pullRequestId:\"x\"}){clientMutationId}}"')"
+assert_exit "bash-guard: gh api graphql, mergePullRequest coupé par des guillemets → BLOCK" "2" "$(run_bash_guard_cmd 'gh api graphql -f query="mutation{merge""PullRequest(input:{pullRequestId:\"x\"}){clientMutationId}}"')"
 assert_exit "bash-guard: gh api graphql, mergePullRequest en here-document → BLOCK" "2" "$(run_bash_guard_cmd $'gh api graphql --input - <<\'EOF\'\n{"query":"mutation{mergePullRequest(input:{pullRequestId:\\"x\\"}){clientMutationId}}"}\nEOF')"
 assert_exit "bash-guard: gh api graphql, enablePullRequestAutoMerge par un pipe → BLOCK" "2" "$(run_bash_guard_cmd 'jq -n "{query:\"mutation{enablePullRequestAutoMerge(input:{pullRequestId:\\\"x\\\"}){clientMutationId}}\"}" | gh api graphql --input -')"
 # BLOCK : approbation
@@ -1105,6 +1106,7 @@ assert_exit "bash-guard: gh api reviews, APPROVE en here-document → BLOCK" "2"
 assert_exit "bash-guard: gh api reviews, APPROVE par un pipe → BLOCK" "2" "$(run_bash_guard_cmd 'jq -n "{event:\"APPROVE\"}" | gh api repos/o/r/pulls/12/reviews --input -')"
 assert_exit "bash-guard: gh api graphql addPullRequestReview APPROVE → BLOCK" "2" "$(run_bash_guard_cmd 'gh api graphql -f query="mutation{addPullRequestReview(input:{pullRequestId:\"x\",event:APPROVE}){clientMutationId}}"')"
 assert_exit "bash-guard: gh api graphql submitPullRequestReview APPROVE → BLOCK" "2" "$(run_bash_guard_cmd 'gh api graphql -f query="mutation{submitPullRequestReview(input:{pullRequestReviewId:\"x\",event:APPROVE}){clientMutationId}}"')"
+assert_exit "bash-guard: gh api graphql, addPullRequestReview et APPROVE coupés par des guillemets → BLOCK" "2" "$(run_bash_guard_cmd 'gh api graphql -f query="mutation{addPull""RequestReview(input:{pullRequestId:\"x\",event:APP""ROVE}){clientMutationId}}"')"
 assert_exit "bash-guard: gh api graphql, addPullRequestReview APPROVE en here-document → BLOCK" "2" "$(run_bash_guard_cmd $'gh api graphql --input - <<\'EOF\'\n{"query":"mutation{addPullRequestReview(input:{pullRequestId:\\"x\\",event:APPROVE}){clientMutationId}}"}\nEOF')"
 assert_exit "bash-guard: gh api reviews, champ event=COMMENT mais corps APPROVE par --input → BLOCK" "2" "$(run_bash_guard_cmd $'gh api repos/o/r/pulls/12/reviews -f event=COMMENT --input - <<\'EOF\'\n{"event":"APPROVE"}\nEOF')"
 # BLOCK : commande illisible (échec fermé)

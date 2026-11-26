@@ -280,7 +280,7 @@ def gh_api(a):
         found.add("merge")
     if graphql:
         # The query may be a field, a here-document or a pipe (--input -): its mutations
-        # are looked for in the whole text by analyse.
+        # are looked for in the whole text and in its words by analyse.
         found.add(GRAPHQL)
     if write and any(re.search(r"pulls/[^/]+/reviews\b", t) for t in a):
         # event=... given as a field decides; without it, or with --input (the body then
@@ -390,14 +390,15 @@ def analyse(s, depth=0):
                 found |= analyse(w, depth + 1)
     if depth == 0:
         # A query or an event may come from anywhere in the command (field, here-document,
-        # pipe): the whole text is searched.
+        # pipe): the whole text is searched, as written and as the words bash reads.
+        text = "\n".join([s] + nested)
         if GRAPHQL in found:
-            if re.search(r"\b(mergePullRequest|enablePullRequestAutoMerge|enqueuePullRequest)\b", s):
+            if re.search(r"\b(mergePullRequest|enablePullRequestAutoMerge|enqueuePullRequest)\b", text):
                 found.add("merge")
-            if re.search(r"\b(add|submit)PullRequestReview\b", s):
+            if re.search(r"\b(add|submit)PullRequestReview\b", text):
                 found.add(REVIEW)
-        if REVIEW in found and (re.search(r"\bAPPROVE\b", s)
-                                or re.search(r"event\W{1,6}approve\b", s, re.I)):
+        if REVIEW in found and (re.search(r"\bAPPROVE\b", text)
+                                or re.search(r"event\W{1,6}approve\b", text, re.I)):
             found.add("approve")
         found -= {GRAPHQL, REVIEW}
     return found
