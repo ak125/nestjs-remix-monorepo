@@ -1063,6 +1063,86 @@ assert_exit "bash-guard: here-document passé à bash → BLOCK"       "2" "$(ru
 assert_exit "bash-guard: here-document passé à bash par un pipe → BLOCK" "2" "$(run_bash_guard_cmd $'cat <<EOF | bash\ngit tag vfoo\nEOF')"
 assert_exit "bash-guard: here-document de message puis push → allow" "0" "$(run_bash_guard_cmd $'cat <<EOF > m.txt\nle tag de release reste a l\'owner\nEOF\ngit push -u origin fix/x')"
 assert_exit "bash-guard: message avec apostrophe et gh api → allow" "0" "$(run_bash_guard_cmd 'git commit -m "l'"'"'owner relit gh api"')"
+# Fusion, armement de la fusion et approbation d'une PR par une session (mandat EZ) :
+# même analyseur que le Guard 6, verdicts « merge » et « approve ».
+run_bash_guard_err() {
+  jq -nc --arg c "$1" '{tool_name:"Bash",tool_input:{command:$c}}' \
+    | bash scripts/claude-hooks/pretool-bash-guard.sh 2>&1 >/dev/null
+}
+# BLOCK : gh pr merge sous toutes ses formes
+assert_exit "bash-guard: gh pr merge <n> → BLOCK"                  "2" "$(run_bash_guard_cmd 'gh pr merge 12')"
+assert_exit "bash-guard: gh pr merge --squash → BLOCK"             "2" "$(run_bash_guard_cmd 'gh pr merge 12 --squash')"
+assert_exit "bash-guard: gh pr merge --merge → BLOCK"              "2" "$(run_bash_guard_cmd 'gh pr merge 12 --merge')"
+assert_exit "bash-guard: gh pr merge --rebase → BLOCK"             "2" "$(run_bash_guard_cmd 'gh pr merge 12 --rebase')"
+assert_exit "bash-guard: gh pr merge --admin → BLOCK"              "2" "$(run_bash_guard_cmd 'gh pr merge 12 --admin --squash')"
+assert_exit "bash-guard: gh pr merge --auto → BLOCK"               "2" "$(run_bash_guard_cmd 'gh pr merge 12 --auto --squash')"
+assert_exit "bash-guard: gh pr merge -R o/r --auto → BLOCK"        "2" "$(run_bash_guard_cmd 'gh pr merge -R o/r 12 --auto')"
+assert_exit "bash-guard: gh pr merge sans numéro → BLOCK"          "2" "$(run_bash_guard_cmd 'gh pr merge --squash --delete-branch')"
+assert_exit "bash-guard: gh pr -R o/r merge → BLOCK"               "2" "$(run_bash_guard_cmd 'gh pr -R o/r merge 12')"
+assert_exit "bash-guard: --disable-auto en valeur de --body → BLOCK" "2" "$(run_bash_guard_cmd 'gh pr merge 12 --body "--disable-auto"')"
+assert_exit "bash-guard: --disable-auto avec --auto → BLOCK"       "2" "$(run_bash_guard_cmd 'gh pr merge 12 --disable-auto --auto')"
+assert_exit "bash-guard: push puis gh pr merge --auto → BLOCK"     "2" "$(run_bash_guard_cmd $'git push -u origin fix/x\ngh pr merge 12 --auto --squash')"
+assert_exit "bash-guard: bash -c 'gh pr merge' → BLOCK"            "2" "$(run_bash_guard_cmd "bash -c 'gh pr merge 12 --auto'")"
+assert_exit "bash-guard: \"\$(gh pr merge)\" → BLOCK"              "2" "$(run_bash_guard_cmd 'echo "$(gh pr merge 12 --squash)"')"
+assert_exit "bash-guard: GH_TOKEN=x gh pr merge → BLOCK"           "2" "$(run_bash_guard_cmd 'GH_TOKEN=x gh pr merge 12')"
+# BLOCK : écritures équivalentes par gh api (REST et GraphQL)
+assert_exit "bash-guard: gh api -X PUT pulls/<n>/merge → BLOCK"    "2" "$(run_bash_guard_cmd 'gh api -X PUT repos/o/r/pulls/12/merge')"
+assert_exit "bash-guard: gh api --method=PUT pulls/<n>/merge → BLOCK" "2" "$(run_bash_guard_cmd 'gh api --method=PUT repos/o/r/pulls/12/merge -f merge_method=squash')"
+assert_exit "bash-guard: gh api graphql mergePullRequest → BLOCK"  "2" "$(run_bash_guard_cmd 'gh api graphql -f query="mutation{mergePullRequest(input:{pullRequestId:\"x\"}){clientMutationId}}"')"
+assert_exit "bash-guard: gh api graphql enablePullRequestAutoMerge → BLOCK" "2" "$(run_bash_guard_cmd 'gh api graphql -f query="mutation{enablePullRequestAutoMerge(input:{pullRequestId:\"x\"}){clientMutationId}}"')"
+assert_exit "bash-guard: gh api graphql enqueuePullRequest → BLOCK" "2" "$(run_bash_guard_cmd 'gh api graphql -f query="mutation{enqueuePullRequest(input:{pullRequestId:\"x\"}){clientMutationId}}"')"
+# BLOCK : approbation
+assert_exit "bash-guard: gh pr review --approve → BLOCK"           "2" "$(run_bash_guard_cmd 'gh pr review 12 --approve')"
+assert_exit "bash-guard: gh pr review -a → BLOCK"                  "2" "$(run_bash_guard_cmd 'gh pr review 12 -a')"
+assert_exit "bash-guard: gh pr review -ab (groupé) → BLOCK"        "2" "$(run_bash_guard_cmd 'gh pr review 12 -ab "ok"')"
+assert_exit "bash-guard: gh pr review -R o/r --approve → BLOCK"    "2" "$(run_bash_guard_cmd 'gh pr review -R o/r 12 --approve --body "ok"')"
+assert_exit "bash-guard: gh api reviews -f event=APPROVE → BLOCK"  "2" "$(run_bash_guard_cmd 'gh api repos/o/r/pulls/12/reviews -f event=APPROVE')"
+assert_exit "bash-guard: gh api reviews -fevent=APPROVE attaché → BLOCK" "2" "$(run_bash_guard_cmd 'gh api -XPOST repos/o/r/pulls/12/reviews -fevent=APPROVE')"
+assert_exit "bash-guard: gh api reviews/<id>/events APPROVE → BLOCK" "2" "$(run_bash_guard_cmd 'gh api -X POST repos/o/r/pulls/12/reviews/99/events -f event=APPROVE')"
+assert_exit "bash-guard: gh api reviews, APPROVE en here-document → BLOCK" "2" "$(run_bash_guard_cmd $'gh api repos/o/r/pulls/12/reviews --input - <<\'EOF\'\n{"event":"APPROVE"}\nEOF')"
+assert_exit "bash-guard: gh api reviews, APPROVE par un pipe → BLOCK" "2" "$(run_bash_guard_cmd 'jq -n "{event:\"APPROVE\"}" | gh api repos/o/r/pulls/12/reviews --input -')"
+assert_exit "bash-guard: gh api graphql addPullRequestReview APPROVE → BLOCK" "2" "$(run_bash_guard_cmd 'gh api graphql -f query="mutation{addPullRequestReview(input:{pullRequestId:\"x\",event:APPROVE}){clientMutationId}}"')"
+assert_exit "bash-guard: gh api graphql submitPullRequestReview APPROVE → BLOCK" "2" "$(run_bash_guard_cmd 'gh api graphql -f query="mutation{submitPullRequestReview(input:{pullRequestReviewId:\"x\",event:APPROVE}){clientMutationId}}"')"
+# BLOCK : commande illisible (échec fermé)
+assert_exit "bash-guard: gh pr merge, guillemet non fermé → BLOCK" "2" "$(run_bash_guard_cmd 'gh pr merge "12')"
+assert_exit "bash-guard: gh pr review, guillemet non fermé → BLOCK" "2" "$(run_bash_guard_cmd 'gh pr review 12 --comment --body "x')"
+# Motifs de refus
+assert_contains "bash-guard: motif du refus de fusion"       "BLOCKED: fusion d'une PR ou armement de sa fusion" "$(run_bash_guard_err 'gh pr merge 12 --auto --squash')"
+assert_contains "bash-guard: motif du refus d'approbation"   "BLOCKED: approbation d'une PR"                     "$(run_bash_guard_err 'gh pr review 12 --approve')"
+assert_contains "bash-guard: motif d'une commande illisible" "BLOCKED: commande illisible"                       "$(run_bash_guard_err 'gh pr merge "12')"
+# ALLOW : lectures
+assert_exit "bash-guard: gh pr view → allow"                       "0" "$(run_bash_guard_cmd 'gh pr view 12 --json mergeable,reviewDecision')"
+assert_exit "bash-guard: gh pr list --search review → allow"       "0" "$(run_bash_guard_cmd 'gh pr list --search "review:approved"')"
+assert_exit "bash-guard: gh pr checks → allow"                     "0" "$(run_bash_guard_cmd 'gh pr checks 12')"
+assert_exit "bash-guard: gh pr diff → allow"                       "0" "$(run_bash_guard_cmd 'gh pr diff 12')"
+assert_exit "bash-guard: gh pr merge --help → allow"               "0" "$(run_bash_guard_cmd 'gh pr merge --help')"
+assert_exit "bash-guard: gh api lecture pulls/<n>/merge → allow"   "0" "$(run_bash_guard_cmd 'gh api repos/o/r/pulls/12/merge')"
+assert_exit "bash-guard: gh api lecture pulls/<n>/reviews → allow" "0" "$(run_bash_guard_cmd 'gh api repos/o/r/pulls/12/reviews --jq ".[] | select(.state==\"APPROVED\") | .commit_id"')"
+assert_exit "bash-guard: gh api graphql lecture des revues → allow" "0" "$(run_bash_guard_cmd 'gh api graphql -f query="query{repository(owner:\"o\",name:\"r\"){pullRequest(number:12){reviews(first:5){nodes{state}}}}}"')"
+# ALLOW : commentaires, revues non approuvantes
+assert_exit "bash-guard: gh pr comment → allow"                    "0" "$(run_bash_guard_cmd 'gh pr comment 12 --body "review faite, le merge reste a l owner"')"
+assert_exit "bash-guard: gh pr review --comment → allow"           "0" "$(run_bash_guard_cmd 'gh pr review 12 --comment --body "trois remarques"')"
+assert_exit "bash-guard: gh pr review --request-changes → allow"   "0" "$(run_bash_guard_cmd 'gh pr review 12 --request-changes -b "a corriger"')"
+assert_exit "bash-guard: -a en valeur de --body → allow"           "0" "$(run_bash_guard_cmd 'gh pr review 12 --comment --body "-a"')"
+assert_exit "bash-guard: gh api reviews event=COMMENT → allow"     "0" "$(run_bash_guard_cmd 'gh api repos/o/r/pulls/12/reviews -f event=COMMENT -f body="rien a APPROVE ici"')"
+assert_exit "bash-guard: gh api reviews, COMMENT en here-document → allow" "0" "$(run_bash_guard_cmd $'gh api repos/o/r/pulls/12/reviews --input - <<\'EOF\'\n{"event":"COMMENT","body":"x"}\nEOF')"
+assert_exit "bash-guard: gh api commentaire d'issue → allow"       "0" "$(run_bash_guard_cmd 'gh api repos/o/r/issues/12/comments -f body="merge et review a l owner"')"
+# ALLOW : ouverture et mise à jour de PR, push de branche, désarmement
+assert_exit "bash-guard: gh pr create → allow"                     "0" "$(run_bash_guard_cmd 'gh pr create --title "fix: x" --body "review et merge par l owner"')"
+assert_exit "bash-guard: gh pr edit → allow"                       "0" "$(run_bash_guard_cmd 'gh pr edit 12 --title "merge review"')"
+assert_exit "bash-guard: push de branche merge/review → allow"     "0" "$(run_bash_guard_cmd 'git push -u origin fix/gh-merge-review')"
+assert_exit "bash-guard: push puis gh pr create → allow"           "0" "$(run_bash_guard_cmd 'git push -u origin fix/x && gh pr create --fill')"
+assert_exit "bash-guard: gh pr merge --disable-auto → allow"       "0" "$(run_bash_guard_cmd 'gh pr merge 12 --disable-auto')"
+assert_exit "bash-guard: gh pr merge -R o/r --disable-auto → allow" "0" "$(run_bash_guard_cmd 'gh pr merge --disable-auto -R o/r 12')"
+assert_exit "bash-guard: gh api graphql disablePullRequestAutoMerge → allow" "0" "$(run_bash_guard_cmd 'gh api graphql -f query="mutation{disablePullRequestAutoMerge(input:{pullRequestId:\"x\"}){clientMutationId}}"')"
+assert_exit "bash-guard: message de commit (gh, review, apostrophe) → allow" "0" "$(run_bash_guard_cmd $'git commit -F - <<\'EOF\'\nla review et le merge restent a l\'owner (gh)\nEOF')"
+# Limite assumée : un texte qui cite la commande est lu comme la commande (comme pour git tag).
+assert_exit "bash-guard: corps qui cite « gh pr merge 12 » → BLOCK" "2" "$(run_bash_guard_cmd 'gh pr comment 12 --body "ne pas lancer gh pr merge 12"')"
+# Analyseur absent → BLOCK aussi pour ces formes, y compris une forme permise
+G6_TMP=$(mktemp -d)
+cp scripts/claude-hooks/pretool-bash-guard.sh "$G6_TMP/"
+assert_exit "bash-guard: analyseur absent, gh pr merge --disable-auto → BLOCK" "2" "$(jq -nc --arg c 'gh pr merge 12 --disable-auto' '{tool_name:"Bash",tool_input:{command:$c}}' | bash "$G6_TMP/pretool-bash-guard.sh" >/dev/null 2>&1; echo $?)"
+rm -rf "$G6_TMP"
 # Analyseur absent ou en erreur → BLOCK (échec fermé, jamais exit 0)
 G6_TMP=$(mktemp -d)
 cp scripts/claude-hooks/pretool-bash-guard.sh "$G6_TMP/"
