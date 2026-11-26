@@ -40,7 +40,7 @@ réel ou un risque documenté.
 ## Périmètre
 
 Ce skill **ne fait que lire**. Il **ne modifie aucun fichier**, **ne crée
-aucune PR**, **n'écrit en DB que via supabase MCP read-only**. Output =
+aucune PR**, **n'écrit pas en DB** (lecture seule via supabase MCP, SELECT seulement). Output =
 rapport markdown structuré listant les findings par check.
 
 ## Architecture atomique (9 checks)
