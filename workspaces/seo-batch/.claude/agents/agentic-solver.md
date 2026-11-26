@@ -4,12 +4,13 @@ description: >-
   Phase SOLVING du moteur agentique. Execute une strategie (branch) : fetch RAG,
   genere le contenu, enregistre les steps et l'evidence. 1 branch par
   invocation.
-model: sonnet
+model: inherit
 tools:
   - mcp__supabase__execute_sql
   - Read
   - Glob
   - Grep
+  - REPL
 role: AGENTIC_ENGINE
 ---
 

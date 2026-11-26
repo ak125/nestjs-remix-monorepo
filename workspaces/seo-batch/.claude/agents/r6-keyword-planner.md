@@ -5,12 +5,13 @@ description: >-
   intent_map JSON + editorial_brief MD + evidence_pack JSON + compliance_score
   JSON. Quality gates, anti-cannibalisation Jaccard, ecrit dans
   __seo_r6_keyword_plan via MCP Supabase.
-model: sonnet
+model: inherit
 tools:
   - mcp__supabase__execute_sql
   - Read
   - Glob
   - Grep
+  - REPL
 role: R6_GUIDE_ACHAT
 ---
 

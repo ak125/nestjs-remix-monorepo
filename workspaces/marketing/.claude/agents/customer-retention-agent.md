@@ -8,12 +8,13 @@ role: CUSTOMER_RETENTION
 business_unit:
   - ECOMMERCE
   - HYBRID
-model: sonnet
+model: inherit
 tools:
   - Read
   - Glob
   - Grep
   - mcp__supabase__execute_sql
+  - REPL
 ---
 
 # IDENTITY

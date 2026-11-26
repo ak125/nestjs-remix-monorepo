@@ -4,12 +4,13 @@ description: >-
   Stage 1 du pipeline SEO v2. Collecte de donnees structurees par gamme : gaps
   contenu, PAA, gammes soeurs, confusion pairs. Ecrit dans __seo_research_brief
   via MCP Supabase.
-model: haiku
+model: inherit
 tools:
   - mcp__supabase__execute_sql
   - Read
   - Glob
   - Grep
+  - REPL
 role: FOUNDATION
 ---
 
