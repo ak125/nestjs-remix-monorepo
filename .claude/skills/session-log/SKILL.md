@@ -1,6 +1,6 @@
 ---
 name: session-log
-description: Use when the current Claude Code session has produced commits or PRs and needs to be appended as a 3-4 line curated entry in log.md at the monorepo root. Format strict, no secrets, append-only. Triggers — "log session", "/log-session", "record this work", or auto-suggested by Stop hook when git activity is detected.
+description: 'Deprecated: log.md is frozen since 2026-10-26; do not use. Use when the current Claude Code session has produced commits or PRs and needs to be appended as a 3-4 line curated entry in log.md at the monorepo root. Format strict, no secrets, append-only. Triggers — "log session", "/log-session", "record this work", or auto-suggested by Stop hook when git activity is detected.'
 type: technique
 status: deprecated
 owners: ['@ak125']

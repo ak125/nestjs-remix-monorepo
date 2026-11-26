@@ -61,43 +61,41 @@ esac
 commits_ahead="$(git log "$MAIN_REF"..HEAD --oneline 2>/dev/null | wc -l | tr -d ' ')"
 [ "${commits_ahead:-0}" -lt 1 ] && exit 0
 
-# Nothing left to push: an entry committed now would reach main only if
-# another push followed. When none does, the PR is merged without it.
+# HEAD already pushed: nothing left to push from this session; the companion
+# is not called.
 REMOTE_BRANCH_REF="refs/remotes/origin/${current_branch}"
 if git rev-parse -q --verify "${REMOTE_BRANCH_REF}^{commit}" >/dev/null \
    && git merge-base --is-ancestor HEAD "$REMOTE_BRANCH_REF" 2>/dev/null; then
-  echo "stop-log: HEAD déjà dans origin/${current_branch} — aucune entrée suggérée après la tête poussée" >&2
+  echo "stop-log: HEAD déjà dans origin/${current_branch} — compagnon non appelé (tête déjà poussée)" >&2
   exit 0
 fi
 
-# The last commit is an entry left by the former auto-commit mode: the
-# work before it is already recorded.
+# Last commit left by the former log.md auto-commit mode: the companion is
+# not called.
 last_subject="$(git log -1 --pretty=%s 2>/dev/null || true)"
 case "$last_subject" in
   "chore(log): auto session entry"*) exit 0 ;;
 esac
 
-# log.md already modified or staged: an entry is in progress.
+# log.md already modified or staged: the companion is not called.
 if ! git diff --quiet -- "$LOG_FILE" || ! git diff --cached --quiet -- "$LOG_FILE"; then
   exit 0
 fi
 
-# A merged or closed PR means the branch is done: an entry committed now
-# would land after the PR head (squash merges leave the branch "ahead").
+# A merged or closed PR means the branch is done (squash merges leave it
+# "ahead" of origin/main): the companion is not called.
 pr_number=""
-pr_part="aucune"
 if command -v gh >/dev/null 2>&1 \
    && pr_state="$(gh pr list --head "$current_branch" --state all --json number,state \
         --jq '([.[] | select(.state == "OPEN")][0].number // "") as $o | "\($o)|\(length)"' 2>/dev/null)"; then
   IFS='|' read -r pr_number pr_total <<< "$pr_state"
   if [ -z "$pr_number" ] && [ "${pr_total:-0}" -gt 0 ]; then
-    echo "stop-log: PR de ${current_branch} fusionnée ou fermée — aucune entrée suggérée après sa tête" >&2
+    echo "stop-log: PR de ${current_branch} fusionnée ou fermée — compagnon non appelé" >&2
     exit 0
   fi
-  [ -n "$pr_number" ] && pr_part="#${pr_number}"
 else
   # Unknown state is not "no PR": the branch may already be merged.
-  echo "stop-log: état de PR inconnu (gh indisponible ou en échec) — aucune entrée suggérée" >&2
+  echo "stop-log: état de PR inconnu (gh indisponible ou en échec) — compagnon non appelé" >&2
   exit 0
 fi
 
