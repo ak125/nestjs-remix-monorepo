@@ -148,7 +148,7 @@ cmd_report() {
   require_env
   [ -n "${GITHUB_RUN_ID:-}" ] || die "GITHUB_RUN_ID manquant"
   [ -n "$out" ] || die "usage : report <résultat.json> <sortie.json>"
-  local now since tmp runs decisive
+  local now since tmp runs
   now=$(date -u +%FT%TZ)
   since=$(date -u -d '24 hours ago' +%FT%TZ)
   tmp=$(mktemp -d)
@@ -157,33 +157,36 @@ cmd_report() {
   # Passages décisifs des 24 h, hors passage courant, du plus récent au plus ancien.
   runs=$(gh run list --repo "$REPO" --workflow "$PROBE_WORKFLOW" --branch "$PROBE_BRANCH" \
       --created ">=$since" --limit 200 --json databaseId,status,conclusion,createdAt)
-  decisive=$(jq -c --argjson cur "$GITHUB_RUN_ID" \
-    "[.[] | select(.databaseId != \$cur) | $DECISIVE] | sort_by(.createdAt) | reverse" <<<"$runs")
+  # Données de taille variable passées à jq par fichier, jamais en argument : un
+  # argument est borné à 128 Kio par le noyau (MAX_ARG_STRLEN), dépassé vers 50
+  # passages détaillés de ~2,6 Ko (« Argument list too long », mandat EY).
+  jq -c --argjson cur "$GITHUB_RUN_ID" \
+    "[.[] | select(.databaseId != \$cur) | $DECISIVE] | sort_by(.createdAt) | reverse" <<<"$runs" >"$tmp/runs.json"
 
   # Détail des passages précédents : un artefact par passage (rétention courte),
   # 8 téléchargements en parallèle. Un artefact absent compte dans runs_without_detail.
-  jq -r '.[].databaseId' <<<"$decisive" \
+  jq -r '.[].databaseId' "$tmp/runs.json" \
     | xargs -r -P 8 -I{} sh -c 'gh run download "$1" --repo "$2" -n "$3" -D "$4/$1" >/dev/null 2>&1 || true' \
         _ {} "$REPO" "$PROBE_ARTIFACT" "$tmp"
-  local prev
-  prev=$(find "$tmp" -name result.json -exec cat {} + | jq -s '[.[] | select(.schema == "purchase-path-probe/v1")]')
+  find "$tmp" -name result.json -exec cat {} + | jq -s '[.[] | select(.schema == "purchase-path-probe/v1")]' >"$tmp/prev.json"
 
   # Passage courant : fichier absent ou illisible = échec de la sonde elle-même.
-  local cur
   if [ -n "$current" ] && jq -e '.schema == "purchase-path-probe/v1"' "$current" >/dev/null 2>&1; then
-    cur=$(jq -c . "$current")
+    jq -c . "$current" >"$tmp/cur.json"
   else
-    cur=$(jq -cn --arg now "$now" '{schema:"purchase-path-probe/v1", ok:false, failed_step:"sonde", finished_at:$now, steps:[]}')
+    jq -cn --arg now "$now" '{schema:"purchase-path-probe/v1", ok:false, failed_step:"sonde", finished_at:$now, steps:[]}' >"$tmp/cur.json"
   fi
 
   # Format parcours-achat.v1, lu par .github/scripts/morning-health-digest.sh (mandat AM).
   # consecutive_failures : échecs décisifs consécutifs jusqu'au passage courant compris
   # (0 s'il a réussi) ; l'alerte part à 2 (décision 67). Agrégats seulement : aucun texte
   # d'erreur, aucune donnée client (le rapport est une issue publique).
-  jq -n --argjson cur "$cur" --argjson prev "$prev" --argjson runs "$decisive" \
+  # --slurpfile lie un tableau des valeurs du fichier : [0] rend la valeur unique.
+  jq -n --slurpfile cur "$tmp/cur.json" --slurpfile prev "$tmp/prev.json" --slurpfile runs "$tmp/runs.json" \
         --argjson steps "$STEPS_JSON" --argjson expected "$PROBE_EXPECTED_RUNS_24H" \
         --arg now "$now" --arg url "$(run_url "$GITHUB_RUN_ID")" '
-    def pct(p): sort | .[((length * p) | ceil) - 1];
+    $cur[0] as $cur | $prev[0] as $prev | $runs[0] as $runs
+    | def pct(p): sort | .[((length * p) | ceil) - 1];
     def stat(p): if length > 0 then pct(p) else null end;
     ($runs | length + 1) as $total
     | (([$runs[] | select(.conclusion == "success")] | length) + (if $cur.ok == true then 1 else 0 end)) as $ok

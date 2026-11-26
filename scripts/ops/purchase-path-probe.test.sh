@@ -8,7 +8,8 @@
 set -uo pipefail
 
 ICI="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SCRIPT="$ICI/purchase-path-probe.sh"
+# PURCHASE_PROBE_SCRIPT : rejouer ce test sur une autre version du script (avant/après).
+SCRIPT="${PURCHASE_PROBE_SCRIPT:-$ICI/purchase-path-probe.sh}"
 FIX="$(mktemp -d "${TMPDIR:-/tmp}/purchase-path-probe-test.XXXXXX")"
 trap '[[ -n "${KEEP_FIX:-}" ]] || rm -rf "$FIX"' EXIT
 FAIL=0
@@ -162,6 +163,165 @@ check "r4 : accepté par le contrôle du digest" "oui" "$(valide r4)"
 check "r4 : sonde en échec, 0/1" "false sonde 0/1 0" "$(val r4 '"\(.last_run.ok) \(.last_run.failed_step) \(.runs_ok)/\(.runs_total) \(.availability_pct)"')"
 
 for d in r1 r2 r3 r4; do absent "$d : aucune commande gh interdite" "INTERDIT" "$FIX/$d/writes"; done
+
+echo "report — volume (mandat EY : aucune donnée de taille variable en argument de jq)"
+# Résultat au format d'un artefact réel (indenté, libellés, requêtes bloquées) : ~2,9 Ko
+# par défaut, comme les ~2,4 Ko observés le 26 nov. 2026. $1 graine, $2 étape en échec
+# ("" = réussi), $3 longueur du jeton de chaque requête bloquée (défaut 43).
+realiste() {
+  jq -n --argjson g "$1" --arg ko "${2:-}" --argjson pad "${3:-43}" '
+    [["accueil","Page d accueil"],["vehicule","Choix du véhicule"],["gamme","Page gamme × véhicule"],
+     ["produit","Fiche produit"],["ajout_panier","Ajout au panier"],["panier","Page panier"],
+     ["commande","Page commande (livraison)"],["paiement","Section paiement (sans payer)"]] as $parcours
+    | ([$parcours[][0]] | index($ko)) as $i
+    | (if $i == null then $parcours else $parcours[0:($i + 1)] end) + [["nettoyage","Nettoyage panier et session"]]
+    | to_entries
+    | map({step: .value[0], label: .value[1], ok: (.value[0] != $ko), ms: (300 + ((.key * 37 + $g * 13) % 4000))}) as $steps
+    | {schema: "purchase-path-probe/v1", started_at: "2026-11-25T06:25:56.444Z", finished_at: "2026-11-25T06:26:09.278Z",
+       origin: "https://www.exemple.test", user_agent_token: "AutoMecanik-PurchaseProbe-bot/1.0",
+       ok: ($ko == ""), failed_step: (if $ko == "" then null else $ko end),
+       failed_label: (if $ko == "" then null else "étape" end), failure: (if $ko == "" then null else "délai dépassé" end),
+       steps: $steps, total_ms: ([$steps[].ms] | add),
+       blocked_writes: [range(8) as $k | {request: ("POST /cdn-cgi/challenge-platform/h/g/precursor/0:" + ("x" * $pad) + "/\($g)-\($k)"), count: 1}],
+       bypass_header_leaks: []}'
+}
+volume() { # nom N échecs-récents octets-par-requête-bloquée → N passages précédents, tous détaillés
+  local dir="$FIX/$1" n="$2" ko="$3" pad="$4" i; mkdir -p "$dir/artifacts"
+  jq -n --argjson n "$n" --argjson ko "$ko" '[{databaseId: 100000, status: "in_progress", conclusion: "", createdAt: "2026-11-26T06:25:00Z"}]
+    + [range(1; $n + 1) | {databaseId: ., status: "completed", conclusion: (if . <= $ko then "failure" else "success" end),
+       createdAt: (1795674300 - . * 900 | todate)}]' > "$dir/runs.json"
+  for ((i = 1; i <= n; i++)); do
+    if ((i <= ko)); then realiste "$i" panier "$pad"; else realiste "$i" "" "$pad"; fi > "$dir/artifacts/$i.json"
+  done
+  echo '[]' > "$dir/issues.json"; : > "$dir/writes"
+  if ((ko > 0)); then realiste 0 panier "$pad"; else realiste 0 "" "$pad"; fi > "$dir/result.json"
+  FAKE_DIR="$dir" FAKE_WRITES="$dir/writes" GITHUB_RUN_ID=100000 bash "$SCRIPT" report "$dir/result.json" "$dir/out.json" 2> "$dir/stderr"
+  echo $? > "$dir/code"
+  # Volume des passages précédents tel que le script les agrège (tableau indenté).
+  cat "$dir"/artifacts/*.json | jq -s . | wc -c > "$dir/octets"
+}
+# MAX_ARG_STRLEN (noyau Linux) : 131 072 octets par argument ; ARG_MAX courant : 2 Mio.
+volume v96 96 0 43
+check "v96 : passages précédents au-delà d'un argument (128 Kio)" "1" "$(($(cat "$FIX/v96/octets") > 131072))"
+check "v96 : code 0" "0" "$(cat "$FIX/v96/code")"
+absent "v96 : pas de « Argument list too long »" "Argument list too long" "$FIX/v96/stderr"
+check "v96 : accepté par le contrôle du digest" "oui" "$(valide v96)"
+check "v96 : 97/97, 100 %, tous détaillés" "97/97 100 0" "$(val v96 '"\(.runs_ok)/\(.runs_total) \(.availability_pct) \(.runs_without_detail)"')"
+check "v96 : max accueil sur les 97 passages" "$(cat "$FIX/v96/artifacts/"*.json "$FIX/v96/result.json" | jq -s '[.[].steps[] | select(.step == "accueil") | .ms] | max')" \
+  "$(val v96 '.steps[] | select(.name=="accueil") | .max_ms')"
+check "v96 : dernier passage réussi" "true 0" "$(val v96 '"\(.last_run.ok) \(.last_run.consecutive_failures)"')"
+
+volume v200 200 2 2000
+check "v200 : passages précédents au-delà de 2 Mio (ARG_MAX)" "1" "$(($(cat "$FIX/v200/octets") > 2097152))"
+check "v200 : code 0" "0" "$(cat "$FIX/v200/code")"
+absent "v200 : pas de « Argument list too long »" "Argument list too long" "$FIX/v200/stderr"
+check "v200 : accepté par le contrôle du digest" "oui" "$(valide v200)"
+check "v200 : 198/201, 98.5 %, tous détaillés" "198/201 98.5 0" "$(val v200 '"\(.runs_ok)/\(.runs_total) \(.availability_pct) \(.runs_without_detail)"')"
+check "v200 : 3 échecs consécutifs, étape nommée" "false 3 panier" "$(val v200 '"\(.last_run.ok) \(.last_run.consecutive_failures) \(.last_run.failed_step)"')"
+
+# g1 : sortie identique, champ pour champ, à celle du script d'origine (origin/main
+# 1d15ecf1ba51, avant le passage par fichier) sur un même petit jeu d'entrées ;
+# generated_at (heure du passage) seul exclu.
+report g1 "$(runs 1:success 2:failure 3:timed_out 4:cancelled 5:success)" "$(realiste 0 panier)" \
+  "1=$(realiste 1)" "2=$(realiste 2 ajout_panier)" "5=$(realiste 5)"
+G1_ATTENDU=$(cat <<'JSON'
+{
+  "availability_pct": 40,
+  "last_run": {
+    "at": "2026-11-25T06:26:09.278Z",
+    "consecutive_failures": 1,
+    "failed_step": "panier",
+    "ok": false,
+    "url": "https://github.com/exemple/depot/actions/runs/1000"
+  },
+  "runs_expected": 96,
+  "runs_ok": 2,
+  "runs_total": 5,
+  "runs_without_detail": 1,
+  "schema": "parcours-achat.v1",
+  "steps": [
+    {
+      "last_ms": 300,
+      "max_ms": 365,
+      "name": "accueil",
+      "ok": true,
+      "p50_ms": 313,
+      "p95_ms": 365
+    },
+    {
+      "last_ms": 337,
+      "max_ms": 402,
+      "name": "vehicule",
+      "ok": true,
+      "p50_ms": 350,
+      "p95_ms": 402
+    },
+    {
+      "last_ms": 374,
+      "max_ms": 439,
+      "name": "gamme",
+      "ok": true,
+      "p50_ms": 387,
+      "p95_ms": 439
+    },
+    {
+      "last_ms": 411,
+      "max_ms": 476,
+      "name": "produit",
+      "ok": true,
+      "p50_ms": 424,
+      "p95_ms": 476
+    },
+    {
+      "last_ms": 448,
+      "max_ms": 513,
+      "name": "ajout_panier",
+      "ok": true,
+      "p50_ms": 461,
+      "p95_ms": 513
+    },
+    {
+      "last_ms": 485,
+      "max_ms": 550,
+      "name": "panier",
+      "ok": false,
+      "p50_ms": 498,
+      "p95_ms": 550
+    },
+    {
+      "last_ms": null,
+      "max_ms": 587,
+      "name": "commande",
+      "ok": false,
+      "p50_ms": 535,
+      "p95_ms": 587
+    },
+    {
+      "last_ms": null,
+      "max_ms": 624,
+      "name": "paiement",
+      "ok": false,
+      "p50_ms": 572,
+      "p95_ms": 624
+    },
+    {
+      "last_ms": 522,
+      "max_ms": 661,
+      "name": "nettoyage",
+      "ok": true,
+      "p50_ms": 522,
+      "p95_ms": 661
+    }
+  ],
+  "window_hours": 24
+}
+JSON
+)
+check "g1 : code 0" "0" "$(cat "$FIX/g1/code")"
+check "g1 : parcours-achat.v1 identique à celui du script d'origine" "$(jq -cS . <<<"$G1_ATTENDU")" \
+  "$(jq -cS 'del(.generated_at)' "$FIX/g1/out.json" 2>/dev/null)"
+
+for d in v96 v200 g1; do absent "$d : aucune commande gh interdite" "INTERDIT" "$FIX/$d/writes"; done
 
 [[ $FAIL -eq 0 ]] && echo "OK — tous les cas passent" || echo "ÉCHEC"
 exit "$FAIL"
