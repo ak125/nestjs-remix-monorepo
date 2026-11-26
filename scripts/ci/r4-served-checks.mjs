@@ -851,6 +851,16 @@ export const NOT_COVERED = [
   "Caches navigateur et CDN après bascule (fenêtre de 10 min acceptée) : hors d'une lecture ponctuelle.",
 ];
 
+// A GitHub table cell: escape the backslash first, so that a detail ending in
+// « \ » cannot turn the escaped pipe that follows into a column separator,
+// then the pipe; a line break would end the row, so it becomes a space.
+export function markdownCell(value) {
+  return String(value ?? "")
+    .replace(/\\/g, "\\\\")
+    .replace(/\|/g, "\\|")
+    .replace(/\r\n|[\r\n]/g, " ");
+}
+
 export function renderSummary(result) {
   const icon = (l) => (l === LEVEL.ok ? "✅" : l === LEVEL.fail ? "❌" : "⚠️");
   const lines = [
@@ -883,13 +893,13 @@ export function renderSummary(result) {
         "| " +
         c.id +
         " | " +
-        c.title +
+        markdownCell(c.title) +
         " | " +
         icon(c.level) +
         " " +
         c.level +
         " | " +
-        c.detail.replace(/\|/g, "\\|") +
+        markdownCell(c.detail) +
         " |",
     ),
     "",
@@ -919,7 +929,7 @@ const CSV_COLUMNS = [
 export function renderCsv(rows) {
   const cell = (v) => {
     const s = String(v ?? "");
-    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
   };
   return (
     [

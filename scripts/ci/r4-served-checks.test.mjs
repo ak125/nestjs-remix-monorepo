@@ -22,8 +22,11 @@ import {
   findReferenceLinks,
   gitRunner,
   httpTransport,
+  markdownCell,
   parseFlags,
   readLists,
+  renderCsv,
+  renderSummary,
   runChecks,
 } from "./r4-served-checks.mjs";
 
@@ -92,14 +95,17 @@ let site;
 let server;
 let base;
 
+// Forced responses are keyed by the exact request path in a Map: a received
+// path never names a property of an object (no "__proto__", "constructor"…).
 function defaults(over = {}) {
+  const { overrides = {}, ...rest } = over;
   return {
     cons: true,
     noi: true,
     revision: () => checkout,
     sitemapExtra: [],
-    overrides: {},
-    ...over,
+    ...rest,
+    overrides: new Map(Object.entries(overrides)),
   };
 }
 
@@ -124,7 +130,8 @@ function linksTo(slugs) {
 
 function respond(path) {
   const s = site;
-  if (s.overrides[path]) return s.overrides[path]();
+  const forced = s.overrides.get(path);
+  if (typeof forced === "function") return forced();
   const in43 = new Map(T43.map((t) => [t.slug, t]));
   const visible = PUBLISHED.filter((p) => !(s.cons && in43.has(p)));
   let m;
@@ -548,6 +555,61 @@ test("request cap reached: the run stops", async () => {
     }),
     /budget de 10 requêtes atteint/,
   );
+});
+
+// ── Output escaping ────────────────────────────────────────────────────────
+
+// Splits a GitHub table row the way GitHub does: a backslash escapes the next
+// character, an unescaped pipe separates two cells.
+function cellsOf(row) {
+  const cells = [];
+  let cur = "";
+  for (let i = 0; i < row.length; i += 1) {
+    if (row[i] === "\\") {
+      cur += row[i + 1] ?? "";
+      i += 1;
+    } else if (row[i] === "|") {
+      cells.push(cur.trim());
+      cur = "";
+    } else cur += row[i];
+  }
+  cells.push(cur.trim());
+  return cells.slice(1, -1);
+}
+
+test("summary table: backslash, pipe and line breaks stay in their cell", () => {
+  const detail = "C:\\temp\\ | fin \\| suite\r\nligne 2\nligne 3\\";
+  const title = "titre | à \\ part";
+  const out = renderSummary({
+    target: "preprod",
+    container: "c",
+    revision: { level: "ok", detail: "r" },
+    flags: { consolidation: { on: true }, noindex: { on: false } },
+    requests: 0,
+    pauseMs: 0,
+    dockerCommands: 0,
+    checks: [{ id: 9, title, level: "alerte", detail }],
+    failed: false,
+  });
+  const lines = out.split("\n");
+  const rows = lines.filter((l) => l.startsWith("| 9 |"));
+  assert.equal(rows.length, 1);
+  assert.ok(
+    !lines.some((l) => l.startsWith("ligne")),
+    "no line break in a row",
+  );
+  assert.deepEqual(cellsOf(rows[0]), [
+    "9",
+    title,
+    "⚠️ alerte",
+    "C:\\temp\\ | fin \\| suite ligne 2 ligne 3\\",
+  ]);
+  assert.equal(markdownCell("a\\|b"), "a\\\\\\|b");
+});
+
+test("CSV: quote, comma, CR and LF are quoted", () => {
+  const csv = renderCsv([{ check: "x", detail: 'a "b", c\rd\ne' }]);
+  assert.ok(csv.endsWith('\nx,,,,,,,,,"a ""b"", c\rd\ne"\n'));
 });
 
 // ── CLI end to end, docker replaced by a local executable on PATH ─────────
