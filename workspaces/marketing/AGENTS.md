@@ -2,6 +2,8 @@
 
 > Conformité [[ADR-061-workspace-governance]] §2 (structure obligatoire) + §5 (`AGENTS.md` exhaustif).
 > Workspace marketing canon : [[ADR-036-marketing-operating-layer]] (3 agents G1 Phase 1-2 — LEAD/LOCAL/RETENTION + business_unit ECOMMERCE/LOCAL/HYBRID).
+>
+> Historique (décisions 72 et 73) : les ADR citées dans ce fichier sont des archives du vault ; elles expliquent une décision sans être normatives. Une règle est en vigueur si le journal des principes la reprend (`../../.claude/governance/journal-des-principes.md`) : ADR-031 → P10 et P11. ADR-036, ADR-060 et ADR-061 n'y ont aucun principe : leurs règles restent écrites ici, écart signalé sous l'issue #2232.
 
 ## Règle d'ownership
 
@@ -9,7 +11,9 @@ Le workspace `app/workspaces/marketing/` est destiné aux agents G1 marketing et
 
 Tout agent invoqué sous le scope de ce workspace **doit** figurer ci-dessous. Ajout/retrait d'agent = PR monorepo signée modifiant ce fichier (cf. ADR-061 §5).
 
-## Agents Paperclip G1 LIVE (état 2026-05-14)
+## Agents Paperclip G1 LIVE (état 2026-05-14) — historique
+
+> Historique : Paperclip est supprimé (décision 69, 2026-11-16) ; un seul circuit d'exécution : mandat, Claude CLI, PR. Ce tableau décrit l'état du 2026-05-14.
 
 | Agent | Role | business_unit | Output canonique | Output interdit |
 |-------|------|---------------|------------------|-----------------|
@@ -51,10 +55,12 @@ Les sources sont dans le monorepo (journal des principes, P30). Les copies sont 
 ## Lifecycle workspace
 
 Création : ADR-036 + brainstorm 2026-04-30 (Phase 1-2).
-État courant : Phase 1-2 LIVE au 2026-05-14.
+État courant : Phase 1-2 LIVE au 2026-05-14 (historique : Paperclip supprimé, décision 69).
 Phase 3 future : agents G2 (additional verticals) sous ADR dédié si besoin.
 
 ## Références
+
+Les ADR ci-dessous sont des archives du vault (décision 73), non normatives.
 
 - [[ADR-036-marketing-operating-layer]] (workspace marketing canon, accepted 2026-05-13 PR vault #263)
 - [[ADR-060-repository-roles-doctrine]] (5 acteurs canon, accepted 2026-05-13 PR vault #264)

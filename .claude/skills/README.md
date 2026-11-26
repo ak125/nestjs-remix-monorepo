@@ -67,7 +67,7 @@ metadata:
 ### `llm_safe`
 
 - `true` si les outputs sont dérivés déterministiquement de fichiers + tools (pas d'invention LLM de faits métier)
-- `false` si le skill génère du contenu métier potentiellement hallucinable (slug, prix, compatibilité véhicule) → DOIT s'appuyer sur RAG + vault (voir `feedback_rag_vault_always_first`)
+- `false` si le skill génère du contenu métier potentiellement hallucinable (slug, prix, compatibilité véhicule) → DOIT s'appuyer sur le WIKI validé, jamais sur RAW ni sur le RAG (journal des principes, P10 et P11)
 
 ### `domain`
 
