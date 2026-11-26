@@ -253,6 +253,15 @@ jobs:
           # this variable is the flag's only PROD source. Rollback = variable unset
           # or false, then a new tag.
           SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE: ${{ vars.PROD_SEO_R6_CONSOLIDATION_ENABLED }}
+          # R4 references (mandats ER and EW): SEO_R4_CONSOLIDATION_ENABLED answers
+          # 301 from the 43 listed /reference-auto/ pages to their conseils page, and
+          # SEO_R4_NOINDEX_ENABLED serves the 62 listed ones noindex, follow. Same
+          # writer and contract as above; neither is in the admin override
+          # allowlist, so these variables are the flags' only PROD source. Unset =
+          # false: PROD stays off until the owner sets them. Rollback = variable
+          # unset or false, then a new tag.
+          SEO_R4_CONSOLIDATION_ENABLED_OVERRIDE: ${{ vars.PROD_SEO_R4_CONSOLIDATION_ENABLED }}
+          SEO_R4_NOINDEX_ENABLED_OVERRIDE: ${{ vars.PROD_SEO_R4_NOINDEX_ENABLED }}
           # Diagnostic projection (ADR-035 D5): nightly WIKI → DB projection of the
           # diagnostic links, from the exports/diagnostic baked into the image. Same
           # writer and contract as above; not in the admin override allowlist, so
@@ -368,7 +377,7 @@ jobs:
           # point of no return: a refused config fails the deploy with the
           # running container and the .env both untouched.
           bash "$GITHUB_WORKSPACE/scripts/ci/prod-seo-collector-env.sh" .env
-          # SEO Projection, R6 consolidation and diagnostic projection flags (see the
+          # SEO Projection, R6 and R4 consolidation, R4 noindex and diagnostic flags (see the
           # env block above). Same contract:
           # every input is validated before any write, and a refusal fails the
           # deploy before the point of no return, running container untouched.
