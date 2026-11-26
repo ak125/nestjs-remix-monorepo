@@ -27738,7 +27738,7 @@
         "backend/src/modules/seo-logs/controllers/seo-kpi.controller.ts"
       ],
       "kind": "test",
-      "loc": 467,
+      "loc": 493,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-logs/controllers/seo-kpi.controller.test.ts",
       "risk": "low",
