@@ -72,6 +72,22 @@ sql "écriture derrière un commentaire"     2 "-- SELECT 1
 DELETE FROM pieces"
 
 echo "== apply_migration toujours refusé (exit 2)"
+echo "== contournements lexicaux refusés (revue de sécurité de #2240)"
+sql "dollar collé à un identifiant"        2 'SELECT x$a$ FROM t; DROP TABLE y; SELECT 1 AS x$a$'
+sql "tag dollar commençant par un chiffre" 2 'SELECT $9$ FROM t; DROP TABLE y; SELECT $9$'
+sql "tag dollar non ASCII"                 2 "SELECT \$é\$ ' \$é\$; DROP TABLE y; --'"
+sql "E collé à un identifiant"             2 "SELECT some'\\' ; DROP TABLE y; --'"
+sql "chaîne collée à un nombre"            2 "SELECT 1e'\\'' ; DROP TABLE y; --'"
+sql "fonction entre guillemets"            2 'SELECT "pg_terminate_backend"(123)'
+sql "schéma et fonction entre guillemets"  2 "SELECT \"pg_catalog\".\"set_config\"('a', 'b', false)"
+sql "identifiant U&"                       2 'SELECT U&"pg\005fterminate_backend"(1)'
+sql "query_to_xml (SQL dynamique)"         2 "SELECT query_to_xml('DELETE FROM t', true, true, '')"
+sql "commentaire non fermé"                2 "SELECT 1 /* DROP TABLE y"
+echo "== lectures légitimes proches (exit 0)"
+sql "chaîne E à échappement"               0 "SELECT E'l\\'huile' AS t"
+sql "littéral typé collé (date'…')"        0 "SELECT date'2026-11-26' AS d"
+sql "chaîne dollar après un espace"        0 'SELECT $q$ DROP $q$ AS t'
+sql "guillemets doublés dans un identifiant" 0 'SELECT 1 AS "a""b"'
 check "apply_migration CREATE INDEX"       2 "$(run "$(env_of "$T_MIG" "CREATE INDEX CONCURRENTLY i ON pieces (piece_id)")")"
 check "apply_migration SELECT seul"        2 "$(run "$(env_of mcp__claude_ai_Supabase__apply_migration "SELECT 1")")"
 

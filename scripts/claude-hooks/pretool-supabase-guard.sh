@@ -13,6 +13,10 @@
 # hors de la courte liste de fonctions d'administration refusées ci-dessous. La
 # frontière effective reste côté base (rôle en lecture seule) ; ce hook n'en est
 # qu'une protection d'agent.
+# Lecture lexicale fermée : une construction dont la lecture par PostgreSQL est
+# incertaine ($ ou chaîne collés à un identifiant ou un nombre, U&"…", chaîne,
+# commentaire ou identifiant non fermé) est refusée plutôt que devinée. Supposé :
+# standard_conforming_strings = on (défaut ; SET est refusé par ce hook).
 # Exit 0 = allow, Exit 2 = block (stderr shown to the model).
 
 if ! command -v jq &>/dev/null; then
@@ -51,58 +55,95 @@ fi
 VERDICT=$(python3 -I -c '
 import re, sys
 sql = sys.stdin.read()
-out, i, n = [], 0, len(sql)
+Q, DQ, n = chr(39), chr(34), len(sql)
+HI = chr(0x80) + "-" + chr(0x10FFFF)
+def ident(ch):
+    return (ch.isascii() and ch.isalnum()) or ch in "_$" or ord(ch) > 127
+def word_before(k):
+    j = k
+    while j > 0 and ident(sql[j - 1]): j -= 1
+    return sql[j:k]
+def stop(reason):
+    print(reason); sys.exit(0)
+# Délimiteur dollar de PostgreSQL : $$ ou $tag$, tag = lettre, _ ou non ASCII, puis
+# lettres, chiffres, _ ou non ASCII (scan.l, dolqdelim).
+TAG = re.compile(r"\$(?:[A-Za-z_" + HI + r"][A-Za-z0-9_" + HI + r"]*)?\$")
+stmts, plain, fn = [], [], []
+def emit(p, f=None):
+    plain.append(p); fn.append(p if f is None else f)
+i = 0
 while i < n:
     c = sql[i]
     if sql.startswith("--", i):
         j = sql.find("\n", i); i = n if j < 0 else j
+        emit(" ")
     elif sql.startswith("/*", i):
         depth, i = 1, i + 2
         while i < n and depth:
             if sql.startswith("/*", i): depth += 1; i += 2
             elif sql.startswith("*/", i): depth -= 1; i += 2
             else: i += 1
-        out.append(" ")
-    elif c == "$" and re.match(r"\$[A-Za-z_]?[A-Za-z0-9_]*\$", sql[i:]):
-        tag = re.match(r"\$[A-Za-z_]?[A-Za-z0-9_]*\$", sql[i:]).group(0)
-        j = sql.find(tag, i + len(tag)); i = n if j < 0 else j + len(tag)
-        out.append(" '"'"''"'"' ")
-    elif c == "'"'"'":
-        esc = i > 0 and sql[i - 1] in "eE"
+        if depth: stop("commentaire non ferme")
+        emit(" ")
+    elif c == "$" and TAG.match(sql, i):
+        # Après un caractère d identifiant, $ prolonge l identifiant (x$a$) ou suit un
+        # nombre : lecture incertaine, refus.
+        if i > 0 and ident(sql[i - 1]): stop("lexique ambigu : $ colle a un identifiant ou a un nombre")
+        tag = TAG.match(sql, i).group(0)
+        j = sql.find(tag, i + len(tag))
+        if j < 0: stop("chaine dollar non fermee")
+        i = j + len(tag); emit(" STR ")
+    elif c == Q:
+        w = word_before(i)
+        # E seul devant la quote = chaîne à échappements ; E collé à un mot = mot puis
+        # chaîne standard ; chaîne collée à un nombre (1e...) : lecture selon la version.
+        if w[:1].isdigit(): stop("lexique ambigu : chaine collee a un nombre")
+        esc = w in ("E", "e")
         i += 1
-        while i < n:
+        while True:
+            if i >= n: stop("chaine non fermee")
             if esc and sql[i] == "\\": i += 2; continue
-            if sql[i] == "'"'"'":
-                if sql.startswith("'"'"''"'"'", i): i += 2; continue
+            if sql[i] == Q:
+                if i + 1 < n and sql[i + 1] == Q: i += 2; continue
                 i += 1; break
             i += 1
-        out.append(" '"'"''"'"' ")
-    elif c == "\"":
-        j = sql.find("\"", i + 1); i = n if j < 0 else j + 1
-        out.append(" quoted_ident ")
+        emit(" STR ")
+    elif c == DQ:
+        if sql[max(0, i - 2):i].upper() == "U&": stop("identifiant U& refuse (echappements Unicode)")
+        j, name = i + 1, []
+        while True:
+            if j >= n: stop("identifiant entre guillemets non ferme")
+            if sql[j] == DQ:
+                if j + 1 < n and sql[j + 1] == DQ: name.append("_"); j += 2; continue
+                break
+            name.append(sql[j]); j += 1
+        i = j + 1
+        # Flux des mots-clés : marqueur neutre ; flux des fonctions : nom en clair.
+        emit(" QI ", " " + re.sub(r"[^A-Za-z0-9_]", "_", "".join(name)) + " ")
+    elif c == ";":
+        stmts.append(("".join(plain), "".join(fn))); plain.clear(); fn.clear(); i += 1
     else:
-        out.append(c); i += 1
-clean = "".join(out).upper()
+        emit(c); i += 1
+stmts.append(("".join(plain), "".join(fn)))
 READ_START = ("SELECT", "WITH", "VALUES", "TABLE", "SHOW")
 WRITE_WORDS = re.compile(r"\b(INSERT|UPDATE|DELETE|MERGE|TRUNCATE|INTO|COPY|DROP|ALTER|CREATE|GRANT|REVOKE)\b")
-ADMIN_FUNCS = re.compile(r"\b(PG_TERMINATE_BACKEND|PG_CANCEL_BACKEND|PG_RELOAD_CONF|SET_CONFIG|SETVAL|NEXTVAL|DBLINK_EXEC|DBLINK|LO_IMPORT|LO_EXPORT|LO_UNLINK|PG_NOTIFY|PG_ADVISORY_LOCK|PG_ADVISORY_XACT_LOCK|HTTP_POST|HTTP_PUT|HTTP_DELETE|HTTP_PATCH|SCHEDULE|UNSCHEDULE|ALTER_JOB)\s*\(")
-def classify(stmt):
-    s = stmt.strip()
+ADMIN_FUNCS = re.compile(r"\b(PG_TERMINATE_BACKEND|PG_CANCEL_BACKEND|PG_RELOAD_CONF|PG_ROTATE_LOGFILE|PG_SWITCH_WAL|PG_CREATE_RESTORE_POINT|PG_LOGICAL_EMIT_MESSAGE|PG_CREATE_LOGICAL_REPLICATION_SLOT|PG_CREATE_PHYSICAL_REPLICATION_SLOT|PG_DROP_REPLICATION_SLOT|PG_FILE_WRITE|SET_CONFIG|SETVAL|NEXTVAL|DBLINK_EXEC|DBLINK|LO_IMPORT|LO_EXPORT|LO_UNLINK|LO_FROM_BYTEA|LO_PUT|PG_NOTIFY|PG_ADVISORY_LOCK|PG_ADVISORY_XACT_LOCK|QUERY_TO_XML|QUERY_TO_XMLSCHEMA|QUERY_TO_XML_AND_XMLSCHEMA|CURSOR_TO_XML|HTTP_POST|HTTP_PUT|HTTP_DELETE|HTTP_PATCH|HTTP_GET|SCHEDULE|UNSCHEDULE|ALTER_JOB)\s*\(")
+def classify(p, f):
+    s = p.upper().strip()
     if not s: return None
     if s.startswith("EXPLAIN"):
         s = re.sub(r"^EXPLAIN\s*(\([^)]*\))?\s*((ANALYZE|ANALYSE|VERBOSE)\s+)*", "", s)
         if not s: return "EXPLAIN sans instruction"
-    head = s.split(None, 1)[0] if s.split() else ""
-    head = re.match(r"[A-Z_]*", head).group(0)
+    head = re.match(r"[A-Z_]*", s.split(None, 1)[0]).group(0)
     if head not in READ_START:
         return "instruction " + (head or "?") + " hors lecture"
     m = WRITE_WORDS.search(s)
     if m: return "mot-cle d ecriture " + m.group(1) + " dans une lecture"
     if re.search(r"\bFOR\s+(NO\s+KEY\s+)?(UPDATE|SHARE|KEY\s+SHARE)\b", s): return "verrou de lignes (FOR UPDATE/SHARE)"
-    m = ADMIN_FUNCS.search(s)
+    m = ADMIN_FUNCS.search(f.upper())
     if m: return "fonction a effet de bord " + m.group(1)
     return None
-reasons = [r for r in (classify(x) for x in clean.split(";")) if r]
+reasons = [r for r in (classify(p, f) for p, f in stmts) if r]
 if reasons: print(reasons[0])
 ' <<<"$QUERY") || {
   echo "BLOCKED: analyse SQL en echec. Garde en echec ferme." >&2
