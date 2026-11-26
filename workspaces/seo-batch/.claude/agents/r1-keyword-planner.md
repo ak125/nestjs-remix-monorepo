@@ -9,6 +9,7 @@ tools:
   - Read
   - Glob
   - Grep
+  - REPL
 role: R1_ROUTER
 ---
 
