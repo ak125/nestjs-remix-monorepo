@@ -20,7 +20,7 @@ metadata:
 
 ## When to use
 
-- Stop hook found unpushed commits ahead of `origin/main` on the current branch and suggested recording the session.
+- Stop hook detected commits ahead of `main` on the current branch and asked Claude to record the session.
 - User explicitly types `/log-session` or "log this session" or "record this work in log.md".
 - Major work completed (feature merged, refactor shipped, incident resolved) and the user wants a permanent timeline trace.
 
@@ -62,7 +62,7 @@ Rules:
 4. Determine the décision : look at the most-impactful commit message OR what the user explicitly asked. ONE sentence.
 5. Determine the sortie :
    - Get PRs : `gh pr list --head <branch>` or check session history.
-   - Get commits : `git log origin/main..HEAD --pretty=format:'%h'` (short SHAs).
+   - Get commits : `git log main..HEAD --pretty=format:'%h'` (short SHAs).
    - Get top-level files : look at the largest `git diff --stat` paths.
 6. Append the block to `log.md`.
 7. Bound the file : run `bash scripts/claude-hooks/rotate-log.sh` from the same checkout. It does nothing while `log.md` is at most 600 lines; above, it moves the oldest entries to `log-archive-<year>.md` and says so on stderr. Nothing else rotates `log.md` : the Stop hook only suggests. When it rotates, `log-archive-<year>.md` goes in the same commit as `log.md`.

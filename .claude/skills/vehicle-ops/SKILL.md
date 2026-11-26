@@ -389,7 +389,7 @@ kg_get_dtc_lookup(p_code TEXT) RETURNS TABLE(code, description, system, severity
 
 ### Liens
 
-- ADR-032 — Diagnostic & Maintenance Unification : archive `ak125/governance-vault` (lecture seule, non normative), `ledger/decisions/adr/ADR-032-diagnostic-maintenance-unification.md`
+- Vault ADR-032 — Diagnostic & Maintenance Unification : `governance-vault/ledger/decisions/adr/ADR-032-diagnostic-maintenance-unification.md`
 - Memoires Claude Code : `diag-maintenance-canon-decisions.md`, `diag-safety-rule-canonical-distinct.md`, `diag-vs-kg-pipelines-disjoints.md`, `diag-intent-enum-canonical-only.md`, `seed-20260321-silent-fail.md`
 - Migrations : `backend/supabase/migrations/20260429_diag_maintenance_via_kg.sql` (PR #207 mergee)
 - Service : `backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts` (PR #211)
