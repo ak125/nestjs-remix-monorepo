@@ -13,7 +13,7 @@
 set -e
 
 LOKI_URL=${LOKI_URL:-http://localhost:3100}
-SITEMAP_URL=${SITEMAP_URL:-https://automecanik.fr/sitemap.xml}
+SITEMAP_URL=${SITEMAP_URL:-https://www.automecanik.com/sitemap.xml}
 TIME_WINDOW=${1:-72h}  # FenÃªtre de temps (72h par dÃ©faut)
 
 echo "ðŸ” Analyse du taux de crawl du sitemap"
