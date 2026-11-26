@@ -72,7 +72,7 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           allowed_bots: "dependabot[bot]"
-          claude_args: "--model claude-haiku-4-5-20251001"
+          claude_args: "--model claude-opus-5-5"
           prompt: |
             You are reviewing a Dependabot PR on ak125/nestjs-remix-monorepo
             (NestJS backend + Remix frontend). Bias toward HOLD on any doubt.
@@ -103,7 +103,7 @@ jobs:
             ACTIONS
             - GO + (update-type ≠ semver-major OR dependency-type ≠ direct:production):
               run
-              `gh pr review ${{ github.event.pull_request.number }} --approve --body "Auto-approved by Claude review (model: claude-haiku-4-5)."`
+              `gh pr review ${{ github.event.pull_request.number }} --approve --body "Auto-approved by Claude review (model: claude-opus-5-5)."`
               then
               `gh pr merge ${{ github.event.pull_request.number }} --auto --squash`.
             - GO + (update-type == semver-major AND dependency-type == direct:production):
