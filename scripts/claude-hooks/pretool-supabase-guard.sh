@@ -68,6 +68,7 @@ def stop(reason):
 # Délimiteur dollar de PostgreSQL : $$ ou $tag$, tag = lettre, _ ou non ASCII, puis
 # lettres, chiffres, _ ou non ASCII (scan.l, dolqdelim).
 TAG = re.compile(r"\$(?:[A-Za-z_" + HI + r"][A-Za-z0-9_" + HI + r"]*)?\$")
+CONT = re.compile(r"(?:\s|--[^\n]*|/\*.*?\*/)*" + Q, re.S)
 stmts, plain, fn = [], [], []
 def emit(p, f=None):
     plain.append(p); fn.append(p if f is None else f)
@@ -107,6 +108,11 @@ while i < n:
                 if i + 1 < n and sql[i + 1] == Q: i += 2; continue
                 i += 1; break
             i += 1
+        # Deux chaînes séparées par des blancs (avec saut de ligne) n en font qu une, et la
+        # suite garde le mode de la première (scan.l, quotecontinue) : E... puis ... se lit
+        # avec échappements. Une quote après une chaîne E, derrière blancs ou commentaires
+        # seulement, est refusée (lecture fermée, sans usage de lecture légitime connu).
+        if esc and CONT.match(sql, i): stop("lexique ambigu : continuation de chaine E")
         emit(" STR ")
     elif c == DQ:
         if sql[max(0, i - 2):i].upper() == "U&": stop("identifiant U& refuse (echappements Unicode)")
