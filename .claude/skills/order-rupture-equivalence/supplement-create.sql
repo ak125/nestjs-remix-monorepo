@@ -2,7 +2,8 @@
 --
 -- MODÈLE : le copier en scratchpad, renseigner les constantes, ne jamais committer la copie
 -- remplie (données client). Le bloc refuse de partir tant qu'une constante manque.
---   c_apply = false : pré-contrôles seuls, aucune écriture (passe dans une session READ ONLY) ;
+--   L'owner le colle lui-même dans l'éditeur SQL Supabase ; l'agent ne le lance jamais :
+--   c_apply = false : pré-contrôles seuls, aucune écriture ;
 --   c_apply = true  : création, sur GO nominatif de l'owner (zone STOP commande).
 --
 -- Crée, par la fonction du site create_order_atomic (commande + ligne + événement ORDER_CREATED,

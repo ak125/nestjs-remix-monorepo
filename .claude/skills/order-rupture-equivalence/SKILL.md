@@ -298,8 +298,11 @@ non prouvé : compatibilité, délai, origine de la marque.
   l'adresse de la commande d'origine.
 - **Annulation** — il refuse, son véhicule n'est pas couvert, aucun équivalent n'est dispo
   (§5), ou l'owner annule (pas de réponse, décision commerciale). Dans cet ordre :
-  1. S'il existe une commande de supplément, l'annuler avec `supplement-cancel.sql` (même déroulé
-     que le script de §6), avant tout mail qui annonce l'annulation. Le script passe par
+  1. S'il existe une commande de supplément, l'annuler avec `supplement-cancel.sql`, avant tout
+     mail qui annonce l'annulation. L'agent copie le script en scratchpad, renseigne les constantes
+     et le montre à l'owner ; il ne le lance jamais lui-même, ni à blanc ni pour écrire. L'owner le
+     colle lui-même dans l'éditeur SQL Supabase : d'abord `c_apply := false`, puis, sur son GO
+     nominatif, `c_apply := true`. Le script passe par
      `cancel_order_atomic` : statut '2', ORDER_CANCELLED journalisé. Aucun mail : le mail
      d'annulation part de l'application, jamais du journal. Si elle est déjà payée, le script
      refuse : owner.

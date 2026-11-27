@@ -2,7 +2,8 @@
 --
 -- MODÈLE : le copier en scratchpad, renseigner les constantes, ne jamais committer la copie
 -- remplie (données client).
---   c_apply = false : contrôles seuls, aucune écriture (passe dans une session READ ONLY) ;
+--   L'owner le colle lui-même dans l'éditeur SQL Supabase ; l'agent ne le lance jamais :
+--   c_apply = false : contrôles seuls, aucune écriture ;
 --   c_apply = true  : annulation, sur GO nominatif de l'owner (zone STOP commande).
 --
 -- Passe par la fonction du site cancel_order_atomic : statut '2' et événement ORDER_CANCELLED
