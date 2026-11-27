@@ -1,0 +1,37 @@
+{
+  "url": "http://127.0.0.1:3000/constructeurs/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "label": "dev-avant",
+  "at": "2026-11-20T22:18:53.218Z",
+  "vues": {
+    "390": {
+      "S_BREADCRUMB": 160,
+      "S_HERO": 205,
+      "S_IDENTITY": 375,
+      "S_FAST_ACCESS": 688,
+      "S_SEO_INTRO": 1107,
+      "S_CATALOG": 1468,
+      "S_BESTSELLERS": 9791,
+      "S_SAFE_TABLE": 13818,
+      "S_ANTI_ERRORS": 14301,
+      "S_HOWTO": 14786,
+      "S_TRUST": 15260,
+      "rechercheGamme": 757,
+      "hauteurPage": 17073
+    },
+    "1440": {
+      "S_BREADCRUMB": 113,
+      "S_HERO": 158,
+      "S_IDENTITY": 321,
+      "S_FAST_ACCESS": 546,
+      "S_SEO_INTRO": 762,
+      "S_CATALOG": 919,
+      "S_BESTSELLERS": 3578,
+      "S_SAFE_TABLE": 4685,
+      "S_ANTI_ERRORS": 5150,
+      "S_HOWTO": 5430,
+      "S_TRUST": 5748,
+      "rechercheGamme": 615,
+      "hauteurPage": 6838
+    }
+  }
+}
