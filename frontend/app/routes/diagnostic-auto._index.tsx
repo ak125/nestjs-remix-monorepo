@@ -146,25 +146,23 @@ export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
 
   return [
     {
-      title:
-        "Identifier une panne auto : diagnostic gratuit, signes et codes OBD | AutoMecanik",
+      title: "Diagnostic panne voiture gratuit par symptôme | AutoMecanik",
     },
     {
       name: "description",
       content:
-        "Comment identifier une panne voiture ? Lisez les signes avant-coureurs, décodez les voyants et codes OBD. 193 diagnostics gratuits avec causes probables par nos experts.",
+        "Décrivez le symptôme de votre voiture : notre outil gratuit, sans inscription, identifie les causes probables et vous oriente vers la bonne pièce.",
     },
     { name: "robots", content: "index, follow" },
     { tagName: "link", rel: "canonical", href: canonicalUrl },
     {
       property: "og:title",
-      content:
-        "Identifier une panne auto : diagnostic gratuit, signes et codes OBD",
+      content: "Diagnostic panne voiture gratuit par symptôme",
     },
     {
       property: "og:description",
       content:
-        "Comment identifier une panne voiture ? Signes avant-coureurs, voyants, codes OBD. 193 diagnostics gratuits avec causes et solutions.",
+        "Décrivez le symptôme : notre outil gratuit identifie les causes probables et vous oriente vers la bonne pièce. Signes avant-coureurs et voyants expliqués.",
     },
     { property: "og:type", content: "website" },
     { property: "og:url", content: canonicalUrl },
@@ -210,7 +208,7 @@ export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
             "@type": "HowToStep",
             position: 3,
             name: "Scanner le code OBD",
-            text: "Branchez un scanner OBD2 sur le port sous le tableau de bord. Les codes Pxxxx concernent le moteur, Cxxxx le châssis, Bxxxx la carrosserie. Entrez le code dans notre outil pour un diagnostic ciblé.",
+            text: "Branchez un scanner OBD2 sur le port sous le tableau de bord. Les codes Pxxxx concernent le moteur, Cxxxx le châssis, Bxxxx la carrosserie. Notre outil n'interprète pas encore ces codes : décrivez les symptômes constatés pour être orienté.",
           },
         ],
       },
