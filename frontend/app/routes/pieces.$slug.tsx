@@ -52,6 +52,7 @@ import { buildCacheHeaders } from "~/utils/cache-control";
 import {
   extractEditorialBlocks,
   mergeFaqBlocks,
+  priceSectionMentionsPrice,
   type EditorialBlocks,
 } from "~/utils/editorial-parser";
 import { parseGammePageData } from "~/utils/gamme-page-contract.utils";
@@ -622,6 +623,9 @@ export default function PiecesDetailPage() {
   // seconde fois côté client à l'hydratation (INP fix — l'ancien useMemo
   // protégeait les re-renders suivants, mais pas ce premier passage client).
   const editorialBlocks = data.editorialBlocks;
+  const qualityWithPrice = priceSectionMentionsPrice(
+    editorialBlocks.priceSection,
+  );
 
   // FAQ unique fusionnée (éditorial + fallback statique)
   const mergedFaq = useMemo(
@@ -827,7 +831,7 @@ export default function PiecesDetailPage() {
           </div>
         </div>
       </div>
-      <GammeQuickNav />
+      <GammeQuickNav withPrice={qualityWithPrice} />
       <GammeDiagnosticCTA />
       {/* ═══════════════════════════════════════════════════════
            H2 #1 — Bien choisir votre {gamme}
@@ -888,7 +892,8 @@ export default function PiecesDetailPage() {
         </div>
       </section>
       {/* ═══════════════════════════════════════════════════════
-           H2 #2 — Qualité, prix et marques
+           H2 #2 — Qualité, prix et marques (« Qualité et marques » si
+           aucun bloc de la section ne parle de prix ; ancre inchangée)
            Image PRICE, marques, fiche technique
            ═══════════════════════════════════════════════════════ */}
       <section
@@ -897,7 +902,9 @@ export default function PiecesDetailPage() {
       >
         <div className="max-w-[1280px] mx-auto">
           <h2 className="text-2xl font-bold text-slate-900 mb-6">
-            Qualité, prix et marques
+            {qualityWithPrice
+              ? "Qualité, prix et marques"
+              : "Qualité et marques"}
           </h2>
 
           {/* Image PRICE + contenu éditorial — côte à côte si texte */}
@@ -966,14 +973,14 @@ export default function PiecesDetailPage() {
             Où se trouve le {n} et quand le remplacer
           </h2>
 
-          {/* Image LOCATION + contenu éditorial — côte à côte si texte, sinon image seule */}
+          {/* Image LOCATION + contenu éditorial — côte à côte si les deux, sinon pleine largeur */}
           {(() => {
             const hasLocationText =
               editorialBlocks.locationSection.length > 0 ||
               editorialBlocks.unmatched.length > 0;
             return (
               <div
-                className={`${hasLocationText ? "grid grid-cols-1 lg:grid-cols-2 gap-8" : ""} mb-8`}
+                className={`${hasLocationText && data.r1Images?.LOCATION ? "grid grid-cols-1 lg:grid-cols-2 gap-8" : ""} mb-8`}
               >
                 {data.r1Images?.LOCATION && (
                   <div>
