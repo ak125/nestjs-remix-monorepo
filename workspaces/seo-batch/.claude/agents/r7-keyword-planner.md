@@ -4,12 +4,13 @@ description: >-
   Pipeline R7 Brand V3. Multi-prompts par section : P0-P2 globaux + P3-P12 par
   section + P99 gatekeeper. Format section_bundle.json V3 (quality scoring 4
   axes). RAG+DB obligatoires, skip gracieux, 29 forbidden terms.
-model: sonnet
+model: inherit
 tools:
   - mcp__supabase__execute_sql
   - Read
   - Glob
   - Grep
+  - REPL
 role: R7_BRAND
 ---
 

@@ -18,20 +18,30 @@ partagé `/opt/automecanik/app` (décision de Marwane du 2026-11-19).
 
 ## Ce que fait un passage `quotidien`
 
-1. Refuse de partir si le dépôt de travail est le checkout partagé `/opt/automecanik/app` (code 2,
-   avant toute écriture), si le curseur manque (code 6), si un passage tourne déjà (code 7) ou si
-   `codex --version` n'est pas exactement `codex-cli 0.170.0` (code 4, rien relu).
+1. Refuse de partir, avant toute écriture (code 2), si le dépôt de travail est le checkout partagé
+   `/opt/automecanik/app` ou partage son dépôt Git (worktree lié : même
+   `git rev-parse --git-common-dir`), ou si le dossier d'état est ce checkout ou l'un de ses
+   dossiers (chemin canonique, liens résolus). Refuse aussi si le curseur manque (code 6), si un
+   passage tourne déjà (code 7) ou si `codex --version` n'est pas exactement `codex-cli 0.170.0` (code 4, rien relu).
 2. Liste les PR fusionnées sur `main` depuis le curseur (`gh -R <origin du clone> pr list --state merged`), moins
    celles déjà relues ou ignorées, de la plus ancienne à la plus récente.
 3. Met à jour le clone dédié (`git fetch origin main`) et y crée un worktree jetable, détaché sur
    `origin/main`, sous le dossier d'état ; il est retiré à la sortie, quelle qu'elle soit.
-4. Pour chaque PR, dans l'ordre : diff du commit de fusion (fichiers générés retirés ; au-delà de
-   400 000 octets, la seule liste des fichiers), puis un passage `codex exec` en lecture seule.
-   Une PR n'est marquée relue que si la sortie est présente et conforme au schéma.
+4. Pour chaque PR, dans l'ordre : diff du commit de fusion contre son premier parent
+   (`git diff <sha>^1 <sha>`, `--stat` compris : une fusion à deux parents est jugée sur ce
+   qu'elle apporte à `main` ; fichiers générés retirés : `package-lock.json`, `audit/registry/`,
+   `audit/dependencies/`, `.claude/knowledge/REPO_MAP.md`,
+   `audit/cleanup/pr-8-controlled-cleanup-candidates.json`, `audit/cleanup/pr-8-deletion-proof.md`
+   et `audit/module-boundaries.json` ; au-delà de 400 000 octets, la seule
+   liste des fichiers), puis un passage `codex exec` en lecture seule. Un diff vide (seuls des
+   fichiers générés) est un échec (code 1) : la PR reste en attente. Une PR n'est marquée relue
+   que si la sortie est présente et conforme au schéma.
 5. S'arrête au premier échec, sans sauter de PR :
    - quota Codex épuisé (code 5) : état `warn`, reprise au passage suivant à cette PR ;
    - tout autre échec (code 1) : état `error`, même reprise ; une PR qui échoue toujours se
-     retire par `ignorer --pr N --motif …`, décision humaine et tracée dans le curseur ;
+     retire par `ignorer --pr N --motif …`, décision humaine et tracée dans le curseur ; `ignorer`
+     n'avance pas la date du curseur, seule une PR relue l'avance : ignorer une PR plus récente
+     qu'une PR en attente ne fait pas sortir celle-ci de la recherche ;
    - plafond de 40 PR atteint : état `warn`, le reste au passage suivant.
 6. Écrit le résumé du jour et l'état du job (`cron_report`, affiché au début de chaque session
    Claude de la machine ; muet au-delà de 36 h = alerte).
@@ -57,7 +67,8 @@ effort `high`. Codex lit `AGENTS.md` du worktree ; la consigne est jointe au pro
 | Variable | Défaut |
 |---|---|
 | `CODEX_CONTROLEUR_DEPOT` | dépôt qui contient le script ; l'unité le fixe au clone dédié `%h/codex-controleur/app`. `/opt/automecanik/app` est refusé (code 2) |
-| `CODEX_CONTROLEUR_ETAT` | `${XDG_STATE_HOME:-~/.local/state}/automecanik/codex-controleur` |
+| `CODEX_CONTROLEUR_ETAT` | `${XDG_STATE_HOME:-~/.local/state}/automecanik/codex-controleur` ; refusé dans `/opt/automecanik/app` (code 2) |
+| `CODEX_CONTROLEUR_PROTEGE` | vide ; un checkout de plus à protéger comme `/opt/automecanik/app` (utilisé par le test) ; ne retire jamais `/opt/automecanik/app` |
 | `CODEX_CONTROLEUR_BIN` / `_VERSION` | `codex` / `0.170.0` |
 | `CODEX_CONTROLEUR_MODELE` / `_EFFORT` | `gpt-6.2-astra` / `high` |
 | `CODEX_CONTROLEUR_MAX_PR` | `40` (aussi `--max N`) |
@@ -125,7 +136,13 @@ retirés, aucun serveur MCP, `package-lock.json` retiré du diff, `--max`, éche
 verrou (7), worktrees retirés, unités livrées (script et dépôt du clone dédié), checkout partagé
 refusé (2, rien créé), lancement depuis un répertoire hors dépôt avec un faux `gh` qui, comme le
 vrai, échoue sans dépôt nommé : chaque appel `gh` porte `-R <origin du dépôt de travail>` (mandat
-EF). Résultat au 2026-11-20 : 91 contrôles, 0 en échec.
+EF) et applique le filtre `merged:>=` de la recherche. Mandat FG : fusion à deux parents (diff
+contre le premier parent, `--stat` compris), diff vide refusé (PR en attente), `ignorer` d'une
+PR plus récente sans perte de la plus ancienne, worktree lié refusé, clone indépendant accepté,
+dossier d'état dans le checkout protégé refusé (chemin exact, sous-dossier, lien symbolique ;
+droits préservés). Complément 1 : projections `audit/cleanup/pr-8-*` et
+`audit/module-boundaries.json` retirées du diff, un diff ordinaire passe sous la limite malgré une
+projection plus grosse qu'elle. Résultat au 2026-11-26 : 135 contrôles, 0 en échec.
 
 ## Installer et activer
 

@@ -4,12 +4,13 @@ description: >-
   Generation de prompts image R3 (Midjourney/DALL-E/ComfyUI). Batch 5-50 gammes.
   Lit RAG knowledge, genere prompts par slot (hero/symptom/schema/fixation),
   ecrit en DB via endpoint admin. Zero LLM.
-model: haiku
+model: inherit
 tools:
   - mcp__supabase__execute_sql
   - Read
   - Glob
   - Grep
+  - REPL
 role: R3_CONSEILS
 ---
 

@@ -1,8 +1,11 @@
-"""Guard 6 of pretool-bash-guard.sh: does a Bash command start a PROD deploy?
+"""Guard 6 of pretool-bash-guard.sh: does a Bash command start a PROD deploy, merge a
+pull request, arm its auto-merge or approve it?
 
 Reads the command on stdin, prints the verdicts found, space separated:
   tag        creates or pushes a v* tag (release-prod.yml trigger: tags v*)
   workflow   runs or re-enables a PROD deploy workflow
+  merge      merges a pull request or arms its merge (auto-merge, merge queue)
+  approve    submits an approving review
   unparsable the command cannot be read as shell words (unclosed quote or here-document)
 Empty output = allowed. Called with python3 -I; any crash must be read as a block by the
 caller.
@@ -14,14 +17,21 @@ redirections (their target is not an argument), arithmetic $((...)), here-docume
 "$(...)", a here-string, a here-document body) is analysed again, whatever its command:
 a pipe can hand any of them to a shell. When such a word cannot be read, the commands
 complete before the error are still analysed, as bash would run them. A command built from variables or a script file stays
-out of reach.
+out of reach. So do, for merge and approve: a gh alias or extension, a request body or a
+GraphQL query read from a file (--input f.json, -F query=@f.graphql), another HTTP client
+(curl), the branch merge API (POST .../merges, mergeBranch), and a word whose letters are
+split by quotes or escapes (mer''ge): the text filter then no longer sees it.
 """
 import re
 import sys
 
 OPS = set(";&|()`\n")
 PROD = r"(release|deploy)[- ]prod|417610500|224452325"
-PREFILTER = (re.compile(r"\b(git|gh)\b"), re.compile(r"\b(tag|push|release|api|workflow)\b"))
+# Text worth reading: git/gh with a deploy word, or gh with a pull request merge/review word.
+PREFILTER = ((re.compile(r"\b(git|gh)\b"), re.compile(r"\b(tag|push|release|api|workflow)\b")),
+             (re.compile(r"\bgh\b"), re.compile(r"\b(merge|review)\b")))
+REVIEW = "review?"  # internal: a review written without a readable event, settled in analyse
+GRAPHQL = "graphql?"  # internal: a graphql call, its query may be outside its words, same
 
 
 class Unparsable(ValueError):
@@ -264,7 +274,71 @@ def gh_api(a):
     if any(re.search(r"actions/workflows/[^/]*(" + PROD + r")[^/]*/(dispatches|enable)\b", t, re.I)
            for t in a):
         found.add("workflow")
+    # Pull requests. GET .../pulls/<n>/merge (is it merged?) and .../reviews (list) are reads.
+    graphql = any(re.search(r"(^|/)graphql/?$", t) for t in a)
+    if write and any(re.search(r"pulls/[^/]+/merge\b", t) for t in a):
+        found.add("merge")
+    if graphql:
+        # The query may be a field, a here-document or a pipe (--input -): its mutations
+        # are looked for in the whole text and in its words by analyse.
+        found.add(GRAPHQL)
+    if write and any(re.search(r"pulls/[^/]+/reviews\b", t) for t in a):
+        # event=... given as a field decides; without it, or with --input (the body then
+        # comes from the input, not from the fields), the event is looked for in the
+        # whole text by analyse.
+        events = [m.group(1) for t in a for m in [re.search(r"(?:^|=|^-[fF])event=(.*)", t)] if m]
+        if not events or any(re.match(r"--input(=|$)", t) for t in a):
+            found.add(REVIEW)
+        elif any(e.upper() == "APPROVE" for e in events):
+            found.add("approve")
     return found
+
+
+def flags(a, short_value, long_value):
+    """Options really passed and positional words; the value of an option (space or
+    attached) is neither. Returns (long options written without '=', option names,
+    positional words)."""
+    exact, names, pos, j = set(), set(), [], 0
+    while j < len(a):
+        t = a[j]
+        if t == "--":
+            pos += a[j + 1:]
+            break
+        if t.startswith("--"):
+            key = t.split("=", 1)[0]
+            names.add(key)
+            if "=" not in t:
+                exact.add(t)
+            j += 2 if key in long_value and "=" not in t else 1
+        elif t.startswith("-") and len(t) > 1:
+            for k, ch in enumerate(t[1:], 1):
+                if ch in short_value:
+                    j += 1 if k < len(t) - 1 else 2
+                    break
+                names.add("-" + ch)
+            else:
+                j += 1
+        else:
+            pos.append(t)
+            j += 1
+    return exact, names, pos
+
+
+def gh_pr(a):
+    """Words after 'gh pr'. merge: every form but --disable-auto alone (disarming) and
+    --help. review: --approve / -a, also grouped (-ab text). Options as of gh 2.101."""
+    pos = flags(a, "R", {"--repo"})[2]
+    if pos[:1] == ["merge"]:
+        exact, names, _ = flags(a, "AbFtR", {"--author-email", "--body", "--body-file",
+                                             "--match-head-commit", "--subject", "--repo"})
+        disarm = "--disable-auto" in exact and not names & {
+            "--auto", "--admin", "--merge", "--rebase", "--squash", "-m", "-r", "-s"}
+        return set() if disarm or "--help" in exact else {"merge"}
+    if pos[:1] == ["review"]:
+        exact, names, _ = flags(a, "bFR", {"--body", "--body-file", "--repo"})
+        if names & {"-a", "--approve"} and "--help" not in exact:
+            return {"approve"}
+    return set()
 
 
 def check(c):
@@ -289,11 +363,13 @@ def check(c):
                 found.add("workflow")
             if a[0] == "api":
                 found |= gh_api(a)
+            if a[0] == "pr":
+                found |= gh_pr(a[1:])
     return found
 
 
 def analyse(s, depth=0):
-    if not all(p.search(s) for p in PREFILTER):
+    if not any(tool.search(s) and word.search(s) for tool, word in PREFILTER):
         return set()
     found = set()
     try:
@@ -312,6 +388,19 @@ def analyse(s, depth=0):
         for w in nested:
             if w != s:
                 found |= analyse(w, depth + 1)
+    if depth == 0:
+        # A query or an event may come from anywhere in the command (field, here-document,
+        # pipe): the whole text is searched, as written and as the words bash reads.
+        text = "\n".join([s] + nested)
+        if GRAPHQL in found:
+            if re.search(r"\b(mergePullRequest|enablePullRequestAutoMerge|enqueuePullRequest)\b", text):
+                found.add("merge")
+            if re.search(r"\b(add|submit)PullRequestReview\b", text):
+                found.add(REVIEW)
+        if REVIEW in found and (re.search(r"\bAPPROVE\b", text)
+                                or re.search(r"event\W{1,6}approve\b", text, re.I)):
+            found.add("approve")
+        found -= {GRAPHQL, REVIEW}
     return found
 
 
