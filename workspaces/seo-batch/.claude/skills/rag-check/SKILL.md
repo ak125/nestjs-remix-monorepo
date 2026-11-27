@@ -17,7 +17,7 @@ argument-hint: "<pg_alias ou vehicle_slug> [--fix] [--batch top10] [--diff]"
 ## Usage
 - `/rag-check filtre-a-huile` — diagnostic RAG gamme (R1/R3/R4/R5/R6)
 - `/rag-check renault-clio-3` — diagnostic RAG véhicule (R8)
-- `/rag-check filtre-a-huile --fix` — diagnostiquer + backfill RAG↔DB
+- `/rag-check filtre-a-huile --fix` — diagnostiquer + backfill DB→RAG
 - `/rag-check renault-clio-3 --fix` — diagnostiquer + backfill RAG véhicule
 - `/rag-check --batch top10` — 10 entités avec le plus de gaps RAG
 - `/rag-check filtre-a-huile --diff` — comparer avec le dernier check
@@ -300,7 +300,7 @@ Si R5 est le seul gap → le prompt ne demande que les symptômes/diagnostic.
 {UNIQUEMENT les sections correspondant aux rôles PARTIAL/BLOCKED}
 ```
 
-### Étape 9 — Mode --fix (backfill bidirectionnel RAG ↔ DB)
+### Étape 9 — Mode --fix (backfill DB → RAG)
 
 Si `--fix` est passé :
 
@@ -310,14 +310,8 @@ Si la DB a des données que le RAG n'a pas (ex: confusions en DB mais pas dans l
 - Ajouter dans le frontmatter via `Edit`
 - Signaler : "Backfill DB→RAG : +{N} confusions"
 
-**Fix B — Backfill RAG → DB**
-Si le RAG a des données que la DB n'a pas (ex: cost_range dans .md mais pas en DB) :
-```sql
-UPDATE __seo_gamme_purchase_guide
-SET sgpg_risk_cost_range = '{cost_range}'
-WHERE sgpg_pg_id = '{pg_id}' AND sgpg_risk_cost_range IS NULL;
-```
-Signaler : "Backfill RAG→DB : cost_range = {value}"
+**Fix B — retiré.** Recopier en base (`__seo_gamme_purchase_guide`) une valeur lue dans le RAG
+ferait du RAG une source de contenu ; le RAG reste un consommateur chatbot (CLAUDE.md, invariant 4).
 
 **Fix C — Enrichissement depuis docs web ingérés**
 Chercher dans les docs RAG web si des normes/cost_range sont mentionnés :
@@ -331,32 +325,15 @@ Si trouvé → extraire et proposer l'ajout dans le frontmatter.
 **Fix D — Après enrichissement → relancer /rag-check**
 Afficher : "Fixes appliqués : {N}. Relancer `/rag-check {alias}` pour vérifier."
 
-### Étape 10 — Stocker le résultat en DB
+### Étape 10 — Pas d'écriture en base
 
-```sql
-CREATE TABLE IF NOT EXISTS __rag_check_history (
-  id SERIAL PRIMARY KEY,
-  pg_id INTEGER NOT NULL,
-  pg_alias TEXT NOT NULL,
-  check_date TIMESTAMPTZ DEFAULT now(),
-  coverage_score INTEGER,
-  r1_status TEXT,
-  r3_status TEXT,
-  r4_status TEXT,
-  r5_status TEXT,
-  r6_status TEXT,
-  faq_status TEXT,
-  desync_count INTEGER DEFAULT 0,
-  fixes_applied INTEGER DEFAULT 0,
-  skill_version TEXT DEFAULT 'v1.1'
-);
-
-INSERT INTO __rag_check_history (pg_id, pg_alias, coverage_score, r1_status, r3_status, r4_status, r5_status, r6_status, faq_status, desync_count, fixes_applied)
-VALUES ({pg_id}, '{pg_alias}', {score}, '{r1}', '{r3}', '{r4}', '{r5}', '{r6}', '{faq}', {desync}, {fixes})
-ON CONFLICT DO NOTHING;
-```
+Le résultat reste dans le rapport de l'étape 7. Ni `CREATE TABLE` ni `INSERT` : les agents
+lisent la base sans l'écrire (`.claude/skills/amk-supabase-postgres-best-practices/SKILL.md`), et
+`__rag_check_history` est visée par l'archivage de `backend/supabase/migrations/20261118_archive_dead_tables_lot_f1.sql`.
 
 ### Mode --diff
+
+Lit l'historique déjà présent dans `__rag_check_history` s'il existe encore ; ce skill n'y ajoute plus rien (étape 10).
 
 Si `--diff` est passé :
 ```sql
@@ -553,6 +530,6 @@ Format : Markdown (.md), frontmatter YAML, nommer `vehicles/{brand}-{model}.md`
 6. **Comparer RAG ↔ DB** — signaler les desyncs
 7. **Score couverture = métrique objective** — pas de jugement subjectif
 8. **BLOCKED = le rôle/bloc ne peut pas être généré** — pas "il sera moins bon"
-9. **Stocker chaque check en DB** — pour le mode --diff
+9. **Aucune écriture en base** — le résultat reste dans le rapport (étape 10)
 10. **Afficher la readiness /kp** — pour guider l'utilisateur vers la prochaine étape
 11. **Détection auto gamme/véhicule** — l'utilisateur n'a pas besoin de préciser le type
