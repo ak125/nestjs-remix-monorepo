@@ -32,7 +32,9 @@ export class HumanEscalationBuilderService {
     return {
       available: true,
       priority_boost,
-      target: '/devis-humain',
+      // Page de contact du support, servie 200 (mandat GE, F02) ;
+      // /devis-humain n'existe pas (404 sur DEV le 27 nov.).
+      target: '/contact',
       reason_codes,
     };
   }

@@ -40,7 +40,7 @@ const mkResponse = (
   human_escalation: {
     available: true,
     priority_boost: false,
-    target: '/devis-humain',
+    target: '/contact',
     reason_codes: ['DR_HANDOFF_TO_HUMAN'],
   },
   ...overrides,
@@ -121,7 +121,7 @@ describe('InvariantAsserter V1A.0', () => {
             {
               type: 'human_resolution',
               priority: 1,
-              target: '/devis-humain',
+              target: '/contact',
               label_key: 'k',
               confidence: 0.95,
               rationale_codes: ['DR_SAFETY_VEHICLE_CONTEXT_MISSING'],
@@ -188,7 +188,7 @@ describe('InvariantAsserter V1A.0', () => {
           human_escalation: {
             available: false,
             priority_boost: false,
-            target: '/devis-humain',
+            target: '/contact',
             reason_codes: ['DR_HANDOFF_TO_HUMAN'],
           },
         }),

@@ -39,7 +39,8 @@ const DEFAULT_LABELS: Record<ActionType, string> = {
   devis: "Demander un devis",
   appel: "Appeler un conseiller",
   garage: "Trouver un garage",
-  guide: "Consulter le guide",
+  // La cible est l'index des conseils (mandat GE, F02), pas un guide précis.
+  guide: "Voir les conseils et guides",
   entretien_pack: "Pack entretien",
   faq: "FAQ associée",
   assistant_diagnostic: "Affiner le diagnostic",
