@@ -91,22 +91,69 @@ export {
   type KeywordCluster,
 } from "./keyword-cluster.schema";
 
-// ── V-Level invariants (réf : audit/levels-doctrine-cgc-vs-vlevel-2026-06-04.md) ──
-// Data-only : énonce les règles V une seule fois (classement marketing FR). N'est PAS un
-// moteur. Ne JAMAIS confondre avec cgc_level (maillage public) ni L1–L5 (sizing contenu).
+// ── V-Level : décision 192 (définition des V1 à V6) ──
+// Les huit lignes mot pour mot et une fonction pure par ligne ; les données d'entrée sont des
+// paramètres. Ne JAMAIS confondre avec cgc_level (maillage public) ni L1–L5 (sizing contenu).
 export {
   V_LEVEL_IDS,
   type VLevelId,
+  VLEVEL_STATE_TO_VERIFY,
+  VLEVEL_STATE_LICENCE_FREE,
+  V_LEVEL_STATES,
+  type VLevelState,
+  type VLevelDecision192Line,
+  VLEVEL_DECISION_192_LINES,
+  VLevelInputError,
+  VLEVEL_DEMAND_SOURCES,
+  type VLevelDemandSource,
+  type VLevelFormulation,
+  type VLevelObservation,
+  type VLevelSearchedVersion,
+  type VLevelToVerifyFormulation,
+  type VLevelLicenceFreeFormulation,
+  type VLevelDemandSorting,
+  sortDemandObservations,
+  V3_SOURCE_TIERS,
+  type V3SourceTier,
+  v3SourceTier,
+  type V3Candidate,
+  type V3Election,
+  type V3ElectionInput,
+  electV3,
+  type VLevelGroupFiche,
+  type VLevelGroupInput,
+  type VLevelGroupClassification,
+  classifyDemandGroup,
+  type VLevelCatalogueFiche,
+  type V5Input,
+  type V5Selection,
+  selectV5,
+  type V2Vote,
+  type V2TallyLine,
+  type V2Election,
+  type V2ElectionInput,
+  electV2,
+  type V6Input,
+  type V6Decision,
+  decideV6,
+  type V1OwnerDecision,
+  carryV1,
+  type VLevelInvariant,
+  V_LEVEL_INVARIANTS,
+  type VLevelKnownGap,
+  V_LEVEL_KNOWN_GAPS,
+  VLEVEL_DB_BASELINE_2026_06_05,
+} from "./vlevel-invariants";
+
+// ── V-Level : remplacé par la décision 192 ──
+// Ancienne règle, exportée seulement pour les calculateurs non raccordés qui l'appellent encore.
+export {
   VLEVEL_V2_CAP,
-  VLEVEL_RANKING_SIGNALS,
-  VLEVEL_PAGE_DISPATCH,
-  VLEVEL_V2_PROMOTION,
   type V2PromotionCandidate,
   type V2Violation,
   validateV2Promotion,
   type V2TierSelection,
   selectV2Tier,
-  V_GROUP_KEY,
   vLevelGroupKey,
   compareV3Champions,
   GAMME_PART_TERMS,
@@ -114,10 +161,4 @@ export {
   VLEVEL_MOTOR_PATTERN,
   type VLevelVehicleCandidate,
   isVLevelEligibleVehicle,
-  type VLevelInvariant,
-  V_LEVEL_INVARIANTS,
-  V_PROPAGATE,
-  type VLevelKnownGap,
-  V_LEVEL_KNOWN_GAPS,
-  VLEVEL_DB_BASELINE_2026_06_05,
 } from "./vlevel-invariants";

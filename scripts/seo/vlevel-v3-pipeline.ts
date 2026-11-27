@@ -1,6 +1,12 @@
 /**
  * vlevel-v3-pipeline.ts — Mécanique de DÉCISION V3 (READ-ONLY + DRY-RUN only).
  *
+ * Règle remplacée par la décision 192 — calculateur non raccordé.
+ * La définition en vigueur des V1 à V6 est dans .spec/features/g-v-classification.md.
+ * Les packs produits ici réélisent V2, V3 et V4 avec l'ancienne règle (champion par volume,
+ * plafond de V2 par gamme), faute des données d'entrée de la décision 192 : écart
+ * « d192-calculateur-packs-de-decision » de V_LEVEL_KNOWN_GAPS (@repo/seo-roles).
+ *
  * Automatise la PROCÉDURE (preuve + contrôle), JAMAIS la décision métier ni la mutation.
  * Pipeline : investigation/scoring -> decision-pack -> (owner review) -> validate -> dry-run.
  * L'apply RÉEL est volontairement NON IMPLÉMENTÉ (stub owner-gated qui n'écrit jamais en DB).

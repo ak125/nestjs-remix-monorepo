@@ -1,334 +1,173 @@
 ---
-title: "G-V Classification — Système V-Level v5.0"
+title: "G-V Classification — V-Level (décision 192)"
 status: draft
-version: 5.0.0
+version: 6.0.0
 ---
 
-# Systeme de Classification V-Level v5.0
+# Classification V-Level — définition des V1 à V6 (décision 192)
 
-> **Version :** v5.0 (2026-02-10)
-> **Auteur :** Claude Code + Utilisateur
-> **Remplace :** v4.0 / v4.1
+> **Règle en vigueur :** décision 192 (Marwane, 25 novembre 2026). Elle précise la décision 46.
+> La décision 159 reste au-dessus : la base se vérifie face au constructeur avant correction, elle
+> n'est pas une source de vérité.
+> **État :** décidé, non implémenté. Les fonctions pures existent et sont testées ; aucun
+> calculateur n'est raccordé, faute des données d'entrée (voir « Données d'entrée » et
+> « Calculateurs »).
+> **Remplace :** v5.0 du 10 février 2026 (voir « Ce que la décision 192 remplace »).
 
 ## But
 
-Le V-Level decide, pour chaque gamme de pieces auto :
-1. **Quels vehicules afficher en priorite** sur les pages publiques
-2. **Quels vehicules meritent une page SEO dediee** (meta tags, sitemap, structured data)
+Le V-Level classe les versions de véhicule (fiches catalogue, `type_id`) pour chaque gamme de
+pièces. Ce document porte la définition des six niveaux et des deux états. Il ne dit rien de
+l'usage des niveaux par les pages (affichage, indexation) : la décision 192 n'en traite pas.
 
-## Sources de donnees
+## Double système de classification
 
-| Source | Ce qu'elle apporte |
-|--------|-------------------|
-| **CSV Google Ads** | Mots-cles recherches par les internautes + volume mensuel |
-| **Base vehicules** (`auto_type`, `auto_modele`) | Catalogue complet des vehicules compatibles |
-
----
-
-## DOUBLE SYSTEME DE CLASSIFICATION
-
-| Systeme | Cible | Niveaux | Description |
+| Système | Cible | Niveaux | Description |
 |---------|-------|---------|-------------|
-| **Systeme G** | GAMMES (familles de pieces) | G1, G2, G3, G4 | Classification des produits |
-| **Systeme V** | VEHICULES | V1, V2, V3, V4, V5, V6 | Classification des motorisations |
+| **Système G** | Gammes (familles de pièces) | G1, G2, G3, G4 | Classification des produits |
+| **Système V** | Véhicules | V1, V2, V3, V4, V5, V6 | Classification des motorisations |
 
-> Ce document couvre uniquement le **Systeme V**.
-
----
-
-## Phase T — Triage des mots-cles CSV
-
-Le CSV Google Ads contient des milliers de mots-cles. La Phase T filtre et classe :
-
-| Etape | Role | Exemple |
-|-------|------|---------|
-| **T1** Pertinence | Le keyword contient le nom de la gamme | "disque frein clio" OK / "plaquette clio" NON |
-| **T2** Exclusion | Le keyword n'appartient pas a une AUTRE gamme | "kit embrayage clio" NON (c'est embrayage, pas disque frein) |
-| **T3** Categorisation | Vehicule, marque, ou generique ? | "disque frein clio 1.5 dci" = vehicule / "disque frein bosch" = marque |
-| **T4** Vehicules only | Seuls les keywords vehicule passent a la Phase V | Les marques et generiques restent en base mais sans V-level |
-
-**Apres T4 :** On a une liste de keywords vehicule avec leur volume Google.
-
-> **Note :** T1/T2/T3 ne changent pas en v5.0. Le code actuel fonctionne.
-
-### T5 — Filtre motorisation (v5.0)
-
-**Regle : Seuls les keywords avec motorisation recoivent un V-level.**
-
-Un keyword vehicule est "specifique" (eligible V-level) s'il mentionne un pattern moteur :
-- Cylindree : `\d+\.\d+` (ex: 1.5, 1.6, 2.0)
-- Fuel patterns : hdi, dci, tdi, cdi, tce, tsi, vti, puretech, tfsi, gti, vtec, mpi, d4d, jtd, cdti, crdi, dtec
-- Chevaux : `\d+ ch`, `\d+ cv`
-
-**Exemples :**
-- "filtre a huile 207 1.6 hdi" → specifique → V3/V4/V2
-- "filtre a huile 207" → generique → **PAS de V-level** (reste en base, v_level = NULL)
-- "filtre a huile clio 3 1.5 dci 90" → specifique → V3/V4/V2
+> Ce document couvre uniquement le **Système V**. Ne pas confondre le V-Level avec `cgc_level`
+> (maillage public) ni avec les niveaux L1 à L5 du générateur de contenu.
 
 ---
 
-## Phase MATCH — Attribution du type_id
+## La définition — huit lignes, mot pour mot
 
-Chaque keyword vehicule est matche a un vehicule reel dans `auto_type` via le RPC `backfill_seo_keywords_type_ids`.
+Les numéros sont ceux des lignes du classeur de la décision. Le texte est cité sans reformulation ;
+`packages/seo-roles/src/vlevel-invariants.ts` porte les mêmes huit lignes et un test vérifie que
+les deux textes sont identiques.
 
-Exemple : "disque frein clio 3 1.5 dci" -> `type_id = 12345` (Clio III 1.5 dCi 68ch)
+| Ligne | Niveau ou état | Périmètre | Règle |
+|-------|----------------|-----------|-------|
+| 16 | V3 · premier choix | Une gamme × un modèle × une génération × une énergie | « Retenir une seule fiche vérifiée. Priorité à une version identifiée avec la gamme. À précision égale avec la gamme, préférer la version vue dans les deux sources, puis Ads seul, puis Google.fr seul. » |
+| 17 | V4 · autres demandes | Même groupe et même gamme que le V3 | « Classer chaque autre version recherchée et identifiée par son moteur, sa puissance, son année ou sa période, et son type_id. Plusieurs graphies de la même version renvoient à une seule fiche. » |
+| 18 | V5 · variantes restantes | Une gamme × un modèle × une génération | « Dès le premier V3 vérifié, prendre toutes les fiches catalogue affichables et compatibles de cette génération. Retirer les V3 et V4 de la gamme. Le reste reçoit V5, toutes énergies et carrosseries comprises. » |
+| 19 | V2 · choix entre gammes | Un modèle × une génération × une énergie | « Chaque gamme ayant validé un V3 donne une voix à son type_id. Le seul type_id en tête devient V2. À égalité, garder le V2 validé s’il est parmi les premiers. Sinon consigner un arbitrage humain. » |
+| 20 | V6 · véhicule sans demande observée | Une fiche catalogue exacte, toutes gammes contrôlées | « Attribuer V6 après vérification de toutes les gammes, si aucune demande ni aucun V3, V4 ou V5 ne concerne la fiche. Un V5 dans une seule gamme suffit à l’exclure du V6. » |
+| 21 | V1 · choix marketing | Un modèle et sa génération | « L’agent étudie l’intérêt du modèle pour le public et la campagne, documente les indices et remet son avis. Marwane décide du V1. » |
+| 22 | À vérifier | Formulation ambiguë ou recherche incomplète | « Garder la formulation, son origine, les fiches possibles et la précision manquante. Reprendre la recherche avant toute élection. » |
+| 26 | Périmètre · voitures sans permis | Toutes les gammes · agents, simulation et recalcul | « Conserver la formulation Ads exacte et sa ligne source. Dès que la version est identifiée comme voiture sans permis, la marquer « Hors V-Level • voiture sans permis », y compris avec une fiche catalogue compatible. » |
 
-**Regle : Tout keyword qui entre en Phase V a un type_id.**
+Deux de ces lignes ne sont pas des niveaux mais des **états** :
 
----
+- **« À vérifier »** (ligne 22) : la formulation attend une précision ; elle ne reçoit aucun niveau.
+- **« Hors V-Level • voiture sans permis »** (ligne 26) : la version sort du V-Level, dans toutes
+  les gammes.
 
-## Phase V — Classification en 6 niveaux
-
-### Groupement
-
-Les keywords vehicule sont groupes par **[gamme + modele + energie]**.
-
-**Energies reconnues :** diesel, essence, hybride, electrique, GPL
-
-**Patterns de detection :**
-
-| Energie | Patterns |
-|---------|----------|
-| Diesel | diesel, dci, hdi, tdi, cdi, d4d, jtd, cdti, crdi, dtec |
-| Essence | essence, tce, vti, puretech, tfsi, tsi, gti, vtec, mpi |
-| Hybride | hybrid, phev, e-hybrid, plug-in, hybride |
-| Electrique | ev, electrique, electric, e-208, e-c4 (e-prefix) |
-| GPL | gpl, lpg, bifuel |
-
-**Gammes universelles :** Certaines gammes n'ont pas de distinction par energie (essuie-glaces, ampoules, tapis...). Elles sont marquees avec `gamme_universelle = true` dans `pieces_gamme`. Pour ces gammes, le groupement est **[gamme + modele]** seulement.
-
-**Exemple (gamme "disque de frein", PAS universelle) :**
-```
-Groupe 1 : disque frein | clio | diesel    -> 8 keywords
-Groupe 2 : disque frein | clio | essence   -> 5 keywords
-Groupe 3 : disque frein | 308 | diesel     -> 12 keywords
-Groupe 4 : disque frein | 308 | essence    -> 3 keywords
-```
+**V1 n'est jamais attribué par le code** (ligne 21) : l'agent remet un avis, Marwane décide.
 
 ---
 
-### V3 — Champion du groupe
+## Fonctions pures
 
-Dans chaque groupe, **1 seul keyword est elu V3 = le champion**.
+Chaque ligne a sa fonction dans `packages/seo-roles/src/vlevel-invariants.ts`. Les fonctions ne
+lisent aucune base : toutes les données d'entrée sont des paramètres fournis par l'appelant.
 
-**Election du V3 :**
-1. Trier les keywords du groupe par **volume DESC**
-2. Si egalite de volume : **le premier dans l'ordre du CSV** gagne
-3. Le 1er du tri = V3
+| Ligne | Fonction | Ce que l'appelant fournit | Résultat |
+|-------|----------|---------------------------|----------|
+| 17, 22, 26 | `sortDemandObservations` | Les formulations relevées : texte exact, source, ligne source, fiche identifiée ou fiches possibles, précision manquante, marqueur voiture sans permis | Versions identifiées (une fiche par version, toutes ses graphies), formulations « À vérifier », formulations « Hors V-Level • voiture sans permis » |
+| 16 | `electV3` | Les fiches d'un groupe gamme × modèle × génération × énergie : vérifiée ou non, identifiée avec la gamme ou non, sources ; recherche complète ou non | Une seule fiche retenue, ou élection suspendue, ou aucune fiche vérifiée, ou égalité non départagée |
+| 16, 17 | `classifyDemandGroup` | Les mêmes fiches, avec moteur, puissance, année ou période | Le V3, les V4, les fiches en attente d'un V3, les fiches « À vérifier », les fiches hors V-Level |
+| 18 | `selectV5` | Les fiches catalogue de la génération (affichable, compatible avec la gamme), les V3 vérifiés et les V4 de la gamme | Les V5, les fiches retirées comme V3 ou V4, les fiches non retenues et pourquoi |
+| 19 | `electV2` | Une voix par gamme ayant validé un V3 ; le V2 déjà validé, s'il existe | Le V2, ou le V2 validé gardé, ou un arbitrage humain à consigner, ou aucune voix |
+| 20 | `decideV6` | Pour une fiche : toutes les gammes vérifiées ou non, demande observée ou non, ses niveaux V3, V4 ou V5 dans chaque gamme | V6, ou la raison de l'exclusion |
+| 21 | `carryV1` | Les décisions de Marwane | Le V1 porté par une décision ; aucune fonction ne le calcule |
 
-**Cas particuliers :**
-- **Seul dans le groupe** -> V3 automatique (meme si volume = 0)
-- **Tous les keywords a volume 0** -> le premier du CSV = V3
-- **1 seul V3 par groupe**, jamais plus
-
-**Modele :** Le modele est parse du keyword (ex: "clio" dans "disque frein clio 1.5 dci") **puis confirme** par le type_id matche (auto_type -> auto_modele -> modele_name).
-
-**Affichage public :** V3 = affiche en haut de la page gamme, trie par volume DESC entre les V3.
-
-**Exemple :**
-```
-Groupe "disque frein | clio | diesel" :
-  "disque frein clio 3 1.5 dci"     volume=500  -> V3 (champion, plus gros volume)
-  "disque frein clio 3 1.5 dci 90"  volume=200  -> V4
-  "disque frein clio 3 dci"         volume=50   -> V4
-  "disque frein clio 3 1.5 dci 68"  volume=0    -> V4
-
-Groupe "disque frein | lada | diesel" (1 seul keyword) :
-  "disque frein lada niva 1.7 d"    volume=0    -> V3 (seul dans le groupe)
-
-Groupe "disque frein | dacia | essence" (tous a 0) :
-  "disque frein dacia sandero 1.0"  volume=0    -> V3 (premier du CSV)
-  "disque frein sandero stepway"    volume=0    -> V4
-```
+Le V2 se choisit **entre gammes** (ligne 19) : il ne fait plus partie du recalcul d'une seule gamme.
 
 ---
 
-### V4 — Reste du groupe (CSV)
+## Données d'entrée
 
-Tous les keywords vehicule du meme groupe qui ne sont pas V3.
+Relevé en lecture seule du 26 novembre 2026. Une donnée absente n'est remplacée par aucun
+substitut (volume, rang dans un fichier, longueur du texte, chiffre romain du nom du modèle).
 
-**Regles :**
-- V4 = dans le CSV, pas le champion
-- **Inclut les volume = 0** (tout non-champion est V4)
-- Au reimport CSV : un V4 peut devenir V3 si son nouveau volume est plus eleve que l'ancien champion
+| Donnée d'entrée | Lignes | Aujourd'hui | Écart déclaré |
+|-----------------|--------|-------------|---------------|
+| Fiche « vérifiée » (face au constructeur, décision 159) | 16, 18 | N'existe pas : aucune colonne ni table | `d192-fiche-verifiee` |
+| Version « identifiée avec la gamme » | 16 | N'existe pas. `GAMME_PART_TERMS` est un motif de texte pour trois gammes, pas cette donnée | `d192-identifiee-avec-la-gamme` |
+| Source de la demande (Ads, Google.fr, les deux) | 16 | Existe en partie : `__seo_keywords.source`, sans aucune valeur Google.fr ; une de ses valeurs ne se range ni dans Ads ni dans Google.fr ; une ligne n'a qu'une source | `d192-source-de-la-demande` |
+| Génération du modèle | 16, 18, 19, 21 | N'existe pas : `__seo_keywords.generation` est vide et le catalogue n'a pas d'attribut génération | `d192-generation` |
+| Fiche catalogue « affichable » | 18 | Existe : `auto_type.type_display` ; seul `'1'` est lu par le code, le sens des autres valeurs n'est pas documenté | `d192-affichable-et-compatible` |
+| Fiche catalogue « compatible » avec la gamme | 18 | Plusieurs tables candidates, aucune désignée comme faisant foi | `d192-affichable-et-compatible` |
+| « V2 validé » et arbitrage humain consigné | 19 | N'existe pas. Les `v_level = 'V2'` en base viennent de l'ancienne promotion par gamme | `d192-v2-valide` |
+| « Voiture sans permis » | 26 | N'existe pas : aucun marqueur sur la marque, le modèle, la fiche ou la formulation | `d192-voiture-sans-permis` |
+| État « À vérifier » (origine, fiches possibles, précision manquante) et état « Hors V-Level • voiture sans permis » | 22, 26 | Non stockables : `__seo_keywords.v_level` n'admet que des niveaux, et l'une de ses deux contraintes rejette V6 | `d192-etats-non-stockables` |
+| Décision V1 par modèle et génération | 21 | N'existe pas (`gamme_seo_metrics.is_v1` est par gamme) | `d192-decision-v1` |
 
-**Affichage public :** V4 = affiche plus bas sur la page gamme, trie par volume DESC entre les V4.
-
-**Utilite SEO :** V4 represente les variantes moteur d'un meme modele. Meme affiche plus bas, ils ajoutent du contenu et de la couverture longue traine.
-
----
-
-### V2 — Top 10 des V3 dans la gamme
-
-Parmi tous les V3 d'une gamme, on prend les 10 meilleurs par volume.
-
-**Regles :**
-- Trier tous les V3 par volume DESC
-- Dedup par **[modele + energie]** (un meme modele PEUT avoir 2 V2 : un diesel + un essence)
-- Les 10 premiers = V2
-- V2 remplace V3 (un keyword est V2 OU V3, jamais les deux)
-- **10 au total** par gamme, toutes energies confondues
-- Un V3 avec volume=0 peut etre V2 (s'il y a moins de 10 V3 avec volume)
-
-**Exemple (gamme "disque de frein") :**
-```
-V3 champions tries par volume :
-  1. "disque frein 308 1.6 hdi"    vol=800  -> V2 (308 diesel)
-  2. "disque frein clio 1.5 dci"   vol=500  -> V2 (clio diesel)
-  3. "disque frein clio 1.2 tce"   vol=450  -> V2 (clio essence — meme modele, autre energie)
-  4. "disque frein megane 1.5 dci"  vol=400  -> V2 (megane diesel)
-  ...
-  10. "disque frein c4 1.6 hdi"    vol=80   -> V2 (c4 diesel)
-  11. "disque frein polo 1.4 tdi"  vol=60   -> reste V3 (plus de place)
-```
+Ce qu'il faudrait pour chaque donnée (colonne, table, source) est décrit dans
+`V_LEVEL_KNOWN_GAPS`, champ `proposedOnly` : **proposé seulement**. Toute nouvelle donnée,
+colonne ou migration est une décision de Marwane.
 
 ---
 
-### V5 — Vehicules en base, pas dans le CSV
+## Calculateurs
 
-Vehicules qui existent dans la base (`auto_type`) mais ne sont PAS dans le CSV Google.
+Aucun des trois calculateurs n'est raccordé aux fonctions de la décision 192 : il leur manque des
+données d'entrée. Ils sont laissés tels quels et appliquent encore la règle remplacée.
 
-**Regles :**
-- Leur **modele** (via `modele_parent` dans `auto_modele`) a des V3/V4 dans cette gamme
-- **Meme generation seulement** : les freres ayant le meme `modele_parent` (pas toute la branche)
-- Si `modele_parent = 0` : le modele est un root, pas de siblings
-- Seulement les types avec `type_display = '1'` (vehicules affichables)
-- **Toutes energies** : si un V3 diesel declenche un V5, les siblings essence du meme parent sont aussi V5
-- Crees automatiquement avec volume = 0
-- **Recalcules** a chaque import/recalcul (supprimes puis recrees)
+| Calculateur | Rôle | Écart déclaré |
+|-------------|------|---------------|
+| `backend/src/modules/admin/services/gamme-vlevel.service.ts` | Recalcul d'une gamme (API admin), écrit en base | `d192-calculateur-recalcul-admin` |
+| `scripts/insert-missing-keywords.ts` | Import de mots-clés (CLI), écrit en base | `d192-calculateur-import-csv` |
+| `scripts/seo/vlevel-v3-pipeline.ts` | Packs de décision, lecture seule | `d192-calculateur-packs-de-decision` |
 
-**Exemple avec la hierarchie auto_modele :**
-```
-auto_modele :
-  Clio       (modele_id=1, modele_parent=0)   <- root (PAS de siblings car parent=0)
-  Clio II    (modele_id=4, modele_parent=1)   <- generation 1 (enfant de Clio)
-  Clio III   (modele_id=5, modele_parent=1)   <- generation 1 (enfant de Clio)
-  Clio IV    (modele_id=7, modele_parent=1)   <- generation 1 (enfant de Clio)
-  Clio III Estate (modele_id=6, modele_parent=5) <- generation 2 (enfant de Clio III)
-```
-
-**Scenario :** Le CSV a "disque frein clio 3 1.5 dci" (V3, type_id=12345, modele=Clio III, modele_id=5)
-
-```
-1. Clio III a modele_parent=1 (pas 0, donc on peut chercher des siblings)
-2. Siblings = SELECT * FROM auto_modele WHERE modele_parent=1 AND modele_id != 5
-   -> Clio II (id=4) et Clio IV (id=7)
-   -> PAS Clio III Estate (id=6) car son parent est 5, pas 1
-3. Tous les auto_type de Clio II et Clio IV avec type_display='1'
-4. Exclure ceux deja dans le CSV
-5. Les restants = V5 (volume=0)
-```
-
-**Resultat :** Les vehicules Clio II et Clio IV de la meme generation sont V5, mais pas Clio III Estate (qui est un sous-modele).
+Des objets en base sont antérieurs à la décision 192 et n'ont pas été modifiés (fonction
+`propagate_vlevel_per_typeid`, déclencheurs `v2_repetitions`, fonctions `get_vlevel_*`) : écart
+`d192-objets-en-base`. Les niveaux stockés aujourd'hui dans `__seo_keywords.v_level` viennent de
+la règle remplacée : ils ne sont pas des niveaux au sens de la décision 192.
 
 ---
 
-### V1 — Stars inter-gammes (DEFERRED)
+## Points que la décision ne tranche pas
 
-> **Reporte** — sera implemente quand plus de gammes seront importees.
+Le code ne choisit pas à la place de la décision. Sur chaque point ci-dessous, il rend un résultat
+explicite ou demande la donnée à l'appelant.
 
-Un vehicule qui est V2 dans **beaucoup de gammes differentes**. C'est un vehicule populaire toutes categories confondues.
-
-**Regles futures :**
-- V1 = vehicule qui est V2 dans >= 30% des gammes G1 (gammes principales)
-- Calcul global, apres import de plusieurs gammes
-
----
-
-### V6 — Orphelins (DEFERRED)
-
-> **Reporte** — sera implemente quand plus de gammes seront importees.
-
-Vehicules dans la base qui n'apparaissent dans **aucune gamme** (ni via CSV, ni via V5).
-
-**Regle future :** Calcul global. Vehicules oublies du catalogue.
-
----
-
-## Pipeline complet
-
-```
-CSV Google Ads
-    |
-    v
-Phase T : T1 pertinence -> T2 exclusion -> T3 categorisation -> T4 vehicules only
-    |
-    v
-Phase MATCH : attribution type_id (RPC backfill_seo_keywords_type_ids)
-    |
-    v
-Phase V :
-    V3/V4  (par groupe [gamme+modele+energie])
-    -> V2   (top 10 des V3, dedup par [modele+energie])
-    -> V5   (siblings en base via modele_parent, meme generation)
-    -> V1   (DEFERRED — inter-gammes, >= 30% des G1)
-    -> V6   (DEFERRED — orphelins globaux)
-```
+| Point | Ce que fait le code |
+|-------|---------------------|
+| « Identifiée avec la gamme » : oui ou non, ou degré de précision ? | Entrée oui/non fournie par l'appelant ; « à précision égale » compare deux fiches de même valeur |
+| Deux fiches vérifiées à égalité après l'ordre de la ligne 16 | Aucun choix : résultat « égalité non départagée », les fiches sont nommées |
+| V4 sans V3 retenu dans le groupe | Aucun V4 : les fiches restent « en attente d'un V3 » |
+| V4 : la fiche doit-elle être « vérifiée » ? | La ligne 17 ne le demande pas : non exigé |
+| V4 : moteur, puissance, année ou période absents | Pas de V4 : état « À vérifier », précision manquante nommée |
+| « Reprendre la recherche avant toute élection » : portée (la formulation, le groupe, la gamme) | « Recherche complète » est fournie par l'appelant pour le groupe ; si non, l'élection du V3 est suspendue |
+| « Gamme ayant validé un V3 » (ligne 19) : validé ou vérifié ? | Les voix sont fournies par l'appelant ; le code ne déduit pas la validation |
+| Aucune voix alors qu'un V2 est validé | Rien n'est élu ni retiré |
+| V6 : une formulation « À vérifier » est-elle une demande observée ? | « Demande observée » est fournie par l'appelant |
+| Voiture sans permis et V5, V6 | Lue depuis « Hors V-Level » : ni V5 ni V6 |
+| Mots-clés sans véhicule | Hors de la définition : aucun niveau, aucune règle écrite ici |
 
 ---
 
-## Reimport CSV
+## Ce que la décision 192 remplace
 
-| Sujet | Comportement |
-|-------|-------------|
-| Mode | **Fusion** — merge avec l'existant |
-| Volume | **Le plus recent** du CSV remplace l'ancien |
-| V3/V4 | **Recalcules** — un V4 peut devenir V3 si son nouveau volume est plus eleve |
-| V2 | **Recalcules** — top 10 recalcule avec les nouveaux volumes |
-| V5 | **Supprimes et recrees** — recalcules a partir des nouveaux V3/V4 |
+La v5.0 de ce document n'est plus en vigueur. Ses règles, que les calculateurs non raccordés
+appliquent encore :
 
----
+- groupe `[gamme + modèle + énergie]`, sans génération ;
+- V3 = champion du groupe par volume, puis ordre du fichier ou longueur du mot-clé ;
+- V4 = le reste du groupe ;
+- V2 = les dix premiers V3 d'une gamme ;
+- V5 = véhicules frères par `modele_parent` ;
+- V1 et V6 reportés.
 
-## Affichage public
-
-| V-Level | Position | Tri |
-|---------|----------|-----|
-| V2 | Tout en haut | Volume DESC |
-| V3 | Haut de page | Volume DESC |
-| V4 | Plus bas | Volume DESC |
-| V5 | En bas | Alphabetique ou par modele |
+Dans `packages/seo-roles/src/vlevel-invariants.ts`, ce qui en reste est regroupé sous
+« Remplacé par la décision 192 » et n'est conservé que parce qu'un calculateur non raccordé
+l'appelle encore. Le texte de la v5.0 reste lisible dans l'historique du fichier.
 
 ---
 
-## Decisions v5.0
+## Fichiers
 
-| Sujet | Decision |
-|-------|----------|
-| **Energies** | diesel, essence, hybride, electrique, GPL |
-| **Gammes universelles** | Flag `gamme_universelle` dans `pieces_gamme` pour ignorer l'energie |
-| **V4 volume=0** | **Autorise** — tout non-champion CSV = V4 |
-| **Tri V2** | **Volume Google seul** (pas de formule coefficient) |
-| **V2 comptage** | **10 au total** par gamme, toutes energies confondues |
-| **V2 dedup** | Par **[modele + energie]** (un modele peut avoir 2 V2 : diesel + essence) |
-| **V-level par** | **Par keyword** (chaque keyword a son type_id, son V-level) |
-| **V1** | **Reporte** |
-| **V6** | **Reporte** |
-| **type_id** | **Garanti par le pipeline** (MATCH avant V) |
-| **Reimport CSV** | **Fusion** — merge avec l'existant, volume = le plus recent |
-| **V5 au reimport** | **Recalcules** — supprimes et recrees |
-| **Tri public** | **Volume Google DESC** a l'interieur d'un meme V-level |
-| **Gammes universelles** | **Liste fixe** : essuie-glaces, ampoules, tapis (+ ajout futur) |
-| **Limite V2** | **Toujours 10** (pas configurable) |
-| **V5 profondeur** | **Meme generation** (meme parent), PAS toute la branche |
-| **V5 toutes energies** | Oui — un V3 essence declenche des V5 diesel du meme modele |
-| **V5 type_display** | Seulement `type_display = '1'` (vehicules affichables) |
-| **V3 solo** | Seul dans le groupe = V3 automatique (meme volume=0) |
-| **V3 tous a zero** | Groupe tout a volume=0 = premier du CSV = V3 |
-| **score_seo** | **Supprime** — on utilise directement le champ volume |
-| **Multi-gamme** | **Non** — T2 garantit 1 keyword = 1 seule gamme |
-| **Recalcul admin** | **Tout** : V2/V3/V4 recalcules + V5 supprimes et recrees |
-| **T2 exclusion** | **Inchange** |
-| **T3 categorisation** | **Inchange** |
-
----
-
-## Fichiers d'implementation
-
-| Fichier | Role |
+| Fichier | Rôle |
 |---------|------|
-| `scripts/insert-missing-keywords.ts` | Pipeline complet (CLI) : T -> MATCH -> V3/V4 -> V2 -> V5 |
-| `backend/src/modules/admin/services/gamme-vlevel.service.ts` | Recalcul V-Level par gamme (API admin) |
-| `frontend/app/components/admin/gamme-seo/VLevelTab.tsx` | UI admin V-Level |
+| `packages/seo-roles/src/vlevel-invariants.ts` | Les huit lignes, les fonctions pures, les écarts connus |
+| `packages/seo-roles/src/__tests__/vlevel-invariants.test.ts` | Un cas synthétique par ligne ; identité du texte avec ce document |
+| `backend/src/modules/admin/services/gamme-vlevel.service.ts` | Calculateur non raccordé |
+| `scripts/insert-missing-keywords.ts` | Calculateur non raccordé |
+| `scripts/seo/vlevel-v3-pipeline.ts` | Calculateur non raccordé |
 
 ---
 
@@ -336,6 +175,7 @@ Phase V :
 
 | Version | Date | Changements |
 |---------|------|-------------|
-| v5.0 | 2026-02-10 | Reecriture complete. 25 decisions. Ajout hybride/electrique/GPL. Gammes universelles. V5 = meme generation. Score_seo supprime. Section K supprimee. V1/V6 reportes. |
-| v4.1 | 2026-02-10 | Fix V5 siblings via modele_parent. V3/V4 redefinies. |
-| v4.0 | 2026-02-09 | Premiere version formalisee. |
+| v6.0 | 2026-11-26 | Alignement sur la décision 192 : huit lignes mot pour mot, deux états, fonctions pures, données d'entrée et calculateurs non raccordés. |
+| v5.0 | 2026-02-10 | Réécriture complète. Remplacée par la décision 192. |
+| v4.1 | 2026-02-10 | Fix V5 siblings via modele_parent. V3/V4 redéfinies. |
+| v4.0 | 2026-02-09 | Première version formalisée. |
