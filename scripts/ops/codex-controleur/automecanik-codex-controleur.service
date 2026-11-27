@@ -1,6 +1,10 @@
 [Unit]
 Description=Codex contrôleur : relecture en lecture seule des PR fusionnées sur main (département 23)
 Documentation=file:///home/deploy/codex-controleur/app/scripts/ops/codex-controleur/README.md
+# Tri automatique, rapport seul (codex-tri.sh) : démarré par systemd quand ce passage se termine en
+# succès (code 0, plafond atteint compris), jamais après un échec ou la limite de l'abonnement
+# (code 5) ; le tri suivant reprend ce qui reste (systemd.unit(5), OnSuccess=).
+OnSuccess=automecanik-codex-tri.service
 
 [Service]
 Type=oneshot

@@ -2,8 +2,8 @@
 
 Codex relit après coup chaque PR fusionnée sur `main`, avec une consigne permanente et une sortie
 sous schéma. Il ne bloque aucune fusion et n'écrit rien : ni dans le dépôt, ni sur GitHub. Les
-constats restent sur la machine DEV ; leur suite (tri, issues, corrections) est une décision
-humaine. Le cadre d'exécution reprend celui de l'essai CP (PR #2185). La routine vit dans un clone dédié du
+constats restent sur la machine DEV. Leur tri est automatique et en rapport seul (`codex-tri.sh`,
+section « Tri des constats »). Les issues et les corrections restent une décision humaine. Le cadre d'exécution reprend celui de l'essai CP (PR #2185). La routine vit dans un clone dédié du
 dépôt public, `/home/deploy/codex-controleur/app` : elle n'écrit jamais dans le checkout DEV
 partagé `/opt/automecanik/app` (décision de Marwane du 2026-11-19).
 
@@ -15,6 +15,13 @@ partagé `/opt/automecanik/app` (décision de Marwane du 2026-11-19).
 | `codex-controleur.test.sh` | Tests sans réseau ni Codex réel (faux `codex`, faux `gh`, dépôt d'origine local). |
 | `automecanik-codex-controleur.service` | Unité utilisateur `oneshot` qui lance `codex-controleur.sh quotidien` depuis le clone dédié (`CODEX_CONTROLEUR_DEPOT=%h/codex-controleur/app`). |
 | `automecanik-codex-controleur.timer` | Un passage par jour à 05:30 UTC, rattrapé au démarrage s'il a été manqué. |
+| `commun.sh` | Fonctions partagées par `codex-controleur.sh` et `codex-tri.sh` : `SENSIBLE_RE`, `rapport` (`cron_report`), garde du checkout partagé, verrou, worktree jetable. |
+| `codex-tri.sh` | Tri automatique des constats, rapport seul : `quotidien`, `commande` (section « Tri des constats »). |
+| `codex-tri.test.sh` | Tests du tri sans réseau ni modèle réel (faux `claude`, faux `gh`). |
+| `consigne-tri.md` | Consigne de la session de tri (méthode du mandat FB). |
+| `tri.schema.json` | Schéma imposé à la réponse de la session (`--json-schema`). |
+| `tri.jq` | Validation de la réponse et rendu des trois fichiers du tri. |
+| `automecanik-codex-tri.service` | Unité `oneshot` du tri, démarrée seulement par `OnSuccess=` du service du contrôleur. |
 
 ## Ce que fait un passage `quotidien`
 
@@ -119,6 +126,132 @@ correction de `server.js` puis une nouvelle vérification, et une décision de M
   réellement joint au prompt est noté dans chaque `meta.json` (version 1 : `777e6718d94d3ae3d1023d44f594926b62f2424aead9726bf90efd83416b9c00`).
 - `codex exec` ne renvoie aucun quota restant : la consommation se lit en tokens par passage.
 
+## Tri des constats (`codex-tri.sh`), rapport seul
+
+Après chaque passage réussi du contrôleur, une session Claude Code non interactive relit sur
+`origin/main` les constats critical, high et medium pas encore triés, et rend un tri au format du
+mandat FB. Le tri n'ouvre ni issue ni PR, ne pose ni label ni commentaire, et ne corrige rien. Les
+issues et les corrections restent une décision humaine.
+
+**Déclencheur.** Il est déclaré par `OnSuccess=automecanik-codex-tri.service` dans l'unité du contrôleur. systemd.unit(5),
+version 249 et suivantes : « units that are activated when this unit enters the "inactive"
+state » ; `OnFailure=` correspond à l'état « failed ». Un passage terminé en code 0 déclenche donc
+le tri, y compris quand le plafond est atteint. Un échec, la limite de l'abonnement (code 5) ou le
+verrou (code 7) ne le déclenchent pas. L'unité `automecanik-codex-tri.service` n'a ni minuteur ni
+section d'installation.
+
+**Un passage `quotidien`.**
+
+1. Gardes communes (`commun.sh`) : checkout partagé refusé (code 2), verrou du dossier d'état
+   (code 7), `umask 077` et dossier `tri/` en `700`. Version de `claude` relevée, et chaque
+   option employée cherchée dans `claude --help` (code 4 si elle manque).
+2. Inventaire dans `bruts/<jour>/<objet>/` des objets dont le passage a réussi
+   (`meta.json` `code: 0`) ; la base de chaque objet vient de son `meta.json`.
+   - Un objet en alerte sensible (`meta.json` `alerte`) n'est jamais envoyé au modèle ; il est
+     compté à part.
+   - Les constats low et info sont comptés seulement.
+   - Un constat déjà présent dans `curseur-tri.json` ou dans un tri antérieur est sauté.
+   - Au plus 40 constats par passage (`--max N`, `CODEX_TRI_MAX`) ; le reste passe au tri
+     suivant, et le rapport le dit.
+3. Issues et PR ouvertes lues par `gh -R <origin> … --limit 1000` avant la session ; une liste
+   tronquée arrête le passage.
+4. Worktree jetable `$ETAT/wt-tri-*`, détaché sur `origin/main` dans le clone dédié, retiré en
+   sortie.
+5. Session `claude -p` dans ce worktree, avec le modèle par défaut du compte (décision 143) et la
+   consigne `consigne-tri.md`. Sa réponse doit suivre `tri.schema.json`.
+6. Le script seul écrit. `tri.jq valide` refuse toute sortie hors schéma :
+   - un id inventé, manquant ou en double ;
+   - une valeur hors énumération ;
+   - un numéro d'issue ou de PR absent des listes lues ;
+   - un groupe sans constat.
+   Une sortie refusée est gardée dans `sortie-refusee.json` : code 1, curseur inchangé.
+7. Écriture de `rapport.md`, `constats-tries.json` et `brouillons-issues.md`, puis du curseur de
+   tri (écriture atomique) et de l'état `cron_report` du job `codex-controleur-tri`.
+
+**Format (méthode FB).**
+
+- Verdicts : confirmé, faux, déjà corrigé ou non tranchable (avec ce qu'il faudrait pour trancher).
+- Gravité revue, avec sa raison.
+- Groupes par cause.
+- Couverture par une issue ou une PR ouverte, ou par un tri antérieur.
+- Département proposé (`dept:NN-<nom>`), avec sa source : `ownership.yaml`, `CODEOWNERS` ou
+  `agent-operating-map.yaml`.
+- Un brouillon par groupe confirmé non couvert. Un groupe couvert cite le numéro ou le brouillon
+  antérieur (par exemple `FB/B07`), sans nouveau brouillon.
+- Un groupe de sécurité n'a jamais de brouillon public. Il est marqué « sécurité — hors GitHub
+  public ».
+- `SENSIBLE_RE`, les chemins du serveur (`/home/`, `/opt/`), les UUID et les mentions `@` hors
+  code sont cherchés dans chaque brouillon. Une correspondance retire le brouillon et met
+  l'état en alerte.
+- Durée et tokens (entrée, cache créé, cache lu, sortie) dans `rapport.md`, `meta-tri.json`
+  et l'état cron.
+
+### Commande claude effective
+
+`bash scripts/ops/codex-controleur/codex-tri.sh commande` l'affiche :
+
+```
+claude --print --output-format json --json-schema <tri.schema.json>
+  --tools Read,Grep,Glob
+  --disallowedTools Bash,Edit,Write,NotebookEdit,WebFetch,WebSearch,Agent,REPL,mcp__*
+  --permission-mode dontAsk
+  --settings '{"permissions":{"blockReadsOutsideWorkingDirectories":true}}'
+  --strict-mcp-config --mcp-config '{"mcpServers":{}}'
+  --no-session-persistence --disable-slash-commands
+```
+
+Elle est lancée par `env -i` : seuls `HOME`, `PATH`, `LANG`, `USER`, `LOGNAME` et
+`XDG_RUNTIME_DIR` sont transmis. Le prompt arrive sur l'entrée standard, et le descripteur du
+verrou n'est pas hérité.
+
+### Couches de lecture seule et ce qu'elles bloquent
+
+| Couche | Source | Ce qu'elle bloque | Limite |
+|---|---|---|---|
+| Outils | `--tools Read,Grep,Glob` (documentation de la CLI, « Restrict which built-in tools Claude can use ») et `--disallowedTools` | Pas de shell, d'édition, d'écriture, de réseau ou de sous-agent. `REPL` est exclu, parce que les réglages utilisateur l'activent. | `--tools` ne retire pas les outils MCP, d'où `mcp__*` et la couche MCP. |
+| Permissions | `--permission-mode dontAsk` (« auto-deny tools that would prompt ») et `blockReadsOutsideWorkingDirectories` | Toute demande d'autorisation est refusée sans question, et toute lecture hors du worktree aussi. | Tout ce qui est dans le worktree reste lisible. |
+| MCP | `--strict-mcp-config` et une configuration vide | Aucun serveur MCP, ni utilisateur ni projet. | Aucune. |
+| Environnement | `env -i` | `GH_TOKEN`, `GITHUB_TOKEN`, `GH_ENTERPRISE_TOKEN` et `ANTHROPIC_API_KEY` (une clé présente serait facturée à l'API) sont retirés. | Aucune. |
+| Hooks du projet | `.claude/settings.json` du worktree (sans `--bare`), scripts de `scripts/claude-hooks/` | `pretool-file-guard.sh` bloque (code 2) l'écriture des chemins réservés à l'owner. `pretool-bash-guard.sh` bloque push, fusion et approbation. Les deux échouent fermé. | Ils ne se déclenchent que sur Edit, Write et Bash, absents de la session : ce sont des filets, pas la garde principale. Le hook SessionStart écrit un fichier temporaire, qu'il retire. |
+| Sortie | `--json-schema`, puis `tri.jq valide` dans le script | Le modèle n'écrit aucun fichier. Seul le script écrit, sous `$ETAT/tri/`, après validation. | Aucune. |
+
+La CLI écrit aussi hors du dossier d'état, comme toute session de l'abonnement :
+- `~/.claude.json` et ses sauvegardes ;
+- les fichiers `~/.claude/plugins/` ;
+- l'état du plugin `security-guidance` dans `~/.claude/security/`.
+`--no-session-persistence` empêche l'écriture de la transcription.
+
+### Réglages et sorties
+
+| Variable | Défaut |
+|---|---|
+| `CODEX_TRI_BIN` | `~/.local/bin/claude` |
+| `CODEX_TRI_MAX` | `40` (aussi `--max N`) |
+| `CODEX_TRI_ANTERIEURS` | Non défini : `~/mandats/FB/constats-tries.json` s'il existe. Défini, même vide : exactement cette liste de fichiers, séparés par « : » ; un fichier absent donne le code 2. |
+| `CODEX_CONTROLEUR_DEPOT` / `_ETAT` / `_BRANCHE` | Les mêmes que pour le contrôleur. |
+
+Sorties :
+- `$ETAT/tri/<jour>/` (`-2`, `-3`… pour un deuxième passage le même jour), en `700` :
+  - `entree.json`, `prompt.txt`, `issues-ouvertes.json`, `prs-ouvertes.json` ;
+  - `sortie.json`, `stderr.txt`, `meta-tri.json` ;
+  - les trois fichiers du tri.
+- `$ETAT/tri/curseur-tri.json` : le curseur de tri, distinct de `curseur.json`, qu'il ne
+  touche pas.
+- `~/.local/state/automecanik/cron/codex-controleur-tri.json` : l'état du job. Il est muet au-delà de
+  36 h. Il passe en `warn` quand des constats sont reportés ou en alerte, et en `error` sur un échec, dès
+  ce passage (`gh`, fetch, worktree, sortie refusée…).
+
+Codes de sortie :
+- 0 : tri fait, ou rien à trier ;
+- 1 : échec, ou sortie refusée ;
+- 2 : usage ou garde ;
+- 4 : `claude` ou une option introuvable ;
+- 5 : limite de l'abonnement (curseur de tri inchangé ; le passage suivant reprend) ;
+- 7 : verrou.
+
+**Arrêt** : retirer la ligne `OnSuccess=` de l'unité du contrôleur installée, puis lancer
+`systemctl --user daemon-reload`.
+
 ## Contrôles
 
 ```bash
@@ -143,6 +276,21 @@ dossier d'état dans le checkout protégé refusé (chemin exact, sous-dossier, 
 droits préservés). Complément 1 : projections `audit/cleanup/pr-8-*` et
 `audit/module-boundaries.json` retirées du diff, un diff ordinaire passe sous la limite malgré une
 projection plus grosse qu'elle. Résultat au 2026-11-26 : 135 contrôles, 0 en échec.
+
+`bash scripts/ops/codex-controleur/codex-tri.test.sh` (mandat FW) couvre :
+- le déclencheur `OnSuccess=` et l'absence de minuteur ;
+- le curseur de tri, avec `curseur.json` intact ;
+- le plafond et la reprise ;
+- l'exclusion des objets sensibles ;
+- huit sorties hors schéma refusées ;
+- la limite de l'abonnement (5), puis la reprise ;
+- un échec de `gh` en cours de passage (1, état `error` posé tout de suite) ;
+- la couverture par une issue et par le tri FB ;
+- le refus du checkout partagé, le verrou (7) et une option absente (4) ;
+- l'environnement de la session (jetons retirés, descripteur du verrou fermé) ;
+- les brouillons en alerte ;
+- l'absence d'écriture hors du dossier d'état.
+Résultat au 2026-11-27 : 169 vérifications, 0 en échec.
 
 ## Installer et activer
 
@@ -173,7 +321,8 @@ git worktree list                                   # seul le clone, aucun wt-* 
 
 # 3. Unités, puis passage quotidien (le reste des PR depuis le curseur au prochain déclenchement)
 mkdir -p ~/.config/systemd/user
-install -m 0644 "$S/automecanik-codex-controleur.service" "$S/automecanik-codex-controleur.timer" ~/.config/systemd/user/
+install -m 0644 "$S/automecanik-codex-controleur.service" "$S/automecanik-codex-controleur.timer" \
+  "$S/automecanik-codex-tri.service" ~/.config/systemd/user/      # tri : OnSuccess= du contrôleur
 systemctl --user daemon-reload
 systemctl --user enable --now automecanik-codex-controleur.timer
 systemctl --user list-timers automecanik-codex-controleur.timer
@@ -189,16 +338,17 @@ le test, puis, si les unités ont changé, l'`install` et le `daemon-reload` de 
 
 **Arrêt** : `systemctl --user disable --now automecanik-codex-controleur.timer`. Le curseur reste :
 une réactivation reprend là où le dernier passage réussi s'était arrêté.
-**Retrait** : arrêt, puis `rm ~/.config/systemd/user/automecanik-codex-controleur.{service,timer}`
+**Retrait** : arrêt, puis `rm ~/.config/systemd/user/automecanik-codex-{controleur.service,controleur.timer,tri.service}`
 et `systemctl --user daemon-reload` ; le dossier d'état peut être gardé pour ses constats, le clone
 `/home/deploy/codex-controleur/app` peut être supprimé.
 
 ## Où vont les constats (proposition, rien n'est ouvert)
 
-- **Tri d'abord** : la session de pilotage lit `resume-<jour>.md` chaque matin et trie chaque
-  constat dans le code (vrai avec gravité, faux positif, déjà connu, indécis), comme les annexes
-  de CP et de DI. Marwane tranche les priorités et confie les corrections par mandat. Un constat
-  brut n'est jamais publié tel quel.
+- **Tri d'abord** : `codex-tri.sh` trie chaque constat critical, high ou medium dans le code après
+  chaque passage réussi (section « Tri des constats »), au format du mandat FB. La session de
+  pilotage lit `tri/<jour>/rapport.md` et `brouillons-issues.md`. Marwane tranche les priorités et
+  confie les corrections par mandat. Un constat brut n'est jamais publié tel quel, et un brouillon
+  ne l'est qu'après relecture humaine.
 - **Une issue par département**, étiquette existante `dept:NN-<nom>` (`dept:23-ia-agents`…),
   titre « Contrôle Codex — département NN », tenue à jour par la session de pilotage : une ligne
   cochable par constat vrai (fichier:ligne, gravité, PR d'origine), cochée à la correction. Les
