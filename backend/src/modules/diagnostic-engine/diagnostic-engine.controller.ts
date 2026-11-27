@@ -34,7 +34,10 @@ import {
   VEHICLE_CONTEXT_PORT,
   type VehicleContextPort,
 } from './ports/vehicle-context.port';
-import { mapAnalyzeInputToVehicleContextPayload } from './vehicle-context-mapping';
+import {
+  keepKnownMotorisation,
+  mapAnalyzeInputToVehicleContextPayload,
+} from './vehicle-context-mapping';
 import { FeatureFlagsService } from '../../config/feature-flags.service';
 // V1A.0 — Intent Resolution layer
 import { DiagnosticResolutionPipelineService } from './services/diagnostic-resolution-pipeline.service';
@@ -411,7 +414,9 @@ export class DiagnosticEngineController {
   /**
    * Maps the analyze input via the pure helper, then persists the JWS via
    * the port. Silent : malformed / partial / missing data → no-op (never
-   * breaks the happy path of the diagnostic response).
+   * breaks the happy path of the diagnostic response). An input without
+   * motorisation keeps the type_id already held for the same brand and
+   * model (keepKnownMotorisation, mandat GE).
    */
   private async persistVehicleContextIfPresent(
     body: unknown,
@@ -420,8 +425,18 @@ export class DiagnosticEngineController {
     const payload = mapAnalyzeInputToVehicleContextPayload(body);
     if (payload === null) return;
 
+    let existing: ReturnType<VehicleContextPort['get']> = null;
     try {
-      await this.vehicleContext.persist(payload, res);
+      existing = res.req ? this.vehicleContext.get(res.req) : null;
+    } catch (err) {
+      this.logger.warn(`vehicle_ctx read skipped: ${(err as Error).message}`);
+    }
+
+    try {
+      await this.vehicleContext.persist(
+        keepKnownMotorisation(existing, payload),
+        res,
+      );
     } catch (err) {
       this.logger.warn(
         `vehicle_ctx persist skipped: ${(err as Error).message}`,
