@@ -1,0 +1,4 @@
+/sitemap-vehicules.xml
+/sitemap-pieces-1.xml
+/sitemap-pieces-2.xml
+/sitemap-pieces-3.xml

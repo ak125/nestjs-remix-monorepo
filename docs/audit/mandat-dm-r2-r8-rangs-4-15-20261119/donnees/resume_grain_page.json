@@ -1,0 +1,61 @@
+{
+ "ctr_rang3_page": 0.03895569098995223,
+ "fenetres": {
+  "90j": {
+   "R2": {
+    "pages_avec_impr": 51181,
+    "impr": 205172,
+    "clics": 3391,
+    "pages_rang_page_4_15": 39005,
+    "impr_4_15": 154818,
+    "clics_4_15": 2692,
+    "clics_gagnables_page_4_15": 4799.7,
+    "liste_pages": 311,
+    "liste_impr_page": 27420,
+    "liste_clics_page": 501,
+    "liste_gain_page": 586.9
+   },
+   "R8": {
+    "pages_avec_impr": 3090,
+    "impr": 52823,
+    "clics": 1070,
+    "pages_rang_page_4_15": 2506,
+    "impr_4_15": 46106,
+    "clics_4_15": 974,
+    "clics_gagnables_page_4_15": 1071.8,
+    "liste_pages": 114,
+    "liste_impr_page": 24633,
+    "liste_clics_page": 436,
+    "liste_gain_page": 469.5
+   }
+  },
+  "28j": {
+   "R2": {
+    "pages_avec_impr": 21651,
+    "impr": 67102,
+    "clics": 1015,
+    "pages_rang_page_4_15": 15927,
+    "impr_4_15": 48918,
+    "clics_4_15": 787,
+    "clics_gagnables_page_4_15": 1618.1,
+    "liste_pages": 162,
+    "liste_impr_page": 6330,
+    "liste_clics_page": 91,
+    "liste_gain_page": 152.1
+   },
+   "R8": {
+    "pages_avec_impr": 1580,
+    "impr": 15891,
+    "clics": 310,
+    "pages_rang_page_4_15": 1266,
+    "impr_4_15": 13766,
+    "clics_4_15": 281,
+    "clics_gagnables_page_4_15": 342.8,
+    "liste_pages": 65,
+    "liste_impr_page": 7298,
+    "liste_clics_page": 125,
+    "liste_gain_page": 138.6
+   }
+  }
+ }
+}
