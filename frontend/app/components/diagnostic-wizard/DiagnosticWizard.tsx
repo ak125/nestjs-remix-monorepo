@@ -26,6 +26,7 @@ import {
   getFunnelDevice,
   getFunnelSessionId,
 } from "~/utils/funnel-beacon";
+import { getVehicleClient } from "~/utils/vehicle-cookie";
 import { useDiagnosticVehicleSelector } from "./hooks/use-diagnostic-vehicle-selector";
 import { DiagnosticResults } from "./results/DiagnosticResults";
 import { hasSuggestedGammes } from "./results/ResultCatalog";
@@ -91,6 +92,38 @@ const DTC_FORMAT = /^[PCBU][0-9A-F]{4}$/;
 type EntryNotice =
   | { kind: "dtc_standby"; code: string | null }
   | { kind: "symptom_not_linked" };
+
+// Vehicle chosen with the site's shared selector (cookie `selected_vehicle`,
+// written by `storeVehicleClient`). Ids are required: a name alone does not
+// tell apart engines of one model.
+const SiteVehicleSchema = z.object({
+  marque_id: z.number().int().positive(),
+  marque_name: z.string().min(1),
+  marque_alias: z.string().optional(),
+  modele_id: z.number().int().positive(),
+  modele_name: z.string().min(1),
+  modele_alias: z.string().optional(),
+  type_id: z.number().int().positive(),
+  type_name: z.string().optional(),
+  type_alias: z.string().optional(),
+});
+
+function readSiteVehicle() {
+  const parsed = SiteVehicleSchema.safeParse(getVehicleClient());
+  if (!parsed.success) return null;
+  const v = parsed.data;
+  return {
+    brand: v.marque_name,
+    brandId: v.marque_id,
+    brandAlias: v.marque_alias || undefined,
+    model: v.modele_name,
+    modelId: v.modele_id,
+    modelAlias: v.modele_alias || undefined,
+    typeId: v.type_id,
+    typeName: v.type_name || undefined,
+    typeAlias: v.type_alias || undefined,
+  };
+}
 
 // The local draft is a resumable input snapshot, never a stored diagnosis.
 const DraftSchema = z.object({
@@ -192,6 +225,23 @@ function wizardReducer(state: WizardState, action: WizardAction): WizardState {
       return { ...state, maintenanceRecords: action.payload };
     case "SET_VEHICLE":
       return { ...state, vehicle: action.payload };
+    case "SET_TYPE_DETAILS":
+      // Only for the motorisation it was looked up for. One missing from the
+      // model's list is dropped: the driver could not see what is sent.
+      if (state.vehicle.typeId !== action.payload.typeId) return state;
+      return {
+        ...state,
+        vehicle: {
+          ...state.vehicle,
+          ...(action.payload.details ?? {
+            typeId: undefined,
+            typeName: undefined,
+            typeAlias: undefined,
+            engine: undefined,
+            fuel: undefined,
+          }),
+        },
+      };
     case "SET_USAGE":
       return {
         ...state,
@@ -356,6 +406,31 @@ export function DiagnosticWizard() {
       }
       if (draft.step && draft.step === 2)
         dispatch({ type: "SET_STEP", payload: 2 });
+    }
+    // No draft names a vehicle: open on the one already chosen on the site,
+    // so the driver does not enter it again. A draft keeps its own vehicle.
+    const siteVehicle = draft?.vehicle?.brand ? null : readSiteVehicle();
+    if (siteVehicle) {
+      dispatch({
+        type: "SET_VEHICLE",
+        payload: { ...(draft?.vehicle ?? initialState.vehicle), ...siteVehicle },
+      });
+      vehicleSelector.fetchModels(siteVehicle.brandId);
+      void vehicleSelector.fetchTypes(siteVehicle.modelId).then((items) => {
+        const item = items.find((t) => t.value === String(siteVehicle.typeId));
+        dispatch({
+          type: "SET_TYPE_DETAILS",
+          payload: {
+            typeId: siteVehicle.typeId,
+            details: item && {
+              typeName: item.typeName,
+              typeAlias: item.typeAlias,
+              engine: item.engine,
+              fuel: item.fuel,
+            },
+          },
+        });
+      });
     }
     // A category link names the system to open; StepSymptom checks it against
     // the offered systems and asks for a choice when it names none of them.

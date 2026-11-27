@@ -114,23 +114,31 @@ export function useDiagnosticVehicleSelector() {
     setLoadingModels(false);
   }, []);
 
-  // Fetch motorisations for a specific model
-  const fetchTypes = useCallback((modelId: number) => {
-    const request = ++typesRequest.current;
-    setLoadingTypes(true);
-    setTypes([]);
-    enhancedVehicleApi
-      .getTypes(modelId)
-      .then((data) => {
-        if (request === typesRequest.current) setTypes(data.map(toTypeItem));
-      })
-      .catch(() => {
-        if (request === typesRequest.current) setTypes([]);
-      })
-      .finally(() => {
-        if (request === typesRequest.current) setLoadingTypes(false);
-      });
-  }, []);
+  // Fetch motorisations for a specific model. Resolves the listed items, or
+  // an empty list when the request failed or a newer one replaced it.
+  const fetchTypes = useCallback(
+    (modelId: number): Promise<ComboboxItem[]> => {
+      const request = ++typesRequest.current;
+      setLoadingTypes(true);
+      setTypes([]);
+      return enhancedVehicleApi
+        .getTypes(modelId)
+        .then((data) => {
+          if (request !== typesRequest.current) return [];
+          const items = data.map(toTypeItem);
+          setTypes(items);
+          return items;
+        })
+        .catch(() => {
+          if (request === typesRequest.current) setTypes([]);
+          return [];
+        })
+        .finally(() => {
+          if (request === typesRequest.current) setLoadingTypes(false);
+        });
+    },
+    [],
+  );
 
   const clearTypes = useCallback(() => {
     typesRequest.current += 1;

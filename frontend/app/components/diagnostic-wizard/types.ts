@@ -43,6 +43,16 @@ export type WizardAction =
   | { type: "SET_MODE"; payload: "diagnostic" | "maintenance" }
   | { type: "SET_MAINTENANCE_RECORDS"; payload: MaintenanceRecord[] }
   | { type: "SET_VEHICLE"; payload: WizardState["vehicle"] }
+  | {
+      type: "SET_TYPE_DETAILS";
+      payload: {
+        typeId: number;
+        details?: Pick<
+          WizardState["vehicle"],
+          "typeName" | "typeAlias" | "engine" | "fuel"
+        >;
+      };
+    }
   | { type: "SET_USAGE"; payload: { profile?: string; lastServiceKm?: number } }
   | { type: "SET_SYSTEM"; payload: string }
   | { type: "SET_SYMPTOMS"; payload: string[] }
