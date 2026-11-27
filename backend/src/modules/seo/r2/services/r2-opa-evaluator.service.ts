@@ -1,18 +1,17 @@
 /**
  * ADR-066 — R2 OPA WASM Evaluator (Gate 4 — invariants enforcement)
  *
- * Loads pre-built WASM bundles `r2-content-write.wasm` and `r2-cluster-health.wasm`
- * (compiled from Rego policies in governance-vault, mergé via vault commit `8a92c49`,
- * available under `dist/policies/` if vault checked out alongside or fetched).
+ * Loads the pre-built WASM bundle `r2-content-write.wasm`, compiled from the Rego
+ * policy `policies/seo-content/r2-content-write.rego` of this repository by
+ * `policies/build-opa-bundles.sh` and committed under `policies/dist/`.
  *
- * For PR 1, the WASM file path is configurable via env var :
- *   R2_OPA_BUNDLE_PATH (default : /opt/automecanik/governance-vault/dist/policies)
+ * The bundle directory is configurable via env var :
+ *   R2_OPA_BUNDLE_PATH (default : `<repo>/policies/dist`, resolved from this file)
  *
- * If WASM bundles are missing at module init :
+ * If the WASM bundle or `@open-policy-agent/opa-wasm` is missing at module init :
  *   - Service starts in "fallback deny-all" mode (fail-closed, safest)
  *   - Logger warns at startup
- *   - PR 2 V1.5 will ship the bundle either by copying into monorepo `assets/`
- *     or via deploy-time pull from vault.
+ * A runtime that does not ship `policies/dist` therefore stays deny-all.
  *
  * Eval is SYNC <1ms once loaded (WASM in-process).
  *
@@ -22,7 +21,19 @@
 
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
+
+/**
+ * Default bundle directory : `<repo>/policies/dist`. The repository root is
+ * resolved from this file (`backend/{src,dist}/modules/seo/r2/services`), the
+ * same way `operating-matrix.service.ts` resolves it from `backend/src/config`.
+ */
+export const DEFAULT_R2_OPA_BUNDLE_DIR = resolve(
+  __dirname,
+  '../../../../../..',
+  'policies',
+  'dist',
+);
 
 interface OpaWasmModule {
   // Minimal contract — we just need `evaluate(input) → { result }`.
@@ -73,8 +84,7 @@ export class R2OpaEvaluatorService implements OnModuleInit {
    */
   onModuleInit(): void {
     const bundlePath =
-      process.env.R2_OPA_BUNDLE_PATH ??
-      '/opt/automecanik/governance-vault/dist/policies';
+      process.env.R2_OPA_BUNDLE_PATH ?? DEFAULT_R2_OPA_BUNDLE_DIR;
 
     const wasmFile = join(bundlePath, 'r2-content-write.wasm');
 
