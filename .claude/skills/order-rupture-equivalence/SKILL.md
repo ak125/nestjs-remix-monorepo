@@ -67,7 +67,8 @@ le 2026-10-21) et, pour chaque écriture, le seul outil sûr.
 
 ## Procédure (ordre imposé)
 
-Lectures en base : SELECT, ou l'essai à blanc du script de §6, dans une session READ ONLY.
+Lectures en base : SELECT seulement, dans une session READ ONLY. Le script de §6, même à blanc,
+c'est l'owner qui le lance.
 Données client (nom, e-mail, id de commande, `cst_id`, adresse) : scratchpad uniquement, jamais
 dans un fichier commité, une PR ou un commit (dépôt public).
 
@@ -240,11 +241,9 @@ d'origine), créée avant l'envoi du mail de §7, qui porte son lien.
   pré-contrôles : commande d'origine payée et inchangée, aucun supplément non annulé, équivalent
   en vente au prix du mail et jamais à perte, montant exact, contrôles après écriture.
   1. Copier le fichier en scratchpad et renseigner les constantes ; le bloc refuse de partir sinon.
-  2. `c_apply := false` : l'agent lance les pré-contrôles seuls, sans écriture, en session
-     READ ONLY.
-  3. Montrer le script à l'owner. Sur GO nominatif, `c_apply := true` : `execute_sql` du MCP
-     Supabase, ou l'owner le colle dans l'éditeur SQL Supabase. Un refus du classifieur ne se
-     contourne pas.
+  2. Montrer le script à l'owner. L'agent ne le lance jamais lui-même, ni à blanc ni pour écrire.
+  3. L'owner le colle lui-même dans l'éditeur SQL Supabase : d'abord `c_apply := false`
+     (pré-contrôles seuls, sans écriture), puis, sur son GO nominatif, `c_apply := true`.
 
   Transitoire : quand la sonde désigne le formulaire (403, témoins conformes), retirer le script
   par une PR.
