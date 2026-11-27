@@ -2,7 +2,7 @@
 name: runbook-marketing-pilot-rollback
 description: Procédure de rollback du pilote Marketing Operating Layer (Phase 1 LOCAL). Critères d'échec, actions, post-mortem. Pas de DROP de tables — données purgées + agent désactivé, schéma conservé pour relance future.
 type: runbook
-status: active
+status: deprecated
 date: 2026-04-30
 relocated: 2026-11-17
 related_adr: ["ADR-013", "ADR-036"]
@@ -10,6 +10,8 @@ related_rules: ["AI4", "G2"]
 ---
 
 # Runbook — Rollback du pilote Marketing Operating Layer (Phase 1 LOCAL)
+
+> Historique : Paperclip est supprimé (décision 69, 2026-11-16) ; cette procédure passe par son API et ne se joue plus.
 
 > Objectif : permettre un rollback **propre, réversible, auditable** du pilote
 > `local-business-agent` (Phase 1 ADR-036) si les critères d'échec sont atteints.

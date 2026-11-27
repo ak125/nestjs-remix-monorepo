@@ -1513,6 +1513,8 @@ final_status: PARTIAL_COVERAGE
 
 Phase 0 ADR-036 introduit 3 agents G1 dédiés au marketing :
 
+> Historique : Paperclip est supprimé (décision 69, 2026-11-16) ; les routines de la colonne « Routine Paperclip » ne tournent plus.
+
 | Agent                      | Scope `business_unit`                    | Routine Paperclip                        |
 | -------------------------- | ---------------------------------------- | ---------------------------------------- |
 | `marketing-lead-agent`     | lit ECOMMERCE + LOCAL, exécute aucun     | `rt-weekly-marketing-plan` (lundi 07:00) |
