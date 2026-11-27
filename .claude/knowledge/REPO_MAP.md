@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 284f665f9c3c7f283996738b1548d30f29684bfaa26031701cd968292d6b4783
+source_sha256: 36ef2af8a2e26d6ef04fff1706bdd9a0186009d5e55323cf5655a0e23f32b559
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3335 |
+| Files (Layer 1) | 3338 |
 | DB tables (Layer 1) | 316 |
 | DB RPC (Layer 1) | 272 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1023 |
 
-Source sotFingerprint: `39c7b24d748d`.
+Source sotFingerprint: `51e880c9e11b`.
 
 ## Comment l'utiliser
 
@@ -45,11 +45,11 @@ Source sotFingerprint: `39c7b24d748d`.
 
 ### D2 — Legacy/XTR Migration
 
-- **Files**: 190 (test=173, service=12, config=4, controller=1)
+- **Files**: 192 (test=175, service=12, config=4, controller=1)
 - **Runtime entrypoints**: 5
-- **Top owners**: @ak125 (175), __unassigned__ (15)
+- **Top owners**: @ak125 (177), __unassigned__ (15)
 - **Knowledge prose**: [`rm`](modules/rm.md)
-- **Status**: LEGACY=7, LIVE=8, UNKNOWN=175
+- **Status**: LEGACY=7, LIVE=8, UNKNOWN=177
 
 ### D3 — SEO & Sitemap
 
@@ -61,11 +61,11 @@ Source sotFingerprint: `39c7b24d748d`.
 
 ### D4 — Vehicle / Compatibility
 
-- **Files**: 118 (service=67, test=33, config=12, controller=6)
+- **Files**: 119 (service=67, test=34, config=12, controller=6)
 - **Runtime entrypoints**: 47
-- **Top owners**: @ak125/vehicle-team (78), @ak125 (40)
+- **Top owners**: @ak125/vehicle-team (79), @ak125 (40)
 - **Knowledge prose**: [`diagnostic-engine`](modules/diagnostic-engine.md), [`mcp-validation`](modules/mcp-validation.md), [`vehicle-context`](modules/vehicle-context.md), [`vehicles`](modules/vehicles.md)
-- **Status**: LIVE=71, UNKNOWN=47
+- **Status**: LIVE=71, UNKNOWN=48
 
 ### D5 — Blog / Content
 

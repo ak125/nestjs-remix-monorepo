@@ -44702,6 +44702,7 @@
         "backend/src/modules/diagnostic-engine/diagnostic-handoff-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-session-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-symptoms-integrity.test.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-vehicle-context-persist.test.ts",
         "backend/src/modules/diagnostic-engine/maintenance-calendar-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts"
       ],
@@ -44723,7 +44724,7 @@
         "backend/src/modules/diagnostic-engine/vehicle-context-mapping.ts"
       ],
       "kind": "controller",
-      "loc": 607,
+      "loc": 622,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
       "risk": "medium",
@@ -45099,6 +45100,28 @@
       "loc": 122,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-symptoms-integrity.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D4",
+      "id": "backend/src/modules/diagnostic-engine/diagnostic-vehicle-context-persist.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts"
+      ],
+      "kind": "test",
+      "loc": 154,
+      "owner": "@ak125/vehicle-team",
+      "path": "backend/src/modules/diagnostic-engine/diagnostic-vehicle-context-persist.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -46774,7 +46797,7 @@
         "@repo/registry"
       ],
       "kind": "service",
-      "loc": 45,
+      "loc": 91,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/vehicle-context-mapping.ts",
       "risk": "medium",
@@ -80612,10 +80635,11 @@
         "~/components/ui/button",
         "~/components/ui/progress",
         "~/utils/analytics",
-        "~/utils/funnel-beacon"
+        "~/utils/funnel-beacon",
+        "~/utils/vehicle-cookie"
       ],
       "kind": "config",
-      "loc": 958,
+      "loc": 1044,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/DiagnosticWizard.tsx",
       "risk": "low",
@@ -80637,11 +80661,12 @@
         "frontend/app/components/diagnostic-wizard/steps/StepVehicle.tsx"
       ],
       "imports": [
+        "@repo/database-types",
         "~/components/ui/combobox",
         "~/services/api/enhanced-vehicle.api"
       ],
       "kind": "config",
-      "loc": 89,
+      "loc": 162,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/hooks/use-diagnostic-vehicle-selector.ts",
       "risk": "low",
@@ -80701,7 +80726,7 @@
         "~/components/ui/button"
       ],
       "kind": "config",
-      "loc": 191,
+      "loc": 192,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/results/DiagnosticResults.tsx",
       "risk": "low",
@@ -80808,7 +80833,7 @@
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 137,
+      "loc": 158,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/results/ResultCatalog.tsx",
       "risk": "low",
@@ -80884,7 +80909,7 @@
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 195,
+      "loc": 213,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/results/ResultMaintenance.tsx",
       "risk": "low",
@@ -81093,7 +81118,7 @@
         "~/components/ui/label"
       ],
       "kind": "config",
-      "loc": 265,
+      "loc": 333,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/steps/StepVehicle.tsx",
       "risk": "low",
@@ -81124,7 +81149,7 @@
         "frontend/app/components/diagnostic-wizard/steps/StepMaintenance.tsx"
       ],
       "kind": "config",
-      "loc": 155,
+      "loc": 173,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/types.ts",
       "risk": "low",
@@ -98650,7 +98675,7 @@
         "@repo/seo-url-contract"
       ],
       "kind": "service",
-      "loc": 161,
+      "loc": 210,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/url-builder.utils.ts",
       "risk": "medium",
@@ -100550,7 +100575,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 137,
+      "loc": 225,
       "owner": "@ak125",
       "path": "frontend/tests/unit/diagnostic-result-links.test.tsx",
       "risk": "medium",
@@ -100626,6 +100651,26 @@
         "manual"
       ],
       "domain": "D2",
+      "id": "frontend/tests/unit/diagnostic-wizard-motorisation.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 232,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/diagnostic-wizard-motorisation.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
       "id": "frontend/tests/unit/diagnostic-wizard-recovery.test.tsx",
       "importedBy": [],
       "imports": [],
@@ -100633,6 +100678,26 @@
       "loc": 319,
       "owner": "@ak125",
       "path": "frontend/tests/unit/diagnostic-wizard-recovery.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/diagnostic-wizard-site-vehicle.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 230,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/diagnostic-wizard-site-vehicle.test.tsx",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -111847,11 +111912,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "4bd8407a831a3385f4c3e8845dd213a18f13ec99e6a3528a63160c01e78749ae",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "c860d98733845cc61898cf05da26d387d08fa6d84587859957aea8e63bc49951",
+      "audit/registry/files.json": "a8f986bc76bb88e134347edad12a71204bb970da4efd67d7e95ab9532dc8410a",
       "audit/registry/rpc.json": "d2adfc5c28fa116a45b81fc8f46b8714110c5db624a7c495f90de474f7c6b314",
       "audit/registry/runtime.json": "3a4f60e7cf1802be2c0ace6a5e7533f12581b579b99cf9df4ecb91b938f61e66"
     },
-    "sotFingerprint": "39c7b24d748d"
+    "sotFingerprint": "51e880c9e11b"
   },
   "runtime": [
     {
