@@ -71,7 +71,7 @@ export function R1SlotImage({
         />
       </picture>
       {caption && (
-        <figcaption className="text-xs text-slate-400 mt-1.5 text-center">
+        <figcaption className="text-xs text-neutral-400 mt-1.5 text-center">
           {caption}
         </figcaption>
       )}

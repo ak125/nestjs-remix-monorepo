@@ -1,0 +1,41 @@
+{
+  "url": "http://127.0.0.1:3017/pieces/filtre-a-huile-7.html",
+  "selecteur": "#emplacement a[href=\"/reference-auto/filtre-a-huile\"]",
+  "href": "/reference-auto/filtre-a-huile",
+  "largeur": 1440,
+  "hauteur": 900,
+  "navigateur": "153.0.8010.47",
+  "at": "2026-11-20T09:32:15.945Z",
+  "seuil": 4.5,
+  "avantVisite": {
+    "repos": {
+      "fondDominant": "#ffffff",
+      "pixelDuTexte": "#155dfc",
+      "ratioTexteFond": 5.24,
+      "noVisited": false
+    },
+    "survol": {
+      "fondDominant": "#ffffff",
+      "pixelDuTexte": "#193cb8",
+      "ratioTexteFond": 8.82,
+      "noVisited": false
+    },
+    "temoinCouleur": "#020817"
+  },
+  "visite": "http://127.0.0.1:3017/reference-auto/filtre-a-huile",
+  "apresVisite": {
+    "repos": {
+      "fondDominant": "#ffffff",
+      "pixelDuTexte": "#9810fa",
+      "ratioTexteFond": 5.54,
+      "noVisited": false
+    },
+    "survol": {
+      "fondDominant": "#ffffff",
+      "pixelDuTexte": "#9810fa",
+      "ratioTexteFond": 5.54,
+      "noVisited": false
+    },
+    "temoinCouleur": "#9810fa"
+  }
+}

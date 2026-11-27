@@ -1,0 +1,444 @@
+{
+  "url": "http://127.0.0.1:3017/pieces/filtre-a-huile-7.html",
+  "label": "apres",
+  "at": "2026-11-20T09:39:48.141Z",
+  "vues": {
+    "390": {
+      "conteneurs": {
+        "bien-choisir": "gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3 [&_a]:underline [&_a]:underline-offset-2",
+        "qualite-prix": "gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3 [&_a]:underline [&_a]:underline-offset-2",
+        "emplacement": "gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3 [&_a]:underline [&_a]:underline-offset-2"
+      },
+      "liens": [
+        {
+          "id": "bien-choisir-0-0",
+          "bloc": "bien-choisir",
+          "texte": "filtre à air",
+          "href": "/pieces/filtre-a-air-8.html",
+          "classe": "seo-internal-link",
+          "couleur": "21, 93, 252",
+          "texteVoisin": "69, 85, 108",
+          "decoration": "underline",
+          "decalage": "2px",
+          "couleurTrait": "168, 209, 255",
+          "alphaTrait": "oklab(0.707 -0.0437502 -0.159094 / 0.5)",
+          "boite": {
+            "x": 66,
+            "y": 413.375,
+            "w": 63,
+            "h": 18
+          },
+          "rects": [
+            "63×18"
+          ],
+          "lignes": [
+            {
+              "x": 66,
+              "y": 413.375,
+              "w": 63,
+              "h": 18
+            }
+          ],
+          "rapportLienTexteVoisin": 1.44,
+          "pixelsDuSoulignement": 252,
+          "repos": {
+            "ratio": 5.24,
+            "fond": "#ffffff"
+          },
+          "survol": {
+            "couleur": "21, 93, 252",
+            "decoration": "underline",
+            "ratio": 5.24,
+            "fond": "#ffffff"
+          },
+          "focus": {
+            "actif": true,
+            "focusVisible": true,
+            "contour": "2px solid rgb(15, 30, 56)",
+            "pixelsChanges": 1577
+          }
+        },
+        {
+          "id": "bien-choisir-0-1",
+          "bloc": "bien-choisir",
+          "texte": "filtre à carburant",
+          "href": "/pieces/filtre-a-carburant-9.html",
+          "classe": "seo-internal-link",
+          "couleur": "21, 93, 252",
+          "texteVoisin": "69, 85, 108",
+          "decoration": "underline",
+          "decalage": "2px",
+          "couleurTrait": "168, 209, 255",
+          "alphaTrait": "oklab(0.707 -0.0437502 -0.159094 / 0.5)",
+          "boite": {
+            "x": 16,
+            "y": 404.375,
+            "w": 299,
+            "h": 40.75
+          },
+          "rects": [
+            "42×18",
+            "65×18"
+          ],
+          "lignes": [
+            {
+              "x": 273,
+              "y": 404.375,
+              "w": 42,
+              "h": 18
+            },
+            {
+              "x": 16,
+              "y": 427.125,
+              "w": 65,
+              "h": 18
+            }
+          ],
+          "rapportLienTexteVoisin": 1.44,
+          "pixelsDuSoulignement": 428,
+          "repos": {
+            "ratio": 5.24,
+            "fond": "#ffffff"
+          },
+          "survol": {
+            "couleur": "21, 93, 252",
+            "decoration": "underline",
+            "ratio": 5.24,
+            "fond": "#ffffff"
+          },
+          "focus": {
+            "actif": true,
+            "focusVisible": true,
+            "contour": "2px solid rgb(15, 30, 56)",
+            "pixelsChanges": 2672
+          }
+        },
+        {
+          "id": "qualite-prix-0-0",
+          "bloc": "qualite-prix",
+          "texte": "Guide d'achat filtre à huile : critères, budget et marques recommandée",
+          "href": "/blog-pieces-auto/guide-achat/filtre-a-huile",
+          "classe": "",
+          "couleur": "21, 93, 252",
+          "texteVoisin": "69, 85, 108",
+          "decoration": "underline",
+          "decalage": "2px",
+          "couleurTrait": "21, 93, 252",
+          "alphaTrait": "oklch(0.546 0.245 262.881)",
+          "boite": {
+            "x": 16,
+            "y": 390.125,
+            "w": 355,
+            "h": 63.5
+          },
+          "rects": [
+            "91×18",
+            "267×18",
+            "101×18"
+          ],
+          "lignes": [
+            {
+              "x": 280,
+              "y": 390.125,
+              "w": 91,
+              "h": 18
+            },
+            {
+              "x": 16,
+              "y": 412.875,
+              "w": 267,
+              "h": 18
+            },
+            {
+              "x": 16,
+              "y": 435.625,
+              "w": 101,
+              "h": 18
+            }
+          ],
+          "rapportLienTexteVoisin": 1.44,
+          "pixelsDuSoulignement": 1786,
+          "repos": {
+            "ratio": 5.01,
+            "fond": "#f8fafc"
+          },
+          "survol": {
+            "couleur": "21, 93, 252",
+            "decoration": "underline",
+            "ratio": 5.01,
+            "fond": "#f8fafc"
+          },
+          "focus": {
+            "actif": true,
+            "focusVisible": true,
+            "contour": "2px solid rgb(15, 30, 56)",
+            "pixelsChanges": 112876
+          }
+        },
+        {
+          "id": "emplacement-0-0",
+          "bloc": "emplacement",
+          "texte": "En savoir plus sur le filtre à huile",
+          "href": "/reference-auto/filtre-a-huile",
+          "classe": "",
+          "couleur": "21, 93, 252",
+          "texteVoisin": "69, 85, 108",
+          "decoration": "underline",
+          "decalage": "2px",
+          "couleurTrait": "21, 93, 252",
+          "alphaTrait": "oklch(0.546 0.245 262.881)",
+          "boite": {
+            "x": 65,
+            "y": 412.875,
+            "w": 207,
+            "h": 18
+          },
+          "rects": [
+            "207×18"
+          ],
+          "lignes": [
+            {
+              "x": 65,
+              "y": 412.875,
+              "w": 207,
+              "h": 18
+            }
+          ],
+          "rapportLienTexteVoisin": 1.44,
+          "pixelsDuSoulignement": 812,
+          "repos": {
+            "ratio": 5.24,
+            "fond": "#ffffff"
+          },
+          "survol": {
+            "couleur": "21, 93, 252",
+            "decoration": "underline",
+            "ratio": 5.24,
+            "fond": "#ffffff"
+          },
+          "focus": {
+            "actif": true,
+            "focusVisible": true,
+            "contour": "2px solid rgb(15, 30, 56)",
+            "pixelsChanges": 11036
+          }
+        }
+      ]
+    },
+    "1440": {
+      "conteneurs": {
+        "bien-choisir": "gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3 [&_a]:underline [&_a]:underline-offset-2",
+        "qualite-prix": "gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3 [&_a]:underline [&_a]:underline-offset-2",
+        "emplacement": "gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3 [&_a]:underline [&_a]:underline-offset-2"
+      },
+      "liens": [
+        {
+          "id": "bien-choisir-0-0",
+          "bloc": "bien-choisir",
+          "texte": "filtre à air",
+          "href": "/pieces/filtre-a-air-8.html",
+          "classe": "seo-internal-link",
+          "couleur": "21, 93, 252",
+          "texteVoisin": "69, 85, 108",
+          "decoration": "underline",
+          "decalage": "2px",
+          "couleurTrait": "168, 209, 255",
+          "alphaTrait": "oklab(0.707 -0.0437502 -0.159094 / 0.5)",
+          "boite": {
+            "x": 1133,
+            "y": 440.90625,
+            "w": 63,
+            "h": 18
+          },
+          "rects": [
+            "63×18"
+          ],
+          "lignes": [
+            {
+              "x": 1133,
+              "y": 440.90625,
+              "w": 63,
+              "h": 18
+            }
+          ],
+          "rapportLienTexteVoisin": 1.44,
+          "pixelsDuSoulignement": 63,
+          "repos": {
+            "ratio": 5.24,
+            "fond": "#ffffff"
+          },
+          "survol": {
+            "couleur": "25, 60, 184",
+            "decoration": "underline",
+            "ratio": 8.82,
+            "fond": "#ffffff"
+          },
+          "focus": {
+            "actif": true,
+            "focusVisible": true,
+            "contour": "2px solid rgb(15, 30, 56)",
+            "pixelsChanges": 457
+          }
+        },
+        {
+          "id": "bien-choisir-0-1",
+          "bloc": "bien-choisir",
+          "texte": "filtre à carburant",
+          "href": "/pieces/filtre-a-carburant-9.html",
+          "classe": "seo-internal-link",
+          "couleur": "21, 93, 252",
+          "texteVoisin": "69, 85, 108",
+          "decoration": "underline",
+          "decalage": "2px",
+          "couleurTrait": "168, 209, 255",
+          "alphaTrait": "oklab(0.707 -0.0437502 -0.159094 / 0.5)",
+          "boite": {
+            "x": 736,
+            "y": 440.65625,
+            "w": 111,
+            "h": 18
+          },
+          "rects": [
+            "111×18"
+          ],
+          "lignes": [
+            {
+              "x": 736,
+              "y": 440.65625,
+              "w": 111,
+              "h": 18
+            }
+          ],
+          "rapportLienTexteVoisin": 1.44,
+          "pixelsDuSoulignement": 111,
+          "repos": {
+            "ratio": 5.24,
+            "fond": "#ffffff"
+          },
+          "survol": {
+            "couleur": "25, 60, 184",
+            "decoration": "underline",
+            "ratio": 8.82,
+            "fond": "#ffffff"
+          },
+          "focus": {
+            "actif": true,
+            "focusVisible": true,
+            "contour": "2px solid rgb(15, 30, 56)",
+            "pixelsChanges": 564
+          }
+        },
+        {
+          "id": "qualite-prix-0-0",
+          "bloc": "qualite-prix",
+          "texte": "Guide d'achat filtre à huile : critères, budget et marques recommandée",
+          "href": "/blog-pieces-auto/guide-achat/filtre-a-huile",
+          "classe": "",
+          "couleur": "21, 93, 252",
+          "texteVoisin": "69, 85, 108",
+          "decoration": "underline",
+          "decalage": "2px",
+          "couleurTrait": "21, 93, 252",
+          "alphaTrait": "oklch(0.546 0.245 262.881)",
+          "boite": {
+            "x": 736,
+            "y": 429.546875,
+            "w": 577,
+            "h": 40.75
+          },
+          "rects": [
+            "233×18",
+            "230×18"
+          ],
+          "lignes": [
+            {
+              "x": 1080,
+              "y": 429.546875,
+              "w": 233,
+              "h": 18
+            },
+            {
+              "x": 736,
+              "y": 452.296875,
+              "w": 230,
+              "h": 18
+            }
+          ],
+          "rapportLienTexteVoisin": 1.44,
+          "pixelsDuSoulignement": 452,
+          "repos": {
+            "ratio": 5.01,
+            "fond": "#f8fafc"
+          },
+          "survol": {
+            "couleur": "25, 60, 184",
+            "decoration": "underline",
+            "ratio": 8.43,
+            "fond": "#f8fafc"
+          },
+          "focus": {
+            "actif": true,
+            "focusVisible": true,
+            "contour": "2px solid rgb(15, 30, 56)",
+            "pixelsChanges": 5496
+          }
+        },
+        {
+          "id": "emplacement-0-0",
+          "bloc": "emplacement",
+          "texte": "En savoir plus sur le filtre à huile",
+          "href": "/reference-auto/filtre-a-huile",
+          "classe": "",
+          "couleur": "21, 93, 252",
+          "texteVoisin": "69, 85, 108",
+          "decoration": "underline",
+          "decalage": "2px",
+          "couleurTrait": "21, 93, 252",
+          "alphaTrait": "oklch(0.546 0.245 262.881)",
+          "boite": {
+            "x": 736,
+            "y": 429.75,
+            "w": 616,
+            "h": 40.75
+          },
+          "rects": [
+            "161×18",
+            "42×18"
+          ],
+          "lignes": [
+            {
+              "x": 1191,
+              "y": 429.75,
+              "w": 161,
+              "h": 18
+            },
+            {
+              "x": 736,
+              "y": 452.5,
+              "w": 42,
+              "h": 18
+            }
+          ],
+          "rapportLienTexteVoisin": 1.44,
+          "pixelsDuSoulignement": 199,
+          "repos": {
+            "ratio": 5.24,
+            "fond": "#ffffff"
+          },
+          "survol": {
+            "couleur": "25, 60, 184",
+            "decoration": "underline",
+            "ratio": 8.82,
+            "fond": "#ffffff"
+          },
+          "focus": {
+            "actif": true,
+            "focusVisible": true,
+            "contour": "2px solid rgb(15, 30, 56)",
+            "pixelsChanges": 4485
+          }
+        }
+      ]
+    }
+  }
+}

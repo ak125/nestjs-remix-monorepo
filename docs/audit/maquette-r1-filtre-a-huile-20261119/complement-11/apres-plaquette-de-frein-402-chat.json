@@ -1,0 +1,310 @@
+{
+  "url": "http://127.0.0.1:3017/pieces/plaquette-de-frein-402.html",
+  "label": "apres",
+  "cible": "chat",
+  "selecteurCible": "button[aria-label=\"Ouvrir le chat\"]",
+  "at": "2026-11-20T14:28:59.882Z",
+  "vue": "390×844",
+  "bulle": {
+    "selecteur": "button.fixed.bottom-24.md:bottom-6.right-4",
+    "aria": "Ouvrir le chat",
+    "opacite": "1",
+    "x": [
+      318,
+      374
+    ],
+    "y": [
+      692,
+      748
+    ]
+  },
+  "cartes": [
+    {
+      "i": 0,
+      "titre": "RENAULT MEGANE III",
+      "ligne": "Fabrication : 2013–2015",
+      "x": [
+        159,
+        317
+      ],
+      "chevauchementHorizontalPx": 0,
+      "preuve": {
+        "texteSousBouton": false
+      },
+      "recouverte": false,
+      "capture": "apres-plaquette-de-frein-402-chat-libre-390.png"
+    },
+    {
+      "i": 1,
+      "titre": "CITROËN BERLINGO II - BERLINGO MULTISPACE (B9)",
+      "ligne": "Début de fabrication : 2008",
+      "x": [
+        159,
+        305
+      ],
+      "chevauchementHorizontalPx": 0,
+      "preuve": {
+        "texteSousBouton": false
+      },
+      "recouverte": false
+    },
+    {
+      "i": 2,
+      "titre": "RENAULT CLIO II",
+      "ligne": "Fabrication : 2001–2009",
+      "x": [
+        159,
+        324
+      ],
+      "chevauchementHorizontalPx": 6,
+      "preuve": {
+        "texteSousBouton": true,
+        "point": [
+          321,
+          720
+        ],
+        "dessus": "bouton flottant"
+      },
+      "recouverte": true,
+      "capture": "apres-plaquette-de-frein-402-chat-recouvre-390.png"
+    },
+    {
+      "i": 3,
+      "titre": "RENAULT CLIO II",
+      "ligne": "Fabrication : 2007–2009",
+      "x": [
+        159,
+        326
+      ],
+      "chevauchementHorizontalPx": 8,
+      "preuve": {
+        "texteSousBouton": true,
+        "point": [
+          322,
+          720
+        ],
+        "dessus": "bouton flottant"
+      },
+      "recouverte": true
+    },
+    {
+      "i": 4,
+      "titre": "PEUGEOT 307",
+      "ligne": "Fabrication : 2005–2009",
+      "x": [
+        159,
+        242
+      ],
+      "chevauchementHorizontalPx": 0,
+      "preuve": {
+        "texteSousBouton": false
+      },
+      "recouverte": false
+    },
+    {
+      "i": 5,
+      "titre": "PEUGEOT 307",
+      "ligne": "Fabrication : 2004–2009",
+      "x": [
+        159,
+        242
+      ],
+      "chevauchementHorizontalPx": 0,
+      "preuve": {
+        "texteSousBouton": false
+      },
+      "recouverte": false
+    },
+    {
+      "i": 6,
+      "titre": "PEUGEOT 307",
+      "ligne": "Fabrication : 2000–2007",
+      "x": [
+        159,
+        327
+      ],
+      "chevauchementHorizontalPx": 9,
+      "preuve": {
+        "texteSousBouton": true,
+        "point": [
+          323,
+          720
+        ],
+        "dessus": "bouton flottant"
+      },
+      "recouverte": true
+    },
+    {
+      "i": 7,
+      "titre": "AUDI A4 III B7",
+      "ligne": "Fabrication : 2004–2008",
+      "x": [
+        159,
+        242
+      ],
+      "chevauchementHorizontalPx": 0,
+      "preuve": {
+        "texteSousBouton": false
+      },
+      "recouverte": false
+    },
+    {
+      "i": 8,
+      "titre": "AUDI A4 III B7",
+      "ligne": "Fabrication : 2005–2006",
+      "x": [
+        159,
+        242
+      ],
+      "chevauchementHorizontalPx": 0,
+      "preuve": {
+        "texteSousBouton": false
+      },
+      "recouverte": false
+    },
+    {
+      "i": 9,
+      "titre": "AUDI A4 III B7",
+      "ligne": "Fabrication : 2005–2006",
+      "x": [
+        159,
+        242
+      ],
+      "chevauchementHorizontalPx": 0,
+      "preuve": {
+        "texteSousBouton": false
+      },
+      "recouverte": false
+    },
+    {
+      "i": 10,
+      "titre": "VOLKSWAGEN GOLF IV",
+      "ligne": "Fabrication : 1997–2004",
+      "x": [
+        159,
+        321
+      ],
+      "chevauchementHorizontalPx": 3,
+      "preuve": {
+        "texteSousBouton": true,
+        "point": [
+          320,
+          720
+        ],
+        "dessus": "bouton flottant"
+      },
+      "recouverte": true
+    },
+    {
+      "i": 11,
+      "titre": "VOLKSWAGEN GOLF IV",
+      "ligne": "Fabrication : 1997–2004",
+      "x": [
+        159,
+        321
+      ],
+      "chevauchementHorizontalPx": 3,
+      "preuve": {
+        "texteSousBouton": true,
+        "point": [
+          320,
+          720
+        ],
+        "dessus": "bouton flottant"
+      },
+      "recouverte": true
+    },
+    {
+      "i": 12,
+      "titre": "VOLKSWAGEN GOLF IV",
+      "ligne": "Fabrication : 1998–2001",
+      "x": [
+        159,
+        319
+      ],
+      "chevauchementHorizontalPx": 1,
+      "preuve": {
+        "texteSousBouton": true,
+        "point": [
+          319,
+          720
+        ],
+        "dessus": "bouton flottant"
+      },
+      "recouverte": true
+    },
+    {
+      "i": 13,
+      "titre": "BMW Série 1 (E81)",
+      "ligne": "Fabrication : 2011",
+      "x": [
+        159,
+        273
+      ],
+      "chevauchementHorizontalPx": 0,
+      "preuve": {
+        "texteSousBouton": false
+      },
+      "recouverte": false
+    },
+    {
+      "i": 14,
+      "titre": "BMW Série 1 (E81)",
+      "ligne": "Fabrication : 2008–2011",
+      "x": [
+        159,
+        319
+      ],
+      "chevauchementHorizontalPx": 1,
+      "preuve": {
+        "texteSousBouton": true,
+        "point": [
+          319,
+          720
+        ],
+        "dessus": "bouton flottant"
+      },
+      "recouverte": true
+    },
+    {
+      "i": 15,
+      "titre": "BMW Série 1 (E81)",
+      "ligne": "Fabrication : 2006–2011",
+      "x": [
+        159,
+        319
+      ],
+      "chevauchementHorizontalPx": 1,
+      "preuve": {
+        "texteSousBouton": true,
+        "point": [
+          319,
+          720
+        ],
+        "dessus": "bouton flottant"
+      },
+      "recouverte": true
+    },
+    {
+      "i": 16,
+      "titre": "HONDA CIVIC IX",
+      "ligne": "Début de fabrication : 2013",
+      "x": [
+        159,
+        305
+      ],
+      "chevauchementHorizontalPx": 0,
+      "preuve": {
+        "texteSousBouton": false
+      },
+      "recouverte": false
+    }
+  ],
+  "preuves": [],
+  "synthese": {
+    "cartes": 17,
+    "avecLigne": 17,
+    "chevauchementHorizontal": 8,
+    "recouvertesPendantDefilement": 8
+  }
+}

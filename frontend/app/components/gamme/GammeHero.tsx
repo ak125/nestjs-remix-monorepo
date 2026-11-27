@@ -56,7 +56,7 @@ export default function GammeHero({
               {b.href ? (
                 <Link
                   to={b.href}
-                  className="hover:text-white/50 transition-colors"
+                  className="inline-flex items-center min-h-6 text-neutral-300 hover:text-white no-visited transition-colors"
                 >
                   {b.label}
                 </Link>
@@ -71,12 +71,12 @@ export default function GammeHero({
           {gammeName}
         </h1>
       </div>
-      {/* Desktop: 2 columns (image + selector), Mobile: stacked */}
+      {/* Desktop: 2 columns (image + selector), Mobile: selector first, image below */}
       <div className="max-w-7xl mx-auto px-page pb-5 lg:pb-8">
         <div className="flex flex-col lg:flex-row lg:items-stretch lg:gap-8">
           {/* Product image */}
-          <div className="lg:w-[280px] lg:shrink-0 flex">
-            <div className="mx-0 mb-4 lg:mb-0 w-full max-h-[280px] bg-gradient-to-br from-white/[0.08] to-white/[0.03] border border-white/[0.12] rounded-2xl overflow-hidden flex items-center justify-center backdrop-blur-xs">
+          <div className="order-last lg:order-none lg:w-[280px] lg:shrink-0 flex">
+            <div className="mx-0 mt-4 lg:mt-0 w-full max-h-[280px] bg-gradient-to-br from-white/[0.08] to-white/[0.03] border border-white/[0.12] rounded-2xl overflow-hidden flex items-center justify-center backdrop-blur-xs">
               {r1HeroPath || pgPic ? (
                 (() => {
                   const imgPath = r1HeroPath
@@ -136,7 +136,7 @@ export default function GammeHero({
                 <div className="mb-2.5 flex justify-center">
                   <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[12px] font-medium text-slate-700 shadow-sm">
                     <span className="relative flex h-2 w-2">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                      <span className="absolute inline-flex h-full w-full animate-ping motion-reduce:animate-none rounded-full bg-emerald-400 opacity-75" />
                       <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
                     </span>
                     Sélectionnez votre véhicule
@@ -226,7 +226,7 @@ export default function GammeHero({
                 <div className="flex justify-center pt-4 pb-1">
                   <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-[13px] font-medium text-slate-700 shadow-sm">
                     <span className="relative flex h-2 w-2">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                      <span className="absolute inline-flex h-full w-full animate-ping motion-reduce:animate-none rounded-full bg-emerald-400 opacity-75" />
                       <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
                     </span>
                     Sélectionnez votre véhicule
@@ -251,7 +251,7 @@ export default function GammeHero({
                           className={`flex h-12 items-center justify-center gap-2 rounded-[16px] text-[14px] font-semibold transition-all ${
                             isActive
                               ? "bg-white text-slate-950 shadow-sm ring-1 ring-slate-200"
-                              : "text-slate-500 hover:text-slate-800"
+                              : "text-neutral-500 hover:text-neutral-800"
                           }`}
                         >
                           <Icon

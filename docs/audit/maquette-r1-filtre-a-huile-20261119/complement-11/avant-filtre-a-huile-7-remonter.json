@@ -1,0 +1,308 @@
+{
+  "url": "http://127.0.0.1:3017/pieces/filtre-a-huile-7.html",
+  "label": "avant",
+  "cible": "remonter",
+  "selecteurCible": "button.fixed.bottom-40",
+  "at": "2026-11-20T14:22:36.893Z",
+  "vue": "390×844",
+  "bulle": {
+    "selecteur": "button.fixed.bottom-40.right-4.md:bottom-24",
+    "aria": "Retour en haut",
+    "opacite": "1",
+    "x": [
+      326,
+      374
+    ],
+    "y": [
+      636,
+      684
+    ]
+  },
+  "cartes": [
+    {
+      "i": 0,
+      "titre": "RENAULT CLIO III",
+      "ligne": "Fabrication : 2005–2012",
+      "x": [
+        159,
+        322
+      ],
+      "chevauchementHorizontalPx": 0,
+      "preuve": {
+        "texteSousBouton": false
+      },
+      "recouverte": false,
+      "capture": "avant-filtre-a-huile-7-remonter-libre-390.png"
+    },
+    {
+      "i": 1,
+      "titre": "PEUGEOT 206",
+      "ligne": "Fabrication : 2002–2007",
+      "x": [
+        159,
+        325
+      ],
+      "chevauchementHorizontalPx": 0,
+      "preuve": {
+        "texteSousBouton": false
+      },
+      "recouverte": false
+    },
+    {
+      "i": 2,
+      "titre": "AUDI A3 II",
+      "ligne": "Fabrication : 2005–2008",
+      "x": [
+        159,
+        242
+      ],
+      "chevauchementHorizontalPx": 0,
+      "preuve": {
+        "texteSousBouton": false
+      },
+      "recouverte": false
+    },
+    {
+      "i": 3,
+      "titre": "ALFA ROMEO 159",
+      "ligne": "Fabrication : 2005–2011",
+      "x": [
+        159,
+        319
+      ],
+      "chevauchementHorizontalPx": 0,
+      "preuve": {
+        "texteSousBouton": false
+      },
+      "recouverte": false
+    },
+    {
+      "i": 4,
+      "titre": "FORD FIESTA V",
+      "ligne": "Fabrication : 2001–2008",
+      "x": [
+        159,
+        324
+      ],
+      "chevauchementHorizontalPx": 0,
+      "preuve": {
+        "texteSousBouton": false
+      },
+      "recouverte": false
+    },
+    {
+      "i": 5,
+      "titre": "FIAT 500",
+      "ligne": "Fabrication : dès 2007",
+      "x": [
+        159,
+        308
+      ],
+      "chevauchementHorizontalPx": 0,
+      "preuve": {
+        "texteSousBouton": false
+      },
+      "recouverte": false
+    },
+    {
+      "i": 6,
+      "titre": "OPEL CORSA C",
+      "ligne": "Fabrication : 2003–2009",
+      "x": [
+        159,
+        327
+      ],
+      "chevauchementHorizontalPx": 1,
+      "preuve": {
+        "texteSousBouton": true,
+        "point": [
+          327,
+          660
+        ],
+        "dessus": "bouton flottant"
+      },
+      "recouverte": true,
+      "capture": "avant-filtre-a-huile-7-remonter-recouvre-390.png"
+    },
+    {
+      "i": 7,
+      "titre": "SEAT IBIZA III",
+      "ligne": "Fabrication : 2002–2005",
+      "x": [
+        159,
+        327
+      ],
+      "chevauchementHorizontalPx": 1,
+      "preuve": {
+        "texteSousBouton": true,
+        "point": [
+          327,
+          660
+        ],
+        "dessus": "bouton flottant"
+      },
+      "recouverte": true
+    },
+    {
+      "i": 8,
+      "titre": "JEEP CHEROKEE III",
+      "ligne": "Fabrication : 2004–2008",
+      "x": [
+        159,
+        242
+      ],
+      "chevauchementHorizontalPx": 0,
+      "preuve": {
+        "texteSousBouton": false
+      },
+      "recouverte": false
+    },
+    {
+      "i": 9,
+      "titre": "DACIA SANDERO I",
+      "ligne": "Fabrication : dès 2008",
+      "x": [
+        159,
+        310
+      ],
+      "chevauchementHorizontalPx": 0,
+      "preuve": {
+        "texteSousBouton": false
+      },
+      "recouverte": false
+    },
+    {
+      "i": 10,
+      "titre": "BMW Série 3 (E46)",
+      "ligne": "Fabrication : 2001–2005",
+      "x": [
+        159,
+        324
+      ],
+      "chevauchementHorizontalPx": 0,
+      "preuve": {
+        "texteSousBouton": false
+      },
+      "recouverte": false
+    },
+    {
+      "i": 11,
+      "titre": "NISSAN QASHQAI+2 (J10)",
+      "ligne": "Fabrication : 2011–2013",
+      "x": [
+        159,
+        313
+      ],
+      "chevauchementHorizontalPx": 0,
+      "preuve": {
+        "texteSousBouton": false
+      },
+      "recouverte": false
+    },
+    {
+      "i": 12,
+      "titre": "VOLKSWAGEN TOURAN I",
+      "ligne": "Fabrication : 2003–2010",
+      "x": [
+        159,
+        323
+      ],
+      "chevauchementHorizontalPx": 0,
+      "preuve": {
+        "texteSousBouton": false
+      },
+      "recouverte": false
+    },
+    {
+      "i": 13,
+      "titre": "TOYOTA YARIS II",
+      "ligne": "Fabrication : 2005–2012",
+      "x": [
+        159,
+        322
+      ],
+      "chevauchementHorizontalPx": 0,
+      "preuve": {
+        "texteSousBouton": false
+      },
+      "recouverte": false
+    },
+    {
+      "i": 14,
+      "titre": "MERCEDES CLASSE C (W204)",
+      "ligne": "Fabrication : 2007–2009",
+      "x": [
+        159,
+        326
+      ],
+      "chevauchementHorizontalPx": 0,
+      "preuve": {
+        "texteSousBouton": false
+      },
+      "recouverte": false
+    },
+    {
+      "i": 15,
+      "titre": "SUZUKI SWIFT IV",
+      "ligne": "Fabrication : dès 2010",
+      "x": [
+        159,
+        306
+      ],
+      "chevauchementHorizontalPx": 0,
+      "preuve": {
+        "texteSousBouton": false
+      },
+      "recouverte": false
+    },
+    {
+      "i": 16,
+      "titre": "MAZDA 3 II",
+      "ligne": "Fabrication : 2008–2013",
+      "x": [
+        159,
+        322
+      ],
+      "chevauchementHorizontalPx": 0,
+      "preuve": {
+        "texteSousBouton": false
+      },
+      "recouverte": false
+    },
+    {
+      "i": 17,
+      "titre": "HONDA CIVIC IX",
+      "ligne": "Fabrication : dès 2012",
+      "x": [
+        159,
+        304
+      ],
+      "chevauchementHorizontalPx": 0,
+      "preuve": {
+        "texteSousBouton": false
+      },
+      "recouverte": false
+    },
+    {
+      "i": 18,
+      "titre": "KIA PICANTO II",
+      "ligne": "Fabrication : 2011–2017",
+      "x": [
+        159,
+        312
+      ],
+      "chevauchementHorizontalPx": 0,
+      "preuve": {
+        "texteSousBouton": false
+      },
+      "recouverte": false
+    }
+  ],
+  "preuves": [],
+  "synthese": {
+    "cartes": 19,
+    "avecLigne": 19,
+    "chevauchementHorizontal": 2,
+    "recouvertesPendantDefilement": 2
+  }
+}

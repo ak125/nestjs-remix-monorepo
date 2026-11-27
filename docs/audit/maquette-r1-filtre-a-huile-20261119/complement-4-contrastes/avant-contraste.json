@@ -1,0 +1,364 @@
+{
+  "url": "http://127.0.0.1:3017/pieces/filtre-a-huile-7.html",
+  "label": "avant",
+  "at": "2026-11-19T21:51:14.079Z",
+  "methode": "pixel, pire fond > 3 % du cadre du texte, DPR 2, reduced-motion",
+  "vues": {
+    "390x844": {
+      "fil-ariane": [
+        {
+          "text": "Accueil",
+          "px": 10,
+          "lignes": 1,
+          "couleurCalculee": "rgb(13, 68, 115)",
+          "texte": "#0d4473",
+          "fond": "#101f39",
+          "ratio": 1.64,
+          "seuil": 4.5,
+          "verdict": "ÉCHEC",
+          "cls": "inline-flex items-center min-h-6 hover:text-white/50 transition-colors"
+        },
+        {
+          "text": "Pièces Auto",
+          "px": 10,
+          "lignes": 1,
+          "couleurCalculee": "rgb(13, 68, 115)",
+          "texte": "#0d4473",
+          "fond": "#101f39",
+          "ratio": 1.64,
+          "seuil": 4.5,
+          "verdict": "ÉCHEC",
+          "cls": "inline-flex items-center min-h-6 hover:text-white/50 transition-colors"
+        },
+        {
+          "text": "Filtre à huile",
+          "px": 10,
+          "lignes": 1,
+          "couleurCalculee": "oklab(0.999994 0.0000455677 0.0000200868 / 0.6)",
+          "texte": "#9fa5b0",
+          "fond": "#101f3a",
+          "ratio": 6.66,
+          "seuil": 4.5,
+          "verdict": "ok",
+          "cls": "text-white/60 font-medium"
+        }
+      ],
+      "onglet-type-mine": [
+        {
+          "text": "Véhicule",
+          "px": 13,
+          "lignes": 1,
+          "couleurCalculee": "oklch(0.129 0.042 264.695)",
+          "texte": "#020618",
+          "fond": "#ffffff",
+          "ratio": 20.16,
+          "seuil": 4.5,
+          "verdict": "ok",
+          "cls": "min-h-[44px] rounded-2xl px-3 py-2.5 text-center transition-all bg-white text-slate-950 shadow-sm ring-1 ring-orange-500/30"
+        },
+        {
+          "text": "Type Mine",
+          "px": 13,
+          "lignes": 1,
+          "couleurCalculee": "oklch(0.869 0.022 252.894)",
+          "texte": "#cad5e2",
+          "fond": "#0f172b",
+          "ratio": 12,
+          "seuil": 4.5,
+          "verdict": "ok",
+          "cls": "min-h-[44px] rounded-2xl px-3 py-2.5 text-center transition-all bg-transparent text-slate-300"
+        }
+      ],
+      "badge-2-min": [
+        {
+          "text": "GRATUIT",
+          "px": 10,
+          "lignes": 1,
+          "couleurCalculee": "rgb(2, 8, 23)",
+          "texte": "#020817",
+          "fond": "#ecfdf5",
+          "ratio": 18.99,
+          "seuil": 4.5,
+          "verdict": "ok",
+          "cls": "inline-flex items-center gap-1 rounded-full border font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 px-2.5 py"
+        },
+        {
+          "text": "2 min",
+          "px": 10,
+          "lignes": 2,
+          "couleurCalculee": "rgb(2, 8, 23)",
+          "texte": "#020817",
+          "fond": "#fff7ed",
+          "ratio": 18.84,
+          "seuil": 4.5,
+          "verdict": "ok",
+          "cls": "inline-flex items-center gap-1 rounded-full border font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 px-2.5 py"
+        }
+      ],
+      "bande-sous-hero": [
+        {
+          "text": "Compatibilité vérifiée",
+          "px": 12,
+          "lignes": 1,
+          "couleurCalculee": "oklch(0.554 0.046 257.417)",
+          "texte": "#62748e",
+          "fond": "#f8fafc",
+          "ratio": 4.55,
+          "seuil": 4.5,
+          "verdict": "ok",
+          "cls": "flex items-center gap-1.5"
+        },
+        {
+          "text": "Livraison 24-48h",
+          "px": 12,
+          "lignes": 1,
+          "couleurCalculee": "oklch(0.554 0.046 257.417)",
+          "texte": "#62748e",
+          "fond": "#f8fafc",
+          "ratio": 4.55,
+          "seuil": 4.5,
+          "verdict": "ok",
+          "cls": "flex items-center gap-1.5"
+        },
+        {
+          "text": "Retours 30 jours",
+          "px": 12,
+          "lignes": 1,
+          "couleurCalculee": "oklch(0.554 0.046 257.417)",
+          "texte": "#62748e",
+          "fond": "#f8fafc",
+          "ratio": 4.55,
+          "seuil": 4.5,
+          "verdict": "ok",
+          "cls": "flex items-center gap-1.5"
+        },
+        {
+          "text": "Paiement sécurisé",
+          "px": 12,
+          "lignes": 1,
+          "couleurCalculee": "oklch(0.554 0.046 257.417)",
+          "texte": "#62748e",
+          "fond": "#f8fafc",
+          "ratio": 4.55,
+          "seuil": 4.5,
+          "verdict": "ok",
+          "cls": "flex items-center gap-1.5"
+        },
+        {
+          "text": "Guide d'achat",
+          "px": 12,
+          "lignes": 1,
+          "couleurCalculee": "oklch(0.546 0.245 262.881)",
+          "texte": "#155dfc",
+          "fond": "#f8fafc",
+          "ratio": 5.01,
+          "seuil": 4.5,
+          "verdict": "ok",
+          "cls": "inline-flex items-center min-h-6 text-blue-600 hover:text-blue-800 transition-colors"
+        },
+        {
+          "text": "Conseils entretien",
+          "px": 12,
+          "lignes": 1,
+          "couleurCalculee": "rgb(30, 132, 73)",
+          "texte": "#1e8449",
+          "fond": "#f8fafc",
+          "ratio": 4.51,
+          "seuil": 4.5,
+          "verdict": "ok",
+          "cls": "inline-flex items-center min-h-6 text-success hover:text-emerald-800 transition-colors"
+        },
+        {
+          "text": "Fiche technique",
+          "px": 12,
+          "lignes": 1,
+          "couleurCalculee": "rgb(2, 8, 23)",
+          "texte": "#020817",
+          "fond": "#f8fafc",
+          "ratio": 19.12,
+          "seuil": 4.5,
+          "verdict": "ok",
+          "cls": "inline-flex items-center min-h-6 text-foreground hover:text-foreground transition-colors"
+        }
+      ]
+    },
+    "1440x900": {
+      "fil-ariane": [
+        {
+          "text": "Accueil",
+          "px": 11,
+          "lignes": 1,
+          "couleurCalculee": "rgb(13, 68, 115)",
+          "texte": "#0d4473",
+          "fond": "#10203d",
+          "ratio": 1.61,
+          "seuil": 4.5,
+          "verdict": "ÉCHEC",
+          "cls": "inline-flex items-center min-h-6 hover:text-white/50 transition-colors"
+        },
+        {
+          "text": "Pièces Auto",
+          "px": 11,
+          "lignes": 1,
+          "couleurCalculee": "rgb(13, 68, 115)",
+          "texte": "#0d4473",
+          "fond": "#10203d",
+          "ratio": 1.61,
+          "seuil": 4.5,
+          "verdict": "ÉCHEC",
+          "cls": "inline-flex items-center min-h-6 hover:text-white/50 transition-colors"
+        },
+        {
+          "text": "Filtre à huile",
+          "px": 11,
+          "lignes": 1,
+          "couleurCalculee": "oklab(0.999994 0.0000455677 0.0000200868 / 0.6)",
+          "texte": "#9fa6b1",
+          "fond": "#10203c",
+          "ratio": 6.61,
+          "seuil": 4.5,
+          "verdict": "ok",
+          "cls": "text-white/60 font-medium"
+        }
+      ],
+      "onglet-type-mine": [
+        {
+          "text": "Par véhicule",
+          "px": 14,
+          "lignes": 1,
+          "couleurCalculee": "oklch(0.129 0.042 264.695)",
+          "texte": "#020618",
+          "fond": "#ffffff",
+          "ratio": 20.16,
+          "seuil": 4.5,
+          "verdict": "ok",
+          "cls": "flex h-12 items-center justify-center gap-2 rounded-[16px] text-[14px] font-semibold transition-all bg-white text-slate-950 shadow-sm ring-1 ring-slate-200"
+        },
+        {
+          "text": "Type Mine",
+          "px": 14,
+          "lignes": 1,
+          "couleurCalculee": "oklch(0.554 0.046 257.417)",
+          "texte": "#62748e",
+          "fond": "#f1f5f9",
+          "ratio": 4.35,
+          "seuil": 4.5,
+          "verdict": "ÉCHEC",
+          "cls": "flex h-12 items-center justify-center gap-2 rounded-[16px] text-[14px] font-semibold transition-all text-slate-500 hover:text-slate-800"
+        }
+      ],
+      "badge-2-min": [
+        {
+          "text": "GRATUIT",
+          "px": 10,
+          "lignes": 1,
+          "couleurCalculee": "rgb(2, 8, 23)",
+          "texte": "#020817",
+          "fond": "#ecfdf5",
+          "ratio": 18.99,
+          "seuil": 4.5,
+          "verdict": "ok",
+          "cls": "inline-flex items-center gap-1 rounded-full border font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 px-2.5 py"
+        },
+        {
+          "text": "2 min",
+          "px": 10,
+          "lignes": 1,
+          "couleurCalculee": "rgb(2, 8, 23)",
+          "texte": "#020817",
+          "fond": "#fff7ed",
+          "ratio": 18.84,
+          "seuil": 4.5,
+          "verdict": "ok",
+          "cls": "inline-flex items-center gap-1 rounded-full border font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 px-2.5 py"
+        }
+      ],
+      "bande-sous-hero": [
+        {
+          "text": "Compatibilité vérifiée",
+          "px": 12,
+          "lignes": 1,
+          "couleurCalculee": "oklch(0.554 0.046 257.417)",
+          "texte": "#62748e",
+          "fond": "#f8fafc",
+          "ratio": 4.55,
+          "seuil": 4.5,
+          "verdict": "ok",
+          "cls": "flex items-center gap-1.5"
+        },
+        {
+          "text": "Livraison 24-48h",
+          "px": 12,
+          "lignes": 1,
+          "couleurCalculee": "oklch(0.554 0.046 257.417)",
+          "texte": "#62748e",
+          "fond": "#f8fafc",
+          "ratio": 4.55,
+          "seuil": 4.5,
+          "verdict": "ok",
+          "cls": "flex items-center gap-1.5"
+        },
+        {
+          "text": "Retours 30 jours",
+          "px": 12,
+          "lignes": 1,
+          "couleurCalculee": "oklch(0.554 0.046 257.417)",
+          "texte": "#62748e",
+          "fond": "#f1f3f5",
+          "ratio": 4.28,
+          "seuil": 4.5,
+          "verdict": "ÉCHEC",
+          "cls": "flex items-center gap-1.5"
+        },
+        {
+          "text": "Paiement sécurisé",
+          "px": 12,
+          "lignes": 1,
+          "couleurCalculee": "oklch(0.554 0.046 257.417)",
+          "texte": "#62748e",
+          "fond": "#eaecee",
+          "ratio": 4.02,
+          "seuil": 4.5,
+          "verdict": "ÉCHEC",
+          "cls": "flex items-center gap-1.5"
+        },
+        {
+          "text": "Guide d'achat",
+          "px": 12,
+          "lignes": 1,
+          "couleurCalculee": "oklch(0.546 0.245 262.881)",
+          "texte": "#155dfc",
+          "fond": "#eaecee",
+          "ratio": 4.43,
+          "seuil": 4.5,
+          "verdict": "ÉCHEC",
+          "cls": "inline-flex items-center min-h-6 text-blue-600 hover:text-blue-800 transition-colors"
+        },
+        {
+          "text": "Conseils entretien",
+          "px": 12,
+          "lignes": 1,
+          "couleurCalculee": "rgb(30, 132, 73)",
+          "texte": "#1e8449",
+          "fond": "#eaecee",
+          "ratio": 3.98,
+          "seuil": 4.5,
+          "verdict": "ÉCHEC",
+          "cls": "inline-flex items-center min-h-6 text-success hover:text-emerald-800 transition-colors"
+        },
+        {
+          "text": "Fiche technique",
+          "px": 12,
+          "lignes": 1,
+          "couleurCalculee": "rgb(2, 8, 23)",
+          "texte": "#020817",
+          "fond": "#f0f2f4",
+          "ratio": 17.83,
+          "seuil": 4.5,
+          "verdict": "ok",
+          "cls": "inline-flex items-center min-h-6 text-foreground hover:text-foreground transition-colors"
+        }
+      ]
+    }
+  }
+}

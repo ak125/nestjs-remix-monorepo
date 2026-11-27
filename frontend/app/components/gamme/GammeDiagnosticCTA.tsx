@@ -12,7 +12,7 @@ export default function GammeDiagnosticCTA() {
             <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-md shadow-orange-200 shrink-0">
               <SearchCheck
                 size={17}
-                className="text-white animate-subtle-float"
+                className="text-white animate-subtle-float motion-reduce:animate-none"
               />
             </div>
             <h2 className="text-[17px] lg:text-[20px] font-extrabold text-slate-900 tracking-tight font-heading">
@@ -28,9 +28,13 @@ export default function GammeDiagnosticCTA() {
             </Badge>
             <Badge
               variant="outline"
-              className="text-[10px] font-bold text-orange-600 bg-orange-50 border-orange-200 px-2 py-1"
+              className="text-[10px] font-bold bg-cta-50 border-cta-200 px-2 py-1 whitespace-nowrap"
             >
-              <Clock size={9} className="mr-1" /> 2 min
+              {/* Couleur portée par un span interne : Badge (partagé) ne fusionne pas les classes et sa
+                  variante outline impose text-foreground (complément 4). */}
+              <span className="inline-flex items-center text-cta-700">
+                <Clock size={9} className="mr-1" /> 2 min
+              </span>
             </Badge>
           </div>
         </div>
@@ -43,14 +47,15 @@ export default function GammeDiagnosticCTA() {
         </div>
 
         <div className="px-4 pb-4">
-          <Link to="/diagnostic-auto">
-            <button
-              type="button"
-              className="w-full py-4 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl text-white text-[15px] lg:text-[14px] font-bold flex items-center justify-center gap-2.5 shadow-lg shadow-orange-500/25 hover:shadow-xl hover:-translate-y-0.5 transition-all relative overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/[0.12] to-white/0 animate-shimmer" />
-              <SearchCheck size={18} /> Lancer le diagnostic
-            </button>
+          {/* Un seul élément interactif : le lien stylé en bouton (un <button> dans un <a> est invalide).
+              Couleurs du bouton « Lancer le diagnostic » de l'accueil (DiagnosticBanner) : fond cta,
+              texte noir, survol cta-hover — jetons du design system (complément 6). */}
+          <Link
+            to="/diagnostic-auto"
+            className="no-visited w-full py-4 bg-cta hover:bg-cta-hover rounded-xl text-black text-[15px] lg:text-[14px] font-bold flex items-center justify-center gap-2.5 shadow-lg shadow-cta/25 hover:shadow-xl hover:-translate-y-0.5 transition-all relative overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/[0.12] to-white/0 animate-shimmer motion-reduce:animate-none!" />
+            <SearchCheck size={18} /> Lancer le diagnostic
           </Link>
         </div>
       </div>

@@ -1,0 +1,132 @@
+{
+  "url": "http://127.0.0.1:3017/pieces/plaquette-de-frein-402.html",
+  "label": "apres",
+  "at": "2026-11-20T13:17:48.560Z",
+  "passages": 5,
+  "vues": {
+    "390": {
+      "cpu": 4,
+      "runs": [
+        {
+          "LCP": 468,
+          "CLS": 0,
+          "INP": 56,
+          "FCP": 468,
+          "TTFB": 167,
+          "elementLCP": null,
+          "cibleINP": null,
+          "cibleCLS": null
+        },
+        {
+          "LCP": 348,
+          "CLS": 0,
+          "INP": 64,
+          "FCP": 348,
+          "TTFB": 110,
+          "elementLCP": null,
+          "cibleINP": null,
+          "cibleCLS": null
+        },
+        {
+          "LCP": 408,
+          "CLS": 0,
+          "INP": 64,
+          "FCP": 408,
+          "TTFB": 109,
+          "elementLCP": null,
+          "cibleINP": null,
+          "cibleCLS": null
+        },
+        {
+          "LCP": 500,
+          "CLS": 0,
+          "INP": 56,
+          "FCP": 500,
+          "TTFB": 198,
+          "elementLCP": null,
+          "cibleINP": null,
+          "cibleCLS": null
+        },
+        {
+          "LCP": 392,
+          "CLS": 0,
+          "INP": 56,
+          "FCP": 392,
+          "TTFB": 120,
+          "elementLCP": null,
+          "cibleINP": null,
+          "cibleCLS": null
+        }
+      ],
+      "mediane": {
+        "LCP": 408,
+        "CLS": 0,
+        "INP": 56,
+        "FCP": 408,
+        "TTFB": 120
+      }
+    },
+    "1440": {
+      "cpu": 1,
+      "runs": [
+        {
+          "LCP": 320,
+          "CLS": 0.0223,
+          "INP": 40,
+          "FCP": 320,
+          "TTFB": 158,
+          "elementLCP": null,
+          "cibleINP": null,
+          "cibleCLS": null
+        },
+        {
+          "LCP": 356,
+          "CLS": 0.0223,
+          "INP": 32,
+          "FCP": 356,
+          "TTFB": 194,
+          "elementLCP": null,
+          "cibleINP": null,
+          "cibleCLS": null
+        },
+        {
+          "LCP": 272,
+          "CLS": 0.0223,
+          "INP": 40,
+          "FCP": 272,
+          "TTFB": 124,
+          "elementLCP": null,
+          "cibleINP": null,
+          "cibleCLS": null
+        },
+        {
+          "LCP": 296,
+          "CLS": 0.0223,
+          "INP": 32,
+          "FCP": 296,
+          "TTFB": 129,
+          "elementLCP": null,
+          "cibleINP": null,
+          "cibleCLS": null
+        },
+        {
+          "LCP": 308,
+          "CLS": 0.0223,
+          "INP": 40,
+          "FCP": 308,
+          "TTFB": 165,
+          "elementLCP": null,
+          "cibleINP": null,
+          "cibleCLS": null
+        }
+      ],
+      "mediane": {
+        "LCP": 308,
+        "CLS": 0.0223,
+        "INP": 40,
+        "FCP": 308,
+        "TTFB": 158
+      }
+    }
+  }
+}

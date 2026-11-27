@@ -1,0 +1,39 @@
+{
+  "url": "http://127.0.0.1:3017/pieces/filtre-a-huile-7.html",
+  "largeur": 390,
+  "hauteur": 844,
+  "navigateur": "153.0.8010.47",
+  "at": "2026-11-20T01:14:49.130Z",
+  "seuil": 4.5,
+  "avantVisite": {
+    "repos": {
+      "fondDominant": "#f97d27",
+      "pixelDuTexte": "#0e0e0e",
+      "ratioTexteFond": 7.34,
+      "noVisited": true
+    },
+    "survol": {
+      "fondDominant": "#eb641e",
+      "pixelDuTexte": "#0e0e0e",
+      "ratioTexteFond": 5.85,
+      "noVisited": true
+    },
+    "temoinCouleur": "#020817"
+  },
+  "visite": "http://127.0.0.1:3017/diagnostic-auto",
+  "apresVisite": {
+    "repos": {
+      "fondDominant": "#f97d27",
+      "pixelDuTexte": "#0e0e0e",
+      "ratioTexteFond": 7.34,
+      "noVisited": true
+    },
+    "survol": {
+      "fondDominant": "#eb641e",
+      "pixelDuTexte": "#0e0e0e",
+      "ratioTexteFond": 5.85,
+      "noVisited": true
+    },
+    "temoinCouleur": "#9810fa"
+  }
+}

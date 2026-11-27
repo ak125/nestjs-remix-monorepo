@@ -1,0 +1,64 @@
+npm warn Unknown project config "puppeteer-skip-download". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+
+ RUN  v4.1.9 <worktree>/frontend
+
+stderr | tests/unit/r1-motorisation-fabrication.test.tsx > cartes véhicule R1 — ligne « Fabrication » > début seul : « Début de fabrication : AAAA », jamais « dès »
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+
+stderr | tests/unit/r1-motorisation-fabrication.test.tsx > cartes véhicule R1 — ligne « Fabrication » > fin seule : « Fin de fabrication : AAAA »
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+
+ ❯ tests/unit/r1-motorisation-fabrication.test.tsx (5 tests | 2 failed) 492ms
+     × début seul : « Début de fabrication : AAAA », jamais « dès » 93ms
+     × fin seule : « Fin de fabrication : AAAA » 59ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/r1-motorisation-fabrication.test.tsx > cartes véhicule R1 — ligne « Fabrication » > début seul : « Début de fabrication : AAAA », jamais « dès »
+AssertionError: expected 'Fabrication : dès 2008' to be 'Début de fabrication : 2008' // Object.is equality
+
+Expected: "Début de fabrication : 2008"
+Received: "Fabrication : dès 2008"
+
+ ❯ tests/unit/r1-motorisation-fabrication.test.tsx:78:15
+     76|     renderCards();
+     77|     const t = await ligne("DEBUTSEUL");
+     78|     expect(t).toBe("Début de fabrication : 2008");
+       |               ^
+     79|     expect(t).not.toMatch(/dès|depuis/i);
+     80|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/unit/r1-motorisation-fabrication.test.tsx > cartes véhicule R1 — ligne « Fabrication » > fin seule : « Fin de fabrication : AAAA »
+AssertionError: expected 'Fabrication : jusqu\'en 2012' to be 'Fin de fabrication : 2012' // Object.is equality
+
+Expected: "Fin de fabrication : 2012"
+Received: "Fabrication : jusqu'en 2012"
+
+ ❯ tests/unit/r1-motorisation-fabrication.test.tsx:84:37
+     82|   it("fin seule : « Fin de fabrication : AAAA »", async () => {
+     83|     renderCards();
+     84|     expect(await ligne("FINSEULE")).toBe("Fin de fabrication : 2012");
+       |                                     ^
+     85|   });
+     86|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 3 passed (5)
+   Start at  15:19:07
+   Duration  1.75s (transform 258ms, setup 0ms, import 500ms, tests 492ms, environment 609ms)
+
+rc=1

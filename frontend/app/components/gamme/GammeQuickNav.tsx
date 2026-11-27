@@ -7,11 +7,12 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
+// Ordre = ordre des sections de la page R1 (maquette mandat DS : compatibilité d'abord)
 const SECTIONS = [
+  { id: "reference", label: "Compatibilité", icon: Car },
   { id: "bien-choisir", label: "Bien choisir", icon: ShieldCheck },
   { id: "qualite-prix", label: "Prix & Marques", icon: Award },
   { id: "emplacement", label: "Emplacement", icon: MapPin },
-  { id: "reference", label: "Compatibilité", icon: Car },
   { id: "faq", label: "FAQ", icon: HelpCircle },
   { id: "aller-plus-loin", label: "Voir aussi", icon: BookOpen },
 ];
@@ -24,6 +25,7 @@ export default function GammeQuickNav() {
     >
       <div className="max-w-7xl mx-auto px-page">
         <div className="flex items-center gap-2 overflow-x-auto lg:justify-center scrollbar-hide">
+          {/* Cibles tactiles ≥ 44 px (min-h-11) ; survol sans déplacement si reduced-motion (complément 2) */}
           {SECTIONS.map((s) => {
             const Icon = s.icon;
             return (
@@ -31,11 +33,17 @@ export default function GammeQuickNav() {
                 key={s.id}
                 type="button"
                 onClick={() => {
-                  document
-                    .getElementById(s.id)
-                    ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  // Défilement instantané si l'utilisateur demande moins d'animations (complément 3).
+                  // « instant » et non « auto » : root.tsx (useScrollBehavior) met scroll-behavior: smooth sur <html>.
+                  const reduce = window.matchMedia(
+                    "(prefers-reduced-motion: reduce)",
+                  ).matches;
+                  document.getElementById(s.id)?.scrollIntoView({
+                    behavior: reduce ? "instant" : "smooth",
+                    block: "start",
+                  });
                 }}
-                className="flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-200 rounded-[18px] text-[12px] font-semibold text-blue-900 whitespace-nowrap shadow-sm hover:border-blue-200 hover:text-blue-600 hover:bg-blue-50 hover:-translate-y-0.5 transition-all cursor-pointer"
+                className="flex items-center gap-1.5 min-h-11 px-4 py-2 bg-white border border-slate-200 rounded-[18px] text-[12px] font-semibold text-blue-900 whitespace-nowrap shadow-sm hover:border-blue-200 hover:text-blue-600 hover:bg-blue-50 hover:-translate-y-0.5 transition-all cursor-pointer motion-reduce:transition-none motion-reduce:hover:translate-y-0"
               >
                 <Icon size={13} /> {s.label}
               </button>

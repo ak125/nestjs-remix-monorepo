@@ -126,7 +126,7 @@ export default function GammeChecklist({
                     >
                       {s.label}
                     </div>
-                    <div className="text-[10px] text-slate-400 font-normal mt-0.5">
+                    <div className="text-[10px] text-neutral-400 font-normal mt-0.5">
                       {s.desc}
                     </div>
                   </div>

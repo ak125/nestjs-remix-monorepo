@@ -1,0 +1,280 @@
+{
+  "url": "http://127.0.0.1:3017/pieces/filtre-a-huile-7.html",
+  "label": "apres-isole",
+  "at": "2026-11-19T15:21:19.260Z",
+  "viewports": {
+    "390": {
+      "status": 200,
+      "scrollHeight": 16322,
+      "consoleErrors": [],
+      "blockedRequests": [
+        "POST http://127.0.0.1:3017/api/seo/cwv/beacon",
+        "POST http://127.0.0.1:3017/api/seo/cwv/beacon",
+        "POST http://127.0.0.1:3017/api/attribution/landing",
+        "POST http://127.0.0.1:3017/api/seo/runtime-event"
+      ],
+      "blocks": [
+        {
+          "tag": "a",
+          "id": null,
+          "dataSection": null,
+          "heads": [],
+          "top": 159,
+          "height": 1,
+          "visible": true
+        },
+        {
+          "tag": "section",
+          "id": null,
+          "dataSection": null,
+          "heads": [
+            "H1 Filtre à huile compatible avec votre véhicule"
+          ],
+          "top": 160,
+          "height": 865,
+          "visible": true
+        },
+        {
+          "tag": "div",
+          "id": null,
+          "dataSection": null,
+          "heads": [],
+          "top": 1025,
+          "height": 97,
+          "visible": true
+        },
+        {
+          "tag": "nav",
+          "id": null,
+          "dataSection": null,
+          "heads": [],
+          "top": 1122,
+          "height": 62,
+          "visible": true
+        },
+        {
+          "tag": "section",
+          "id": "reference",
+          "dataSection": null,
+          "heads": [
+            "H2 Trouver la bonne référence pour votre véhicule"
+          ],
+          "top": 1184,
+          "height": 5255,
+          "visible": true
+        },
+        {
+          "tag": "section",
+          "id": "bien-choisir",
+          "dataSection": null,
+          "heads": [
+            "H2 Bien choisir votre filtre à huile"
+          ],
+          "top": 6439,
+          "height": 2155,
+          "visible": true
+        },
+        {
+          "tag": "section",
+          "id": "qualite-prix",
+          "dataSection": null,
+          "heads": [
+            "H2 Qualité, prix et marques"
+          ],
+          "top": 8594,
+          "height": 3028,
+          "visible": true
+        },
+        {
+          "tag": "section",
+          "id": "emplacement",
+          "dataSection": null,
+          "heads": [
+            "H2 Où se trouve le filtre à huile et quand le remplacer"
+          ],
+          "top": 11622,
+          "height": 1278,
+          "visible": true
+        },
+        {
+          "tag": "section",
+          "id": "faq",
+          "dataSection": null,
+          "heads": [
+            "H2 Questions fréquentes sur le filtre à huile"
+          ],
+          "top": 12900,
+          "height": 607,
+          "visible": true
+        },
+        {
+          "tag": "section",
+          "id": null,
+          "dataSection": null,
+          "heads": [
+            "H2 Diagnostic gratuit"
+          ],
+          "top": 13507,
+          "height": 241,
+          "visible": true
+        },
+        {
+          "tag": "section",
+          "id": "aller-plus-loin",
+          "dataSection": null,
+          "heads": [
+            "H2 Aller plus loin"
+          ],
+          "top": 13748,
+          "height": 1819,
+          "visible": true
+        },
+        {
+          "tag": "footer",
+          "id": null,
+          "dataSection": null,
+          "heads": [],
+          "top": 15567,
+          "height": 755,
+          "visible": true
+        }
+      ]
+    },
+    "1440": {
+      "status": 200,
+      "scrollHeight": 8789,
+      "consoleErrors": [],
+      "blockedRequests": [
+        "POST http://127.0.0.1:3017/api/seo/cwv/beacon",
+        "POST http://127.0.0.1:3017/api/seo/cwv/beacon",
+        "POST http://127.0.0.1:3017/api/attribution/landing"
+      ],
+      "blocks": [
+        {
+          "tag": "a",
+          "id": null,
+          "dataSection": null,
+          "heads": [],
+          "top": 112,
+          "height": 1,
+          "visible": true
+        },
+        {
+          "tag": "section",
+          "id": null,
+          "dataSection": null,
+          "heads": [
+            "H1 Filtre à huile compatible avec votre véhicule"
+          ],
+          "top": 113,
+          "height": 387,
+          "visible": true
+        },
+        {
+          "tag": "div",
+          "id": null,
+          "dataSection": null,
+          "heads": [],
+          "top": 500,
+          "height": 49,
+          "visible": true
+        },
+        {
+          "tag": "nav",
+          "id": null,
+          "dataSection": null,
+          "heads": [],
+          "top": 549,
+          "height": 62,
+          "visible": true
+        },
+        {
+          "tag": "section",
+          "id": "reference",
+          "dataSection": null,
+          "heads": [
+            "H2 Trouver la bonne référence pour votre véhicule"
+          ],
+          "top": 611,
+          "height": 2550,
+          "visible": true
+        },
+        {
+          "tag": "section",
+          "id": "bien-choisir",
+          "dataSection": null,
+          "heads": [
+            "H2 Bien choisir votre filtre à huile"
+          ],
+          "top": 3161,
+          "height": 1263,
+          "visible": true
+        },
+        {
+          "tag": "section",
+          "id": "qualite-prix",
+          "dataSection": null,
+          "heads": [
+            "H2 Qualité, prix et marques"
+          ],
+          "top": 4424,
+          "height": 1465,
+          "visible": true
+        },
+        {
+          "tag": "section",
+          "id": "emplacement",
+          "dataSection": null,
+          "heads": [
+            "H2 Où se trouve le filtre à huile et quand le remplacer"
+          ],
+          "top": 5889,
+          "height": 734,
+          "visible": true
+        },
+        {
+          "tag": "section",
+          "id": "faq",
+          "dataSection": null,
+          "heads": [
+            "H2 Questions fréquentes sur le filtre à huile"
+          ],
+          "top": 6623,
+          "height": 454,
+          "visible": true
+        },
+        {
+          "tag": "section",
+          "id": null,
+          "dataSection": null,
+          "heads": [
+            "H2 Diagnostic gratuit"
+          ],
+          "top": 7077,
+          "height": 250,
+          "visible": true
+        },
+        {
+          "tag": "section",
+          "id": "aller-plus-loin",
+          "dataSection": null,
+          "heads": [
+            "H2 Aller plus loin"
+          ],
+          "top": 7326,
+          "height": 972,
+          "visible": true
+        },
+        {
+          "tag": "footer",
+          "id": null,
+          "dataSection": null,
+          "heads": [],
+          "top": 8298,
+          "height": 491,
+          "visible": true
+        }
+      ]
+    }
+  }
+}

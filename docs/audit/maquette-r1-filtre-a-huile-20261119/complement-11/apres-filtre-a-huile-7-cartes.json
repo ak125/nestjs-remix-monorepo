@@ -1,0 +1,1133 @@
+{
+  "url": "http://127.0.0.1:3017/pieces/filtre-a-huile-7.html",
+  "label": "apres",
+  "at": "2026-11-20T14:26:25.811Z",
+  "vues": {
+    "390": {
+      "cartesAvantClic": 12,
+      "cartes": 19,
+      "hauteur": {
+        "min": 184,
+        "max": 236,
+        "moyenne": 195
+      },
+      "largeurs": [
+        308
+      ],
+      "doublonsFaits": {
+        "distinctes": 18,
+        "cartesAvecLigne": 19,
+        "cartesAvecLigneIdentiqueAUneAutre": 2,
+        "groupes": [
+          {
+            "ligne": "Fabrication : 2005–2012",
+            "cartes": 2
+          }
+        ]
+      },
+      "doublonsPhrase": {
+        "distinctes": 0,
+        "cartesAvecLigne": 0,
+        "cartesAvecLigneIdentiqueAUneAutre": 0,
+        "groupes": []
+      },
+      "liste": [
+        {
+          "href": "/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html",
+          "titre": "RENAULT CLIO III",
+          "badges": [
+            "1.5 dCi",
+            "86 ch"
+          ],
+          "taille": "308×184",
+          "largeur": 308,
+          "hauteur": 184,
+          "paragraphes": [
+            {
+              "id": "0-0",
+              "texte": "Fabrication : 2005–2012",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2005–2012",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/peugeot-128/206-128014/1-4-hdi-30091.html",
+          "titre": "PEUGEOT 206",
+          "badges": [
+            "1.4 HDI",
+            "69 ch"
+          ],
+          "taille": "308×184",
+          "largeur": 308,
+          "hauteur": 184,
+          "paragraphes": [
+            {
+              "id": "1-0",
+              "texte": "Fabrication : 2002–2007",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2002–2007",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/audi-22/a3-ii-22031/2-0-tdi-19966.html",
+          "titre": "AUDI A3 II",
+          "badges": [
+            "2.0 TDI",
+            "140 ch"
+          ],
+          "taille": "308×204",
+          "largeur": 308,
+          "hauteur": 204,
+          "paragraphes": [
+            {
+              "id": "2-0",
+              "texte": "Fabrication : 2005–2008",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 2
+            }
+          ],
+          "ligneFaits": "Fabrication : 2005–2008",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/alfa-romeo-13/159-13006/1-9-jtdm-8v-18929.html",
+          "titre": "ALFA ROMEO 159",
+          "badges": [
+            "1.9 JTDM 8V",
+            "120 ch"
+          ],
+          "taille": "308×184",
+          "largeur": 308,
+          "hauteur": 184,
+          "paragraphes": [
+            {
+              "id": "3-0",
+              "texte": "Fabrication : 2005–2011",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2005–2011",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/ford-60/fiesta-v-60073/1-4-tdci-16102.html",
+          "titre": "FORD FIESTA V",
+          "badges": [
+            "1.4 TDCI",
+            "68 ch"
+          ],
+          "taille": "308×184",
+          "largeur": 308,
+          "hauteur": 184,
+          "paragraphes": [
+            {
+              "id": "4-0",
+              "texte": "Fabrication : 2001–2008",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2001–2008",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/fiat-58/500-58126/1-2-23175.html",
+          "titre": "FIAT 500",
+          "badges": [
+            "1.2",
+            "69 ch"
+          ],
+          "taille": "308×204",
+          "largeur": 308,
+          "hauteur": 204,
+          "paragraphes": [
+            {
+              "id": "5-0",
+              "texte": "Début de fabrication : 2007",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 2
+            }
+          ],
+          "ligneFaits": "Début de fabrication : 2007",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/opel-123/corsa-c-123046/1-3-cdti-17696.html",
+          "titre": "OPEL CORSA C",
+          "badges": [
+            "1.3 CDTI",
+            "70 ch"
+          ],
+          "taille": "308×184",
+          "largeur": 308,
+          "hauteur": 184,
+          "paragraphes": [
+            {
+              "id": "6-0",
+              "texte": "Fabrication : 2003–2009",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2003–2009",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/seat-147/ibiza-iii-147025/1-4-tdi-17079.html",
+          "titre": "SEAT IBIZA III",
+          "badges": [
+            "1.4 TDI",
+            "75 ch"
+          ],
+          "taille": "308×184",
+          "largeur": 308,
+          "hauteur": 184,
+          "paragraphes": [
+            {
+              "id": "7-0",
+              "texte": "Fabrication : 2002–2005",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2002–2005",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/jeep-86/cherokee-iii-86002/2-8-crd-4wd-18793.html",
+          "titre": "JEEP CHEROKEE III",
+          "badges": [
+            "2.8 CRD 4x4",
+            "163 ch"
+          ],
+          "taille": "308×204",
+          "largeur": 308,
+          "hauteur": 204,
+          "paragraphes": [
+            {
+              "id": "8-0",
+              "texte": "Fabrication : 2004–2008",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 2
+            }
+          ],
+          "ligneFaits": "Fabrication : 2004–2008",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/dacia-47/sandero-i-47024/1-5-dci-31083.html",
+          "titre": "DACIA SANDERO I",
+          "badges": [
+            "1.5 dCi",
+            "68 ch"
+          ],
+          "taille": "308×204",
+          "largeur": 308,
+          "hauteur": 204,
+          "paragraphes": [
+            {
+              "id": "9-0",
+              "texte": "Début de fabrication : 2008",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 2
+            }
+          ],
+          "ligneFaits": "Début de fabrication : 2008",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/bmw-33/serie-3-e46-33027/2-0-320-d-16201.html",
+          "titre": "BMW Série 3 (E46)",
+          "badges": [
+            "320 d",
+            "150 ch"
+          ],
+          "taille": "308×184",
+          "largeur": 308,
+          "hauteur": 184,
+          "paragraphes": [
+            {
+              "id": "10-0",
+              "texte": "Fabrication : 2001–2005",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2001–2005",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/nissan-119/qashqai-2-119199/1-6-dci-11758.html",
+          "titre": "NISSAN QASHQAI+2 (J10)",
+          "badges": [
+            "1.6 dCi",
+            "130 ch"
+          ],
+          "taille": "308×204",
+          "largeur": 308,
+          "hauteur": 204,
+          "paragraphes": [
+            {
+              "id": "11-0",
+              "texte": "Fabrication : 2011–2013",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2011–2013",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/volkswagen-173/touran-i-173141/1-9-tdi-17768.html",
+          "titre": "VOLKSWAGEN TOURAN I",
+          "badges": [
+            "1.9 TDI",
+            "105 ch"
+          ],
+          "taille": "308×204",
+          "largeur": 308,
+          "hauteur": 204,
+          "paragraphes": [
+            {
+              "id": "12-0",
+              "texte": "Fabrication : 2003–2010",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2003–2010",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/toyota-164/yaris-ii-164387/1-4-d-4d-19255.html",
+          "titre": "TOYOTA YARIS II",
+          "badges": [
+            "1.4 D4-D",
+            "90 ch"
+          ],
+          "taille": "308×184",
+          "largeur": 308,
+          "hauteur": 184,
+          "paragraphes": [
+            {
+              "id": "13-0",
+              "texte": "Fabrication : 2005–2012",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2005–2012",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/mercedes-benz-108/classe-c-w204-108039/c-200-cdi-2-1-22457.html",
+          "titre": "MERCEDES CLASSE C (W204)",
+          "badges": [
+            "200 CDI (204.001)",
+            "136 ch"
+          ],
+          "taille": "308×236",
+          "largeur": 308,
+          "hauteur": 236,
+          "paragraphes": [
+            {
+              "id": "14-0",
+              "texte": "Fabrication : 2007–2009",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2007–2009",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/suzuki-158/swift-iv-158049/1-3-ddis-57.html",
+          "titre": "SUZUKI SWIFT IV",
+          "badges": [
+            "1.3 DDIS",
+            "75 ch"
+          ],
+          "taille": "308×204",
+          "largeur": 308,
+          "hauteur": 204,
+          "paragraphes": [
+            {
+              "id": "15-0",
+              "texte": "Début de fabrication : 2010",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 2
+            }
+          ],
+          "ligneFaits": "Début de fabrication : 2010",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/mazda-105/mazda-3-ii-105058/1-6-mzr-cd-31077.html",
+          "titre": "MAZDA 3 II",
+          "badges": [
+            "1.6 MZR CD",
+            "109 ch"
+          ],
+          "taille": "308×184",
+          "largeur": 308,
+          "hauteur": 184,
+          "paragraphes": [
+            {
+              "id": "16-0",
+              "texte": "Fabrication : 2008–2013",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2008–2013",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/honda-74/civic-ix-74048/2-2-i-dtec-13927.html",
+          "titre": "HONDA CIVIC IX",
+          "badges": [
+            "2.2 DTEC",
+            "150 ch"
+          ],
+          "taille": "308×204",
+          "largeur": 308,
+          "hauteur": 204,
+          "paragraphes": [
+            {
+              "id": "17-0",
+              "texte": "Début de fabrication : 2012",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 2
+            }
+          ],
+          "ligneFaits": "Début de fabrication : 2012",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/kia-88/picanto-ii-88042/1-2-7072.html",
+          "titre": "KIA PICANTO II",
+          "badges": [
+            "1.2",
+            "85 ch"
+          ],
+          "taille": "308×184",
+          "largeur": 308,
+          "hauteur": 184,
+          "paragraphes": [
+            {
+              "id": "18-0",
+              "texte": "Fabrication : 2011–2017",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2011–2017",
+          "phrase": null
+        }
+      ]
+    },
+    "1440": {
+      "cartesAvantClic": 12,
+      "cartes": 19,
+      "hauteur": {
+        "min": 195,
+        "max": 195,
+        "moyenne": 195
+      },
+      "largeurs": [
+        595
+      ],
+      "doublonsFaits": {
+        "distinctes": 18,
+        "cartesAvecLigne": 19,
+        "cartesAvecLigneIdentiqueAUneAutre": 2,
+        "groupes": [
+          {
+            "ligne": "Fabrication : 2005–2012",
+            "cartes": 2
+          }
+        ]
+      },
+      "doublonsPhrase": {
+        "distinctes": 0,
+        "cartesAvecLigne": 0,
+        "cartesAvecLigneIdentiqueAUneAutre": 0,
+        "groupes": []
+      },
+      "liste": [
+        {
+          "href": "/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html",
+          "titre": "RENAULT CLIO III",
+          "badges": [
+            "1.5 dCi",
+            "86 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "0-0",
+              "texte": "Fabrication : 2005–2012",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2005–2012",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/peugeot-128/206-128014/1-4-hdi-30091.html",
+          "titre": "PEUGEOT 206",
+          "badges": [
+            "1.4 HDI",
+            "69 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "1-0",
+              "texte": "Fabrication : 2002–2007",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2002–2007",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/audi-22/a3-ii-22031/2-0-tdi-19966.html",
+          "titre": "AUDI A3 II",
+          "badges": [
+            "2.0 TDI",
+            "140 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "2-0",
+              "texte": "Fabrication : 2005–2008",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2005–2008",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/alfa-romeo-13/159-13006/1-9-jtdm-8v-18929.html",
+          "titre": "ALFA ROMEO 159",
+          "badges": [
+            "1.9 JTDM 8V",
+            "120 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "3-0",
+              "texte": "Fabrication : 2005–2011",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2005–2011",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/ford-60/fiesta-v-60073/1-4-tdci-16102.html",
+          "titre": "FORD FIESTA V",
+          "badges": [
+            "1.4 TDCI",
+            "68 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "4-0",
+              "texte": "Fabrication : 2001–2008",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2001–2008",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/fiat-58/500-58126/1-2-23175.html",
+          "titre": "FIAT 500",
+          "badges": [
+            "1.2",
+            "69 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "5-0",
+              "texte": "Début de fabrication : 2007",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Début de fabrication : 2007",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/opel-123/corsa-c-123046/1-3-cdti-17696.html",
+          "titre": "OPEL CORSA C",
+          "badges": [
+            "1.3 CDTI",
+            "70 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "6-0",
+              "texte": "Fabrication : 2003–2009",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2003–2009",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/seat-147/ibiza-iii-147025/1-4-tdi-17079.html",
+          "titre": "SEAT IBIZA III",
+          "badges": [
+            "1.4 TDI",
+            "75 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "7-0",
+              "texte": "Fabrication : 2002–2005",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2002–2005",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/jeep-86/cherokee-iii-86002/2-8-crd-4wd-18793.html",
+          "titre": "JEEP CHEROKEE III",
+          "badges": [
+            "2.8 CRD 4x4",
+            "163 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "8-0",
+              "texte": "Fabrication : 2004–2008",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2004–2008",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/dacia-47/sandero-i-47024/1-5-dci-31083.html",
+          "titre": "DACIA SANDERO I",
+          "badges": [
+            "1.5 dCi",
+            "68 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "9-0",
+              "texte": "Début de fabrication : 2008",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Début de fabrication : 2008",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/bmw-33/serie-3-e46-33027/2-0-320-d-16201.html",
+          "titre": "BMW Série 3 (E46)",
+          "badges": [
+            "320 d",
+            "150 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "10-0",
+              "texte": "Fabrication : 2001–2005",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2001–2005",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/nissan-119/qashqai-2-119199/1-6-dci-11758.html",
+          "titre": "NISSAN QASHQAI+2 (J10)",
+          "badges": [
+            "1.6 dCi",
+            "130 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "11-0",
+              "texte": "Fabrication : 2011–2013",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2011–2013",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/volkswagen-173/touran-i-173141/1-9-tdi-17768.html",
+          "titre": "VOLKSWAGEN TOURAN I",
+          "badges": [
+            "1.9 TDI",
+            "105 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "12-0",
+              "texte": "Fabrication : 2003–2010",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2003–2010",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/toyota-164/yaris-ii-164387/1-4-d-4d-19255.html",
+          "titre": "TOYOTA YARIS II",
+          "badges": [
+            "1.4 D4-D",
+            "90 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "13-0",
+              "texte": "Fabrication : 2005–2012",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2005–2012",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/mercedes-benz-108/classe-c-w204-108039/c-200-cdi-2-1-22457.html",
+          "titre": "MERCEDES CLASSE C (W204)",
+          "badges": [
+            "200 CDI (204.001)",
+            "136 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "14-0",
+              "texte": "Fabrication : 2007–2009",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2007–2009",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/suzuki-158/swift-iv-158049/1-3-ddis-57.html",
+          "titre": "SUZUKI SWIFT IV",
+          "badges": [
+            "1.3 DDIS",
+            "75 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "15-0",
+              "texte": "Début de fabrication : 2010",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Début de fabrication : 2010",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/mazda-105/mazda-3-ii-105058/1-6-mzr-cd-31077.html",
+          "titre": "MAZDA 3 II",
+          "badges": [
+            "1.6 MZR CD",
+            "109 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "16-0",
+              "texte": "Fabrication : 2008–2013",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2008–2013",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/honda-74/civic-ix-74048/2-2-i-dtec-13927.html",
+          "titre": "HONDA CIVIC IX",
+          "badges": [
+            "2.2 DTEC",
+            "150 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "17-0",
+              "texte": "Début de fabrication : 2012",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Début de fabrication : 2012",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/filtre-a-huile-7/kia-88/picanto-ii-88042/1-2-7072.html",
+          "titre": "KIA PICANTO II",
+          "badges": [
+            "1.2",
+            "85 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "18-0",
+              "texte": "Fabrication : 2011–2017",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2011–2017",
+          "phrase": null
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,144 @@
+{
+  "url": "http://127.0.0.1:3017/pieces/filtre-a-huile-7.html",
+  "href": "/blog-pieces-auto/conseils/filtre-a-huile",
+  "label": "apres",
+  "at": "2026-11-20T08:19:54.174Z",
+  "vues": {
+    "390": {
+      "couleur": "21, 93, 252",
+      "couleurCalculee": "oklch(0.546 0.245 262.881)",
+      "texteVoisin": "69, 85, 108",
+      "decoration": "underline",
+      "decalage": "2px",
+      "epaisseur": "auto",
+      "police": "14px",
+      "boite": {
+        "x": 16,
+        "y": 401.375,
+        "w": 347,
+        "h": 40.75
+      },
+      "lignes": 2,
+      "rects": [
+        {
+          "x": 192,
+          "y": 401.375,
+          "w": 171,
+          "h": 18
+        },
+        {
+          "x": 16,
+          "y": 424.125,
+          "w": 152,
+          "h": 18
+        }
+      ],
+      "liensReference": [
+        {
+          "texte": "bouchon de vidange",
+          "classe": "seo-internal-link",
+          "souligne": "underline"
+        },
+        {
+          "texte": "filtre à air",
+          "classe": "seo-internal-link",
+          "souligne": "underline"
+        },
+        {
+          "texte": "Conseils : changer un filtre à huile étape par éta",
+          "classe": "",
+          "souligne": "underline"
+        }
+      ],
+      "rapportLienTexteVoisin": 1.44,
+      "pixelsDuSoulignement": 1210,
+      "repos": {
+        "ratio": 5.01,
+        "fond": "#f8fafc"
+      },
+      "survol": {
+        "couleur": "21, 93, 252",
+        "decoration": "underline",
+        "ratio": 5.01,
+        "fond": "#f8fafc"
+      },
+      "focus": {
+        "actif": true,
+        "focusVisible": true,
+        "contour": "2px solid rgb(15, 30, 56)",
+        "decalage": "2px",
+        "anneau": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(255, 255, 255) 0px 0px 0px 2px, rgb(15, 30, 56) 0px 0px 0px 4px, rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+        "pixelsChanges": 6128,
+        "rapportContourFond": 15.89
+      }
+    },
+    "1440": {
+      "couleur": "21, 93, 252",
+      "couleurCalculee": "oklch(0.546 0.245 262.881)",
+      "texteVoisin": "69, 85, 108",
+      "decoration": "underline",
+      "decalage": "2px",
+      "epaisseur": "auto",
+      "police": "14px",
+      "boite": {
+        "x": 80,
+        "y": 429.515625,
+        "w": 1242,
+        "h": 40.75
+      },
+      "lignes": 2,
+      "rects": [
+        {
+          "x": 1261,
+          "y": 429.515625,
+          "w": 61,
+          "h": 18
+        },
+        {
+          "x": 80,
+          "y": 452.265625,
+          "w": 262,
+          "h": 18
+        }
+      ],
+      "liensReference": [
+        {
+          "texte": "bouchon de vidange",
+          "classe": "seo-internal-link",
+          "souligne": "underline"
+        },
+        {
+          "texte": "filtre à air",
+          "classe": "seo-internal-link",
+          "souligne": "underline"
+        },
+        {
+          "texte": "Conseils : changer un filtre à huile étape par éta",
+          "classe": "",
+          "souligne": "underline"
+        }
+      ],
+      "rapportLienTexteVoisin": 1.44,
+      "pixelsDuSoulignement": 304,
+      "repos": {
+        "ratio": 5.01,
+        "fond": "#f8fafc"
+      },
+      "survol": {
+        "couleur": "25, 60, 184",
+        "decoration": "underline",
+        "ratio": 8.43,
+        "fond": "#f8fafc"
+      },
+      "focus": {
+        "actif": true,
+        "focusVisible": true,
+        "contour": "2px solid rgb(15, 30, 56)",
+        "decalage": "2px",
+        "anneau": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(255, 255, 255) 0px 0px 0px 2px, rgb(15, 30, 56) 0px 0px 0px 4px, rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+        "pixelsChanges": 1532,
+        "rapportContourFond": 15.89
+      }
+    }
+  }
+}

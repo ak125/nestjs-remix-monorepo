@@ -83,6 +83,10 @@ export interface GammePageMotorisationItem {
   type_name: string;
   puissance: string;
   periode: string;
+  /** auto_type.type_year_from (texte), null si inconnu — ligne de faits des cartes R1 */
+  type_year_from?: string | null;
+  /** auto_type.type_year_to (texte), null si inconnu */
+  type_year_to?: string | null;
   advice: string;
 }
 
@@ -406,6 +410,8 @@ export const MotorisationsSchema = z
         type_name: z.string(),
         puissance: z.string(),
         periode: z.string(),
+        type_year_from: z.string().nullish(),
+        type_year_to: z.string().nullish(),
         advice: z.string(),
       }),
     ),

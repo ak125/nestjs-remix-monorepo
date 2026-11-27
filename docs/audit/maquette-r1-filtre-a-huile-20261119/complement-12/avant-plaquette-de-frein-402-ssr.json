@@ -1,0 +1,115 @@
+{
+  "url": "http://127.0.0.1:3017/pieces/plaquette-de-frein-402.html",
+  "label": "avant",
+  "at": "2026-11-20T16:14:54.147Z",
+  "statut": 200,
+  "tailleHtml": {
+    "octets": 227397,
+    "gzip": 38698
+  },
+  "cartesConnues": 17,
+  "cartesAvecAHref": 12,
+  "visibles": 12,
+  "depliables": 0,
+  "boutonVoirPlus": "5",
+  "sansLienDansLeHtml": [
+    "/pieces/plaquette-de-frein-402/volkswagen-173/golf-iv-173039/1-9-tdi-13100.html",
+    "/pieces/plaquette-de-frein-402/bmw-33/serie-1-e81-33017/2-0-116-d-58963.html",
+    "/pieces/plaquette-de-frein-402/bmw-33/serie-1-e81-33017/2-0-116-d-31672.html",
+    "/pieces/plaquette-de-frein-402/bmw-33/serie-1-e81-33017/2-0-118-d-32172.html",
+    "/pieces/plaquette-de-frein-402/honda-74/civic-ix-74048/1-6-i-dtec-58791.html"
+  ],
+  "cartes": [
+    {
+      "href": "/pieces/plaquette-de-frein-402/renault-140/megane-iii-140049/1-5-dci-77310.html",
+      "titre": "RENAULT MEGANE III",
+      "fabrication": "Fabrication : 2013–2015",
+      "etat": "visible"
+    },
+    {
+      "href": "/pieces/plaquette-de-frein-402/citroen-46/berlingo-ii-46007/1-6-bluehdi-65057.html",
+      "titre": "CITROËN BERLINGO II - BERLINGO MULTISPACE (B9)",
+      "fabrication": "Début de fabrication : 2008",
+      "etat": "visible"
+    },
+    {
+      "href": "/pieces/plaquette-de-frein-402/renault-140/clio-ii-140003/1-5-dci-16108.html",
+      "titre": "RENAULT CLIO II",
+      "fabrication": "Fabrication : 2001–2009",
+      "etat": "visible"
+    },
+    {
+      "href": "/pieces/plaquette-de-frein-402/renault-140/clio-ii-140003/1-5-dci-campus-30936.html",
+      "titre": "RENAULT CLIO II",
+      "fabrication": "Fabrication : 2007–2009",
+      "etat": "visible"
+    },
+    {
+      "href": "/pieces/plaquette-de-frein-402/peugeot-128/307-128035/1-6-hdi-19341.html",
+      "titre": "PEUGEOT 307",
+      "fabrication": "Fabrication : 2005–2009",
+      "etat": "visible"
+    },
+    {
+      "href": "/pieces/plaquette-de-frein-402/peugeot-128/307-128035/1-6-hdi-17989.html",
+      "titre": "PEUGEOT 307",
+      "fabrication": "Fabrication : 2004–2009",
+      "etat": "visible"
+    },
+    {
+      "href": "/pieces/plaquette-de-frein-402/peugeot-128/307-128035/2-0-hdi-15903.html",
+      "titre": "PEUGEOT 307",
+      "fabrication": "Fabrication : 2000–2007",
+      "etat": "visible"
+    },
+    {
+      "href": "/pieces/plaquette-de-frein-402/audi-22/a4-iii-22042/1-9-tdi-18400.html",
+      "titre": "AUDI A4 III B7",
+      "fabrication": "Fabrication : 2004–2008",
+      "etat": "visible"
+    },
+    {
+      "href": "/pieces/plaquette-de-frein-402/audi-22/a4-iii-22042/2-0-tdi-26547.html",
+      "titre": "AUDI A4 III B7",
+      "fabrication": "Fabrication : 2005–2006",
+      "etat": "visible"
+    },
+    {
+      "href": "/pieces/plaquette-de-frein-402/audi-22/a4-iii-22042/2-0-tdi-27326.html",
+      "titre": "AUDI A4 III B7",
+      "fabrication": "Fabrication : 2005–2006",
+      "etat": "visible"
+    },
+    {
+      "href": "/pieces/plaquette-de-frein-402/volkswagen-173/golf-iv-173039/1-9-tdi-8456.html",
+      "titre": "VOLKSWAGEN GOLF IV",
+      "fabrication": "Fabrication : 1997–2004",
+      "etat": "visible"
+    },
+    {
+      "href": "/pieces/plaquette-de-frein-402/volkswagen-173/golf-iv-173039/1-9-tdi-8461.html",
+      "titre": "VOLKSWAGEN GOLF IV",
+      "fabrication": "Fabrication : 1997–2004",
+      "etat": "visible"
+    }
+  ],
+  "connues": [
+    "/pieces/plaquette-de-frein-402/renault-140/megane-iii-140049/1-5-dci-77310.html",
+    "/pieces/plaquette-de-frein-402/citroen-46/berlingo-ii-46007/1-6-bluehdi-65057.html",
+    "/pieces/plaquette-de-frein-402/renault-140/clio-ii-140003/1-5-dci-16108.html",
+    "/pieces/plaquette-de-frein-402/renault-140/clio-ii-140003/1-5-dci-campus-30936.html",
+    "/pieces/plaquette-de-frein-402/peugeot-128/307-128035/1-6-hdi-19341.html",
+    "/pieces/plaquette-de-frein-402/peugeot-128/307-128035/1-6-hdi-17989.html",
+    "/pieces/plaquette-de-frein-402/peugeot-128/307-128035/2-0-hdi-15903.html",
+    "/pieces/plaquette-de-frein-402/audi-22/a4-iii-22042/1-9-tdi-18400.html",
+    "/pieces/plaquette-de-frein-402/audi-22/a4-iii-22042/2-0-tdi-26547.html",
+    "/pieces/plaquette-de-frein-402/audi-22/a4-iii-22042/2-0-tdi-27326.html",
+    "/pieces/plaquette-de-frein-402/volkswagen-173/golf-iv-173039/1-9-tdi-8456.html",
+    "/pieces/plaquette-de-frein-402/volkswagen-173/golf-iv-173039/1-9-tdi-8461.html",
+    "/pieces/plaquette-de-frein-402/volkswagen-173/golf-iv-173039/1-9-tdi-13100.html",
+    "/pieces/plaquette-de-frein-402/bmw-33/serie-1-e81-33017/2-0-116-d-58963.html",
+    "/pieces/plaquette-de-frein-402/bmw-33/serie-1-e81-33017/2-0-116-d-31672.html",
+    "/pieces/plaquette-de-frein-402/bmw-33/serie-1-e81-33017/2-0-118-d-32172.html",
+    "/pieces/plaquette-de-frein-402/honda-74/civic-ix-74048/1-6-i-dtec-58791.html"
+  ]
+}

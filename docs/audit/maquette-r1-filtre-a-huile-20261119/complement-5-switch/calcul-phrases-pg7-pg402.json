@@ -1,0 +1,443 @@
+{
+  "7": {
+    "pg_name": "Filtre à huile",
+    "cartes": 19,
+    "phrasesDistinctes": 19,
+    "repetitionMax": 1,
+    "fragmentsAdmis": 8,
+    "fragmentsEcartes": [
+      "10185",
+      "10186"
+    ],
+    "usageParFragment": {
+      "purifier l'huile.": 3,
+      "retenir les particules.": 4,
+      "optimiser les performances.": 1,
+      "préserver le véhicule.": 1,
+      "protéger le moteur.": 6,
+      "maintenir en bon état.": 2,
+      "améliorer la fiabilité.": 2
+    },
+    "cards": [
+      {
+        "type_id": "19052",
+        "vehicule": "RENAULT | CLIO III | 1.5 dCi | 86 ch | 2005 – 2012",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Assurer purifier l'huile les filtre à huile RENAULT CLIO III 1.5 dCi 86 ch, pour assurer une lubrification optimale du moteur.",
+        "apres": "Filtre à huile compatible CLIO III 1.5 dCi 86 ch, pour purifier l'huile.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      },
+      {
+        "type_id": "30091",
+        "vehicule": "PEUGEOT | 206 | 1.4 HDI | 69 ch | 2002 – 2007",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Pour votre PEUGEOT 206 1.4 HDI 69 ch, changer s'il se desserre. Le remplacement de l'huile moteur est rattachée à la vidange du moteur dans ce cas il faut respecté la période de révision mentionnée dans le plan d'entretien de votre voiture.",
+        "apres": "Filtre à huile compatible 206 1.4 HDI 69 ch, pour retenir les particules.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      },
+      {
+        "type_id": "19966",
+        "vehicule": "AUDI | A3 II | 2.0 TDI | 140 ch | 2005 – 2008",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Filtre à huile AUDI A3 II 2.0 TDI 140 ch : vérifier s'il se desserre. Pensez à préserver le véhicule avant montage. Lors du remplacement d'un filtre à huile il faut obligatoirement changer l'huile du moteur.",
+        "apres": "Filtre à huile compatible A3 II 2.0 TDI 140 ch, pour optimiser les performances.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      },
+      {
+        "type_id": "18929",
+        "vehicule": "ALFA ROMEO | 159 | 1.9 JTDM 8V | 120 ch | 2005 – 2011",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Contrôler si témoin allumé pour ALFA ROMEO 159 1.9 JTDM 8V 120 ch. Purifier l'huile avant installation. Le filtre à huile est un composant important dans le circuit de lubrification, il est destiné à supprimer la saleté de l'huile moteur.",
+        "apres": "Filtre à huile compatible 159 1.9 JTDM 8V 120 ch, pour retenir les particules.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      },
+      {
+        "type_id": "16102",
+        "vehicule": "FORD | FIESTA V | 1.4 TDCI | 68 ch | 2001 – 2008",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Filtre à huile FORD FIESTA V 1.4 TDCI 68 ch : changer si encrassé. Pensez à retenir les particules avant montage, pour assurer une lubrification optimale du moteur.",
+        "apres": "Filtre à huile compatible FIESTA V 1.4 TDCI 68 ch, pour retenir les particules.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      },
+      {
+        "type_id": "23175",
+        "vehicule": "FIAT | 500 | 1.2 | 69 ch | Depuis 2007",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Pour votre FIAT 500 1.2 69 ch, contrôler s'il se desserre. Le filtre à huile peut être sous la forme d'une cartouche métallique contenant un élément filtrant en papier à visser ou d'une recharge en papier spécial qui vient s'insérer dans une cloche.",
+        "apres": "Filtre à huile compatible 500 1.2 69 ch, pour préserver le véhicule.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      },
+      {
+        "type_id": "17696",
+        "vehicule": "OPEL | CORSA C | 1.3 CDTI | 70 ch | 2003 – 2009",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Protéger le moteur les filtre à huile OPEL CORSA C 1.3 CDTI 70 ch. Lors du remplacement d'un filtre à huile il faut obligatoirement changer l'huile du moteur.",
+        "apres": "Filtre à huile compatible CORSA C 1.3 CDTI 70 ch, pour protéger le moteur.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      },
+      {
+        "type_id": "17079",
+        "vehicule": "SEAT | IBIZA III | 1.4 TDI | 75 ch | 2002 – 2005",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Pour votre SEAT IBIZA III 1.4 TDI 75 ch, changer si fumée blanche. Le filtre à huile est un composant important dans le circuit de lubrification, il est destiné à supprimer la saleté de l'huile moteur.",
+        "apres": "Filtre à huile compatible IBIZA III 1.4 TDI 75 ch, pour purifier l'huile.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      },
+      {
+        "type_id": "18793",
+        "vehicule": "JEEP | CHEROKEE III | 2.8 CRD 4x4 | 163 ch | 2004 – 2008",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Contrôler si encrassé pour JEEP CHEROKEE III 2.8 CRD 4x4 163 ch. Protéger le moteur avant installation, pour garantir une meilleure lubrification.",
+        "apres": "Filtre à huile compatible CHEROKEE III 2.8 CRD 4x4 163 ch, pour protéger le moteur.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      },
+      {
+        "type_id": "31083",
+        "vehicule": "DACIA | SANDERO I | 1.5 dCi | 68 ch | Depuis 2008",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Pour votre DACIA SANDERO I 1.5 dCi 68 ch, contrôler si encrassé. Le remplacement de l'huile moteur est rattachée à la vidange du moteur dans ce cas il faut respecté la période de révision mentionnée dans le plan d'entretien de votre voiture.",
+        "apres": "Filtre à huile compatible SANDERO I 1.5 dCi 68 ch, pour protéger le moteur.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      },
+      {
+        "type_id": "16201",
+        "vehicule": "BMW | Série 3 (E46) | 320 d | 150 ch | 2001 – 2005",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Changer si fumée blanche pour BMW Série 3 (E46) 320 d 150 ch. Assurer purifier l'huile avant installation. Lors du remplacement d'un filtre à huile il faut obligatoirement changer l'huile du moteur.",
+        "apres": "Filtre à huile compatible Série 3 (E46) 320 d 150 ch, pour maintenir en bon état.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      },
+      {
+        "type_id": "11758",
+        "vehicule": "NISSAN | QASHQAI+2 (J10) | 1.6 dCi | 130 ch | 2011 – 2013",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Filtre à huile NISSAN QASHQAI+2 (J10) 1.6 dCi 130 ch : contrôler si témoin allumé. Pensez à améliorer la fiabilité avant montage. Le filtre à huile peut être sous la forme d'une cartouche métallique contenant un élément filtrant en papier à visser ou d'une recharge en papier spécial qui vient s'insérer dans une cloche.",
+        "apres": "Filtre à huile compatible QASHQAI+2 (J10) 1.6 dCi 130 ch, pour améliorer la fiabilité.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      },
+      {
+        "type_id": "17768",
+        "vehicule": "VOLKSWAGEN | TOURAN I | 1.9 TDI | 105 ch | 2003 – 2010",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Purifier l'huile les filtre à huile VOLKSWAGEN TOURAN I 1.9 TDI 105 ch. La lubrification du moteur se fait à travers la pompe à huile qui sera actionnée par le moteur puis elle envoie l'huile sous pression depuis le carter inférieur à travers le filtre à huile pour le filtrer.",
+        "apres": "Filtre à huile compatible TOURAN I 1.9 TDI 105 ch, pour améliorer la fiabilité.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      },
+      {
+        "type_id": "19255",
+        "vehicule": "TOYOTA | YARIS II | 1.4 D4-D | 90 ch | 2005 – 2012",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Pour votre TOYOTA YARIS II 1.4 D4-D 90 ch, changer si encrassé. Le filtre à huile va filtrer l'huile situé dans le carter d'huile et qui va circuler dans le moteur grâce à la pompe à huile.",
+        "apres": "Filtre à huile compatible YARIS II 1.4 D4-D 90 ch, pour protéger le moteur.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      },
+      {
+        "type_id": "22457",
+        "vehicule": "MERCEDES | CLASSE C (W204) | 200 CDI (204.001) | 136 ch | 2007 – 2009",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Vérifier s'il se desserre pour MERCEDES CLASSE C (W204) 200 CDI (204.001) 136 ch. Prolonger la durée de vie avant installation, pour garantir une meilleure lubrification.",
+        "apres": "Filtre à huile compatible CLASSE C (W204) 200 CDI (204.001) 136 ch, pour protéger le moteur.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      },
+      {
+        "type_id": "57",
+        "vehicule": "SUZUKI | SWIFT IV | 1.3 DDIS | 75 ch | Depuis 2010",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Vérifier si témoin allumé pour SUZUKI SWIFT IV 1.3 DDIS 75 ch. Assurer purifier l'huile avant installation. Le filtre à huile peut être sous la forme d'une cartouche métallique contenant un élément filtrant en papier à visser ou d'une recharge en papier spécial qui vient s'insérer dans une cloche.",
+        "apres": "Filtre à huile compatible SWIFT IV 1.3 DDIS 75 ch, pour maintenir en bon état.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      },
+      {
+        "type_id": "31077",
+        "vehicule": "MAZDA | 3 II | 1.6 MZR CD | 109 ch | 2008 – 2013",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Contrôler s'il est usé pour MAZDA 3 II 1.6 MZR CD 109 ch. Purifier l'huile avant installation. La lubrification du moteur se fait à travers la pompe à huile qui sera actionnée par le moteur puis elle envoie l'huile sous pression depuis le carter inférieur à travers le filtre à huile pour le filtrer.",
+        "apres": "Filtre à huile compatible 3 II 1.6 MZR CD 109 ch, pour retenir les particules.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      },
+      {
+        "type_id": "13927",
+        "vehicule": "HONDA | CIVIC IX | 2.2 DTEC | 150 ch | Depuis 2012",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Pour votre HONDA CIVIC IX 2.2 DTEC 150 ch, contrôler s'il se desserre. Le filtre à huile est un composant important dans le circuit de lubrification, il est destiné à supprimer la saleté de l'huile moteur.",
+        "apres": "Filtre à huile compatible CIVIC IX 2.2 DTEC 150 ch, pour protéger le moteur.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      },
+      {
+        "type_id": "7072",
+        "vehicule": "KIA | PICANTO II | 1.2 | 85 ch | 2011 – 2017",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Purifier l'huile les filtre à huile KIA PICANTO II 1.2 85 ch, pour garantir une meilleure lubrification.",
+        "apres": "Filtre à huile compatible PICANTO II 1.2 85 ch, pour purifier l'huile.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      }
+    ]
+  },
+  "402": {
+    "pg_name": "Plaquette de frein",
+    "cartes": 17,
+    "phrasesDistinctes": 17,
+    "repetitionMax": 1,
+    "fragmentsAdmis": 8,
+    "fragmentsEcartes": [
+      "10559",
+      "10684"
+    ],
+    "usageParFragment": {
+      "préserver le véhicule.": 4,
+      "optimiser les performances.": 2,
+      "garantir la sécurité.": 2,
+      "dissiper l'énergie.": 1,
+      "prolonger la durée de vie.": 2,
+      "maintenir en bon état.": 2,
+      "améliorer la fiabilité.": 2,
+      "ralentir le véhicule.": 2
+    },
+    "cards": [
+      {
+        "type_id": "77310",
+        "vehicule": "RENAULT | MEGANE III | 1.5 dCi | 95 ch | 2013 – 2015",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Plaquette de frein RENAULT MEGANE III 1.5 dCi 95 ch : contrôler avec les étriers. Pensez à optimiser les performances avant montage. En général, il est conseillé de changer les plaquettes de frein de sa voiture tous les 10 000 km à 30 000 km en fonction de votre utilisation.",
+        "apres": "Plaquette de frein compatible MEGANE III 1.5 dCi 95 ch, pour préserver le véhicule.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      },
+      {
+        "type_id": "65057",
+        "vehicule": "CITROËN | BERLINGO II - BERLINGO MULTISPACE (B9) | 1.6 HDi-BlueHDi | 75 ch | Depuis 2008",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Contrôler avec témoin d'usure pour CITROËN BERLINGO II - BERLINGO MULTISPACE (B9) 1.6 HDi-BlueHDi 75 ch. Améliorer la fiabilité avant installation. Pour votre sécurité lors de la conduite du véhicule.",
+        "apres": "Plaquette de frein compatible BERLINGO II - BERLINGO MULTISPACE (B9) 1.6 HDi-BlueHDi 75 ch, pour optimiser les performances.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      },
+      {
+        "type_id": "16108",
+        "vehicule": "RENAULT | CLIO II | 1.5 dCi | 65 ch | 2001 – 2009",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Garantir assurer le freinage par les plaquette de frein RENAULT CLIO II 1.5 dCi 65 ch. Pour les deux coté de l'essieu avant ou arrière du véhicule.",
+        "apres": "Plaquette de frein compatible CLIO II 1.5 dCi 65 ch, pour garantir la sécurité.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      },
+      {
+        "type_id": "30936",
+        "vehicule": "RENAULT | CLIO II | 1.5 dCi CAMPUS | 84 ch | 2007 – 2009",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Garantir la sécurité les plaquette de frein RENAULT CLIO II 1.5 dCi CAMPUS 84 ch. Il faut savoir que les plaquettes de frein d'une voiture se changent toujours par pair (roues avant ou arrière) et que les plaquettes de frein que vous mettez sur votre véhicule doivent toujours être neuves et jamais d'occasion.",
+        "apres": "Plaquette de frein compatible CLIO II 1.5 dCi CAMPUS 84 ch, pour dissiper l'énergie.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      },
+      {
+        "type_id": "19341",
+        "vehicule": "PEUGEOT | 307 | 1.6 HDI | 90 ch | 2005 – 2009",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Vérifier leurs usures pour PEUGEOT 307 1.6 HDI 90 ch. Préserver le véhicule avant installation. Changez vos plaquettes de frein avant ou arrière si cela est nécessaire.",
+        "apres": "Plaquette de frein compatible 307 1.6 HDI 90 ch, pour prolonger la durée de vie.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": true
+      },
+      {
+        "type_id": "17989",
+        "vehicule": "PEUGEOT | 307 | 1.6 HDI | 109 ch | 2004 – 2009",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Vérifier en cas de besoin pour PEUGEOT 307 1.6 HDI 109 ch. Maintenir en bon état avant installation, pour ralentir ou arrêter le véhicule.",
+        "apres": "Plaquette de frein compatible 307 1.6 HDI 109 ch, pour maintenir en bon état.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      },
+      {
+        "type_id": "15903",
+        "vehicule": "PEUGEOT | 307 | 2.0 HDI | 90 ch | 2000 – 2007",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Pour votre PEUGEOT 307 2.0 HDI 90 ch, contrôler pour la sécurité. Pour ralentir la rotation de la roue pour l'arrêt du véhicule.",
+        "apres": "Plaquette de frein compatible 307 2.0 HDI 90 ch, pour améliorer la fiabilité.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      },
+      {
+        "type_id": "18400",
+        "vehicule": "AUDI | A4 III B7 | 1.9 TDI | 116 ch | 2004 – 2008",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Préserver le véhicule les plaquette de frein AUDI A4 III B7 1.9 TDI 116 ch. Les plaquettes de frein jouent un rôle incontournable dans la sécurité de votre véhicule.",
+        "apres": "Plaquette de frein compatible A4 III B7 1.9 TDI 116 ch, pour préserver le véhicule.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      },
+      {
+        "type_id": "26547",
+        "vehicule": "AUDI | A4 III B7 | 2.0 TDI | 121 ch | 2005 – 2006",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Pour votre AUDI A4 III B7 2.0 TDI 121 ch, vérifier l'état d'usure. Les plaquettes de frein avant s'usent plus vite car elles supportent plus de charge au freinage, environ 70% de la puissance est supportée par les plaquettes avant.",
+        "apres": "Plaquette de frein compatible A4 III B7 2.0 TDI 121 ch, pour prolonger la durée de vie.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": true
+      },
+      {
+        "type_id": "27326",
+        "vehicule": "AUDI | A4 III B7 | 2.0 TDI | 126 ch | 2005 – 2006",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Plaquette de frein AUDI A4 III B7 2.0 TDI 126 ch : vérifier en cas de besoin. Pensez à maintenir en bon état avant montage. Les plaquettes de frein jouent un rôle incontournable dans la sécurité de votre véhicule.",
+        "apres": "Plaquette de frein compatible A4 III B7 2.0 TDI 126 ch, pour garantir la sécurité.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      },
+      {
+        "type_id": "8456",
+        "vehicule": "VOLKSWAGEN | GOLF IV | 1.9 TDI | 90 ch | 1997 – 2004",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Garantir assurer le freinage par les plaquette de frein VOLKSWAGEN GOLF IV 1.9 TDI 90 ch, pour un freinage optimal.",
+        "apres": "Plaquette de frein compatible GOLF IV 1.9 TDI 90 ch, pour préserver le véhicule.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      },
+      {
+        "type_id": "8461",
+        "vehicule": "VOLKSWAGEN | GOLF IV | 1.9 TDI | 110 ch | 1997 – 2004",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Changer si témoin allumé pour VOLKSWAGEN GOLF IV 1.9 TDI 110 ch. Optimiser les performances avant installation. Pour savoir si elles ne nécessitent pas un remplacement.",
+        "apres": "Plaquette de frein compatible GOLF IV 1.9 TDI 110 ch, pour préserver le véhicule.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      },
+      {
+        "type_id": "13100",
+        "vehicule": "VOLKSWAGEN | GOLF IV | 1.9 TDI | 115 ch | 1998 – 2001",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Assurer ralentir le véhicule les plaquette de frein VOLKSWAGEN GOLF IV 1.9 TDI 115 ch. Les plaquettes de freins font partie des organes du système de freinage du véhicule, tout comme les disques de frein et les étriers de frein.",
+        "apres": "Plaquette de frein compatible GOLF IV 1.9 TDI 115 ch, pour améliorer la fiabilité.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      },
+      {
+        "type_id": "58963",
+        "vehicule": "BMW | Série 1 (E81) | 116 d | 90 ch | 2011 – 2011",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Pour votre BMW Série 1 (E81) 116 d 90 ch, contrôler pour la sécurité. Les plaquettes de frein doivent être vérifiées régulièrement de manière à assurer une efficacité de freinage optimale.",
+        "apres": "Plaquette de frein compatible Série 1 (E81) 116 d 90 ch, pour optimiser les performances.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      },
+      {
+        "type_id": "31672",
+        "vehicule": "BMW | Série 1 (E81) | 116 d | 116 ch | 2008 – 2011",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Optimiser les performances les plaquette de frein BMW Série 1 (E81) 116 d 116 ch, pour ralentir ou arrêter le véhicule.",
+        "apres": "Plaquette de frein compatible Série 1 (E81) 116 d 116 ch, pour maintenir en bon état.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      },
+      {
+        "type_id": "32172",
+        "vehicule": "BMW | Série 1 (E81) | 118 d | 136 ch | 2006 – 2011",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Améliorer la fiabilité les plaquette de frein BMW Série 1 (E81) 118 d 136 ch. Changez vos plaquettes de frein avant ou arrière si cela est nécessaire.",
+        "apres": "Plaquette de frein compatible Série 1 (E81) 118 d 136 ch, pour ralentir le véhicule.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      },
+      {
+        "type_id": "58791",
+        "vehicule": "HONDA | CIVIC IX | 1.6 DTEC | 120 ch | Depuis 2013",
+        "avant_servi": "Sélectionnez cette motorisation pour afficher les références compatibles.",
+        "avant_description_masquee": "Pour votre HONDA CIVIC IX 1.6 DTEC 120 ch, contrôler si crissement. Les plaquettes de frein doivent être vérifiées régulièrement de manière à assurer une efficacité de freinage optimale.",
+        "apres": "Plaquette de frein compatible CIVIC IX 1.6 DTEC 120 ch, pour ralentir le véhicule.",
+        "validateR1Router": [],
+        "canonR1": [],
+        "motsMandat": [],
+        "r1CopyGateFront": false
+      }
+    ]
+  }
+}

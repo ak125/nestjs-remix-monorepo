@@ -1,0 +1,132 @@
+{
+  "url": "http://127.0.0.1:3017/pieces/filtre-a-huile-7.html",
+  "label": "apres",
+  "at": "2026-11-20T16:25:29.990Z",
+  "passages": 5,
+  "vues": {
+    "390": {
+      "cpu": 4,
+      "runs": [
+        {
+          "LCP": 3944,
+          "CLS": 0,
+          "INP": 64,
+          "FCP": 488,
+          "TTFB": 191,
+          "elementLCP": null,
+          "cibleINP": null,
+          "cibleCLS": null
+        },
+        {
+          "LCP": 3912,
+          "CLS": 0,
+          "INP": 72,
+          "FCP": 392,
+          "TTFB": 116,
+          "elementLCP": null,
+          "cibleINP": null,
+          "cibleCLS": null
+        },
+        {
+          "LCP": 3892,
+          "CLS": 0,
+          "INP": 56,
+          "FCP": 408,
+          "TTFB": 99,
+          "elementLCP": null,
+          "cibleINP": null,
+          "cibleCLS": null
+        },
+        {
+          "LCP": 3840,
+          "CLS": 0,
+          "INP": 80,
+          "FCP": 384,
+          "TTFB": 114,
+          "elementLCP": null,
+          "cibleINP": null,
+          "cibleCLS": null
+        },
+        {
+          "LCP": 3900,
+          "CLS": 0,
+          "INP": 72,
+          "FCP": 420,
+          "TTFB": 170,
+          "elementLCP": null,
+          "cibleINP": null,
+          "cibleCLS": null
+        }
+      ],
+      "mediane": {
+        "LCP": 3900,
+        "CLS": 0,
+        "INP": 72,
+        "FCP": 408,
+        "TTFB": 116
+      }
+    },
+    "1440": {
+      "cpu": 1,
+      "runs": [
+        {
+          "LCP": 3488,
+          "CLS": 0.0223,
+          "INP": 64,
+          "FCP": 292,
+          "TTFB": 142,
+          "elementLCP": null,
+          "cibleINP": null,
+          "cibleCLS": null
+        },
+        {
+          "LCP": 3416,
+          "CLS": 0.0223,
+          "INP": 56,
+          "FCP": 236,
+          "TTFB": 103,
+          "elementLCP": null,
+          "cibleINP": null,
+          "cibleCLS": null
+        },
+        {
+          "LCP": 3456,
+          "CLS": 0.0223,
+          "INP": 48,
+          "FCP": 272,
+          "TTFB": 155,
+          "elementLCP": null,
+          "cibleINP": null,
+          "cibleCLS": null
+        },
+        {
+          "LCP": 3404,
+          "CLS": 0.0223,
+          "INP": 56,
+          "FCP": 248,
+          "TTFB": 110,
+          "elementLCP": null,
+          "cibleINP": null,
+          "cibleCLS": null
+        },
+        {
+          "LCP": 3444,
+          "CLS": 0.0223,
+          "INP": 48,
+          "FCP": 240,
+          "TTFB": 105,
+          "elementLCP": null,
+          "cibleINP": null,
+          "cibleCLS": null
+        }
+      ],
+      "mediane": {
+        "LCP": 3444,
+        "CLS": 0.0223,
+        "INP": 56,
+        "FCP": 248,
+        "TTFB": 110
+      }
+    }
+  }
+}
