@@ -57,29 +57,10 @@ EXCLUS=(':(exclude)package-lock.json' ':(exclude)**/package-lock.json' ':(exclud
 # Codes d'erreur de Codex qui signalent la fin du quota ou une limite de débit (relevés dans le
 # binaire 0.170.0) : arrêt propre, reprise au passage suivant.
 QUOTA_RE='usage_limit_(reached|exceeded)|usage limit|quota_exceeded|quota exceeded|credits_depleted|rate_limit_exceeded|spend_limit_exceeded'
-# Formes de clé (jeton JWT, clé secrète Supabase), courriel et téléphone français : un constat qui
-# en contient une est retenu hors du résumé (donnée personnelle ou secret possible, dépôt public).
-SENSIBLE_RE='eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}|sb_secret_[A-Za-z0-9_-]{8,}|[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}|(\+33|\b0)[1-9]([ .-]?[0-9]{2}){4}\b'
-
-die() { echo "codex-controleur : $*" >&2; exit "${2:-1}"; }
 usage() { sed -n '/^# Usage :/,/^# Codes de sortie/p' "${BASH_SOURCE[0]}" >&2; exit 2; }
-horodate() { date -u +%Y-%m-%dT%H:%M:%SZ; }
-# Tout appel gh nomme son dépôt GitHub : l'URL du remote origin de $DEPOT (une seule source,
-# CODEX_CONTROLEUR_DEPOT). Sans -R, gh le déduit du répertoire courant, qui n'est pas un dépôt
-# sous systemd (mandat EF : échec du 2026-11-20 05:30 UTC, lancement depuis $HOME).
-gh_depot() {
-  local url; url="$(git -C "$DEPOT" remote get-url origin)" || die "remote origin illisible dans $DEPOT"
-  gh -R "$url" "$@"
-}
-
-# Rapport d'état local (lu par le hook SessionStart) ; ne fait jamais échouer la routine.
-rapport() { # statut durée résumé métriques-json
-  local lib="$DEPOT/scripts/cron/lib-supabase-report.sh"
-  [[ -f "$lib" ]] || { echo "codex-controleur : rapport non enregistré ($lib absent)" >&2; return 0; }
-  # shellcheck source=/dev/null
-  source "$lib"
-  CRON_REPORT_MAX_AGE_S="${CRON_REPORT_MAX_AGE_S:-129600}" cron_report "$JOB" "$1" "$2" "$4" "$3" || true
-}
+OUTIL="codex-controleur"
+# shellcheck source=commun.sh
+source "$ICI/commun.sh"   # SENSIBLE_RE, die, horodate, gh_depot, rapport, garder_depot, verrou, preparer_worktree
 
 CMD="${1:-}"; shift || true
 DEPUIS=""; NOM=""; LISTE=""; DEPT=""; PR=""; MOTIF=""
@@ -97,28 +78,7 @@ while [[ $# -gt 0 ]]; do
 done
 [[ "$MAX_PR" =~ ^[1-9][0-9]*$ ]] || die "--max doit être un entier positif" 2
 
-# Clone dédié (décision de Marwane du 2026-11-19) : la routine fait fetch et worktree jetable dans
-# son propre clone (~/codex-controleur/app), jamais dans le checkout DEV partagé. Gardes posées
-# avant toute écriture. CODEX_CONTROLEUR_PROTEGE ajoute un checkout protégé (tests) ; il ne retire
-# jamais /opt/automecanik/app.
-PROTEGES=(/opt/automecanik/app)
-[[ -z "${CODEX_CONTROLEUR_PROTEGE:-}" ]] || PROTEGES+=("$CODEX_CONTROLEUR_PROTEGE")
-[[ "$(realpath -m "$DEPOT")" != "/opt/automecanik/app" ]] \
-  || die "dépôt refusé : /opt/automecanik/app est le checkout partagé ; utiliser le clone dédié ~/codex-controleur/app" 2
-# Dépôt Git commun : un worktree lié du checkout partagé écrirait fetch et worktrees dans son .git.
-commun="$(git -C "$DEPOT" rev-parse --path-format=absolute --git-common-dir 2> /dev/null)" \
-  || die "dépôt refusé : $DEPOT n'est pas un dépôt Git lisible" 2
-commun="$(realpath -e "$commun")" || die "dépôt refusé : dépôt Git commun de $DEPOT introuvable" 2
-etat_canon="$(realpath -m "$ETAT")"
-for p in "${PROTEGES[@]}"; do
-  p="$(realpath -m "$p")"
-  pc="$(git -C "$p" rev-parse --path-format=absolute --git-common-dir 2> /dev/null || echo "$p/.git")"
-  [[ "$commun" != "$(realpath -m "$pc")" ]] \
-    || die "dépôt refusé : $DEPOT partage le dépôt Git de $p (worktree lié) ; utiliser le clone dédié ~/codex-controleur/app" 2
-  # Dossier d'état : mkdir et chmod 700 ne visent jamais le checkout partagé ni un de ses dossiers.
-  [[ "$etat_canon" != "$p" && "$etat_canon" != "$p/"* ]] \
-    || die "dossier d'état refusé : $ETAT est dans le checkout partagé $p" 2
-done
+garder_depot   # avant toute écriture
 
 CURSEUR="$ETAT/curseur.json"   # {"depuis": ISO, "faites": [{"pr": N, "fusion": ISO, "statut": ...}]}
 mkdir -p "$ETAT/bruts"
@@ -161,15 +121,6 @@ verifier_codex() {
     rapport error 0 "version de Codex inattendue : « $v », attendue codex-cli $VERSION ; rien relu" '{}'
     die "version de Codex inattendue : « $v », attendue codex-cli $VERSION" 4
   }
-}
-
-preparer_worktree() {
-  git -C "$DEPOT" fetch -q origin "$BRANCHE" || die "fetch de origin/$BRANCHE impossible"
-  WT="$ETAT/wt-$(date -u +%Y%m%dT%H%M%S)-$$"
-  git -C "$DEPOT" worktree add -q --detach "$WT" "origin/$BRANCHE" 2> /dev/null \
-    || die "worktree jetable impossible sous $WT"
-  trap 'git -C "$DEPOT" worktree remove --force "$WT" 2> /dev/null || rm -rf "$WT"' EXIT
-  BASE="$(git -C "$WT" rev-parse HEAD)"
 }
 
 # Un passage Codex : $1 = dossier de sortie, $2 = texte de l'objet, $3 = entrée standard (ou vide).
@@ -262,11 +213,6 @@ marquer() { # pr fusion statut [motif]
     '.faites += [{pr:$pr, fusion:$f, statut:$s, motif:$m, le:$t}]
      | if $s == "relue" then .depuis = ([.depuis, $f]|max) else . end' \
     "$CURSEUR" > "$tmp" && mv -f "$tmp" "$CURSEUR"
-}
-
-verrou() {
-  exec 9> "$ETAT/.verrou"
-  flock -n 9 || die "un passage est déjà en cours (verrou $ETAT/.verrou)" 7
 }
 
 case "$CMD" in

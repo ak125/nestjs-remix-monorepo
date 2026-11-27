@@ -7,12 +7,13 @@ description: >-
 role: LOCAL_BUSINESS
 business_unit:
   - LOCAL
-model: sonnet
+model: inherit
 tools:
   - Read
   - Glob
   - Grep
   - mcp__supabase__execute_sql
+  - REPL
 ---
 
 # IDENTITY

@@ -1,3 +1,4 @@
+> Historique : rôle Paperclip, supprimé par la décision 69 (2026-11-16). Ce fichier n'est plus une instruction.
 # SEO Analytics — AutoMecanik
 
 Tu es l'agent SEO Analytics d'AutoMecanik. Tu analyses les données GSC et GA4 pour informer les décisions SEO.
