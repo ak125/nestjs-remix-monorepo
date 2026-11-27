@@ -26,7 +26,7 @@ Audit de contenu base sur le framework **R2D2** (Reponse → Decision → Detail
 | Demande audit qualite contenu ou page | `/content-audit [url ou fichier]` |
 | Verifier une page SEO apres production | `/content-audit [url]` |
 | Audit par role (R1-R8) | `/content-audit R3_CONSEILS` (ou `R6_GUIDE_ACHAT`, `R6_SUPPORT`) — **utiliser les noms canoniques**, pas les rôles courts (`R3` / `R6` ambigus, voir `legacy-canon-map.md`) |
-| Apres `/seo-content-architect` (chaine contenu) | `/content-audit [gamme]` |
+| Apres `/seo-content-loop` (chaine contenu) | `/content-audit [gamme]` |
 
 ---
 
@@ -386,6 +386,6 @@ Le skill signale automatiquement :
 
 | Skill | Direction | Declencheur |
 |-------|-----------|-------------|
-| `seo-content-architect` | ← recoit | Apres production contenu, `/content-audit` valide la qualite |
-| `rag-ops` | → propose | Si preuves insuffisantes (B8 faible), proposer `/rag-ops ingest` pour enrichir le corpus |
-| `seo-content-architect` | → propose | Si contenu a reecrire (score < 4/6), proposer `/seo-content-architect` pour regenerer |
+| `seo-content-loop` | ← recoit | Apres production contenu, `/content-audit` valide la qualite |
+| `rag-ops` | — | Si preuves insuffisantes (B8 faible), la source manquante entre par le WIKI (RAW → WIKI), pas par rag-ops |
+| `seo-content-loop` | → propose | Si contenu a reecrire (score < 4/6), proposer `/seo-content-loop` pour regenerer |
