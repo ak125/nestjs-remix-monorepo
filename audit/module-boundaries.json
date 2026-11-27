@@ -239,8 +239,8 @@
         "backend/src/modules/diagnostic-engine/services",
         "backend/src/modules/diagnostic-engine/types"
       ],
-      "files_count": 76,
-      "loc_total": 16662,
+      "files_count": 77,
+      "loc_total": 16857,
       "has_barrel": false
     },
     "errors": {
@@ -343,7 +343,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 590,
-      "loc_total": 112254,
+      "loc_total": 112255,
       "has_barrel": true
     },
     "gamme-rest": {

@@ -15293,6 +15293,34 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/diagnostic-engine/diagnostic-action-targets-served.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
+        "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
+        "backend/src/modules/diagnostic-engine/services/diagnostic-resolution-pipeline.service.ts",
+        "backend/src/modules/diagnostic-engine/services/human-escalation-builder.service.ts",
+        "backend/src/modules/diagnostic-engine/services/intent-classifier.service.ts",
+        "backend/src/modules/diagnostic-engine/services/invariant-asserter.service.ts",
+        "backend/src/modules/diagnostic-engine/types/diagnostic-intent.ts",
+        "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
+      ],
+      "kind": "test",
+      "loc": 180,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/diagnostic-engine/diagnostic-action-targets-served.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.test.ts",
       "importedBy": [],
       "imports": [
@@ -15318,6 +15346,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
       "importedBy": [
+        "backend/src/modules/diagnostic-engine/diagnostic-action-targets-served.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-handoff-integrity.test.ts",
@@ -16518,6 +16547,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
       "importedBy": [
+        "backend/src/modules/diagnostic-engine/diagnostic-action-targets-served.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-handoff-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
@@ -16533,7 +16563,7 @@
         "backend/src/modules/diagnostic-engine/types/recommended-action.ts"
       ],
       "kind": "service",
-      "loc": 252,
+      "loc": 260,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
       "risk": "low",
@@ -16556,7 +16586,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "test",
-      "loc": 194,
+      "loc": 199,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/services/action-recommender.test.ts",
       "risk": "low",
@@ -16702,6 +16732,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/diagnostic-engine/services/diagnostic-resolution-pipeline.service.ts",
       "importedBy": [
+        "backend/src/modules/diagnostic-engine/diagnostic-action-targets-served.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-handoff-integrity.test.ts"
@@ -16734,6 +16765,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/diagnostic-engine/services/human-escalation-builder.service.ts",
       "importedBy": [
+        "backend/src/modules/diagnostic-engine/diagnostic-action-targets-served.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-handoff-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/services/diagnostic-resolution-pipeline.service.ts"
@@ -16744,7 +16776,7 @@
         "backend/src/modules/diagnostic-engine/types/human-escalation.ts"
       ],
       "kind": "service",
-      "loc": 61,
+      "loc": 63,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/services/human-escalation-builder.service.ts",
       "risk": "low",
@@ -16761,6 +16793,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/diagnostic-engine/services/intent-classifier.service.ts",
       "importedBy": [
+        "backend/src/modules/diagnostic-engine/diagnostic-action-targets-served.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-handoff-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
@@ -16815,6 +16848,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/diagnostic-engine/services/invariant-asserter.service.ts",
       "importedBy": [
+        "backend/src/modules/diagnostic-engine/diagnostic-action-targets-served.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-handoff-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/services/diagnostic-resolution-pipeline.service.ts",
@@ -17099,6 +17133,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/diagnostic-engine/types/diagnostic-intent.ts",
       "importedBy": [
+        "backend/src/modules/diagnostic-engine/diagnostic-action-targets-served.test.ts",
         "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
         "backend/src/modules/diagnostic-engine/services/confidence-policy.ts",
         "backend/src/modules/diagnostic-engine/services/intent-classifier.service.ts",
@@ -17179,6 +17214,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts",
       "importedBy": [
+        "backend/src/modules/diagnostic-engine/diagnostic-action-targets-served.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
@@ -49996,7 +50032,7 @@
         "~/components/ui/card"
       ],
       "kind": "config",
-      "loc": 108,
+      "loc": 109,
       "owner": "__unassigned__",
       "path": "frontend/app/components/diagnostic-wizard/results/ActionCard.tsx",
       "risk": "low",
