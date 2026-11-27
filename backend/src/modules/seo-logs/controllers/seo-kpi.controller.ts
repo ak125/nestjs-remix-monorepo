@@ -116,7 +116,7 @@ export class SeoKpiController {
     @Query(crawlRateQueryPipe) { timeWindow }: SeoKpiCrawlRateQueryDto,
   ) {
     const SITEMAP_URL =
-      process.env.SITEMAP_URL || 'https://automecanik.fr/sitemap.xml';
+      process.env.SITEMAP_URL || 'https://www.automecanik.com/sitemap.xml';
 
     try {
       // 1. Récupérer les URLs du sitemap

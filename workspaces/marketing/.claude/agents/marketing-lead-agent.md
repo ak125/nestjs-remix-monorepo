@@ -8,12 +8,13 @@ role: MARKETING_LEAD
 business_unit:
   - ECOMMERCE
   - LOCAL
-model: sonnet
+model: inherit
 tools:
   - Read
   - Glob
   - Grep
   - mcp__supabase__execute_sql
+  - REPL
 ---
 
 # IDENTITY

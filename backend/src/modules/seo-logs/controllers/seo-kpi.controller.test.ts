@@ -5,7 +5,8 @@
  * Prouve : (1) une entrée valide produit un appel HTTP natif vers la cible
  * fixe de la configuration et la forme de réponse attendue ; (2) une entrée
  * hors contrat reçoit un 400 avant tout appel sortant ; (3) aucun processus
- * n'est lancé, quelle que soit l'entrée.
+ * n'est lancé, quelle que soit l'entrée ; (4) sans `SITEMAP_URL`, crawl-rate
+ * lit le sitemap servi du domaine canonique.
  */
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
@@ -30,6 +31,8 @@ const SHELL_SPECIAL_CHARACTERS = [...' \t\n;&|$`\\\'"<>(){}[]*?!#~=%'] as const;
 
 const LOKI_BASE = 'http://loki.test:3100';
 const SITEMAP = 'https://sitemap.test/sitemap.xml';
+// Défaut du contrôleur quand SITEMAP_URL est absente : le sitemap servi.
+const DEFAULT_SITEMAP = 'https://www.automecanik.com/sitemap.xml';
 
 const lokiBody = (
   rows: Array<{ metric: Record<string, string>; hits: number }>,
@@ -254,6 +257,29 @@ describe('SeoKpiController — sans commande shell, entrées validées', () => {
       expect(res.body.success).toBe(false);
       expect(res.body.error).toBe('Sitemap : réponse HTTP 301');
       expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('sans SITEMAP_URL : la cible par défaut est le sitemap servi', async () => {
+      const configured = process.env.SITEMAP_URL;
+      delete process.env.SITEMAP_URL;
+      try {
+        mockSitemapThenLoki(2, 1);
+
+        const res = await request(app.getHttpServer()).get(
+          '/seo-logs/kpi/crawl-rate',
+        );
+
+        expect(res.status).toBe(200);
+        expect(res.body.success).toBe(true);
+        expect(res.body.data.sitemap).toEqual({
+          url: DEFAULT_SITEMAP,
+          totalUrls: 2,
+        });
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(outgoingCalls()[0].target).toBe(DEFAULT_SITEMAP);
+      } finally {
+        process.env.SITEMAP_URL = configured;
+      }
     });
   });
 
