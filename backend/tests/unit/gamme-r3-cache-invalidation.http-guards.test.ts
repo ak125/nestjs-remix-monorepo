@@ -79,10 +79,10 @@ const r1Keys = (pgId: string) => [
 ];
 const R1_KEYS = r1Keys(PG_ID);
 const R3_KEYS = [
-  `r3-guide:v3:r6c0:${PG_ALIAS}`,
-  `r3-guide:v3:r6c0.r4c1:${PG_ALIAS}`,
-  `r3-guide:v3:r6c1:${PG_ALIAS}`,
-  `r3-guide:v3:r6c1.r4c1:${PG_ALIAS}`,
+  `r3-guide:v4:r6c0:${PG_ALIAS}`,
+  `r3-guide:v4:r6c0.r4c1:${PG_ALIAS}`,
+  `r3-guide:v4:r6c1:${PG_ALIAS}`,
+  `r3-guide:v4:r6c1.r4c1:${PG_ALIAS}`,
 ];
 const R1_PATH = `/api/gamme-rest/${PG_ID}/cache/invalidate`;
 const R3_PATH = `/api/r3-guide/${PG_ALIAS}/cache/invalidate`;
