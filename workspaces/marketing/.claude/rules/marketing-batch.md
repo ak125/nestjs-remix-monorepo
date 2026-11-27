@@ -46,7 +46,7 @@ Tout brief = ligne dans `__marketing_brief` (JSONB structuré). **Jamais** de `.
 
 ## Anti-patterns marketing (en plus des Q1-Q4 monorepo)
 
-- **Pas de schema Paperclip inventé** (`activation_mode`, `write_scope` n'existent pas — vérifier `paperclip/docs/specs/agent-config-ui.md`).
+- **Pas de schema Paperclip inventé** (`activation_mode`, `write_scope` n'existent pas — vérifier `paperclip/docs/specs/agent-config-ui.md`). Historique : Paperclip est supprimé (décision 69) ; ce renvoi ne vaut plus.
 - **Pas de duplication backend marketing/** — les agents *consomment* via `/api/marketing/*`, ne réécrivent pas les services.
 - **Pas de prédiction LLM de conversion** (`expected_conversion`) — on mesure via `__marketing_feedback`, on ne devine pas.
 - **Pas de constantes magiques** (`calls*3 + clicks` en dur) — pondération dans `backend/src/modules/marketing/marketing-scoring.config.ts` overridable ENV.
