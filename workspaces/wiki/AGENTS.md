@@ -2,6 +2,8 @@
 
 > Conformité [[ADR-061-workspace-governance]] §2 (structure obligatoire) + §5 (`AGENTS.md` exhaustif).
 > Workspace wiki documentaire : Phase 2 [[ADR-033-wiki-gamme-diagnostic-relations-contract]].
+>
+> Historique (décisions 72 et 73) : les ADR citées dans ce fichier sont des archives du vault ; elles expliquent une décision sans être normatives. Une règle est en vigueur si le journal des principes la reprend (`../../.claude/governance/journal-des-principes.md`) : ADR-031 → P10 et P11 ; ADR-033 (relation diagnostic relue) → P19. ADR-039, ADR-060 et ADR-061 n'y ont aucun principe : leurs règles restent écrites ici, écart à trancher par l'owner (issue #2232).
 
 ## Règle d'ownership
 
@@ -9,7 +11,9 @@ Le workspace `app/workspaces/wiki/` est destiné au skill `wiki-proposal-writer`
 
 Tout agent / skill invoqué sous le scope de ce workspace **doit** figurer ci-dessous. Ajout/retrait = PR monorepo signée modifiant ce fichier (cf. ADR-061 §5).
 
-## Agents Paperclip LIVE (état 2026-05-14)
+## Agents Paperclip LIVE (état 2026-05-14) — historique
+
+> Historique : Paperclip est supprimé (décision 69, 2026-11-16) ; un seul circuit d'exécution : mandat, Claude CLI, PR.
 
 **Aucun agent Paperclip activé** sur ce workspace au 2026-05-14. Phase 4 (agents wiki orchestrateurs) reste future, gated par signal empirique post-Phase 2.
 
@@ -46,6 +50,8 @@ Création : ADR-033 + brainstorm Phase 2 wiki.
 Phase 4 future : agents wiki orchestrateurs (review automatique, batch proposals) sous ADR dédié si signal empirique le justifie.
 
 ## Références
+
+Les ADR ci-dessous sont des archives du vault (décision 73), non normatives.
 
 - [[ADR-033-wiki-gamme-diagnostic-relations-contract]] (workspace wiki Phase 2 canon)
 - [[ADR-031-four-layer-content-architecture]] (4-layer flow, D19 proposals FLAT, D20 sync garde-fou, D22 rag generated)

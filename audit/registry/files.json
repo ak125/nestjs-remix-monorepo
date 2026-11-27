@@ -27738,7 +27738,7 @@
         "backend/src/modules/seo-logs/controllers/seo-kpi.controller.ts"
       ],
       "kind": "test",
-      "loc": 467,
+      "loc": 493,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-logs/controllers/seo-kpi.controller.test.ts",
       "risk": "low",
@@ -76710,6 +76710,44 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/ci/r4-served-checks.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 1051,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/r4-served-checks.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/ci/r4-served-checks.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 760,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/r4-served-checks.test.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",

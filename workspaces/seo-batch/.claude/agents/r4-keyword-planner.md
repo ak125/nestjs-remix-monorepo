@@ -4,12 +4,13 @@ description: >-
   Pipeline R4 Reference v2. 2-Pass Discover/Compile : Pass A genere
   keyword_universe, Pass B compile plan R4. 9 hard gates, system templates,
   link_out_plan, risk_flags. Ecrit dans __seo_r4_keyword_plan via MCP Supabase.
-model: sonnet
+model: inherit
 tools:
   - mcp__supabase__execute_sql
   - Read
   - Glob
   - Grep
+  - REPL
 role: R4_REFERENCE
 ---
 

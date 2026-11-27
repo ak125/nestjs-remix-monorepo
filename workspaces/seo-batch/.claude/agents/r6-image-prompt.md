@@ -4,12 +4,13 @@ description: >-
   Generation de prompts image R6 guide achat (Midjourney/DALL-E/ComfyUI). Lit
   media_slots_proposal + RAG, filtre slots image, genere prompts par slot, ecrit
   en DB. Zero LLM.
-model: haiku
+model: inherit
 tools:
   - mcp__supabase__execute_sql
   - Read
   - Glob
   - Grep
+  - REPL
 role: R6_GUIDE_ACHAT
 ---
 

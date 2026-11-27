@@ -705,8 +705,8 @@
         "scripts/wiki-generators",
         "scripts/wiki-generators/__tests__"
       ],
-      "files_count": 230,
-      "loc_total": 55769,
+      "files_count": 232,
+      "loc_total": 57580,
       "has_barrel": true
     },
     "search": {
@@ -797,7 +797,7 @@
         "backend/src/modules/seo-logs/services"
       ],
       "files_count": 18,
-      "loc_total": 5190,
+      "loc_total": 5216,
       "has_barrel": false
     },
     "seo-monitoring": {

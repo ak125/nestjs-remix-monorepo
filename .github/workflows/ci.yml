@@ -579,6 +579,64 @@ jobs:
       - name: 🌅 Gestes du rapport du matin (tests, mandat CJ)
         run: bash scripts/ops/morning-health-digest.test.sh
 
+      - name: 🛒 Agrégat de la sonde du parcours d'achat (tests, mandat EY)
+        run: bash scripts/ops/purchase-path-probe.test.sh
+
+      - name: 🔒 Revendication de worktree (tests, mandat FA)
+        run: bash scripts/agents/worktree-claim.test.sh
+
+      - name: 🔒 Hook PreToolUse de revendication de worktree (tests, mandat FA)
+        run: bash scripts/claude-hooks/pretool-worktree-claim.test.sh
+
+      - name: 🧭 Hook SessionStart du contexte de workspace (tests, mandat FA)
+        run: bash scripts/claude-hooks/sessionstart-workspace-context.test.sh
+
+      - name: 🧭 Hook Stop de suggestion du journal (tests, mandat FA)
+        run: bash scripts/claude-hooks/stop-log-session-suggest.test.sh
+
+      - name: 🧭 Hook UserPromptSubmit du contexte (tests, mandat FA)
+        run: bash scripts/claude-hooks/userpromptsubmit-context-push.test.sh
+
+      - name: 🧹 Dédoublonnage des node_modules de worktree (tests, mandat FA)
+        run: bash scripts/cron/dedup-worktree-node-modules.test.sh
+
+      - name: 🧹 Élagage des worktrees fusionnés (tests, mandat FA)
+        run: bash scripts/cron/prune-merged-worktrees.test.sh
+
+      - name: 💾 Sauvegarde de la base de connaissances RAG (tests, mandat FA)
+        run: bash scripts/cron/rag-knowledge-backup.test.sh
+
+      - name: 📣 Profil marketing Hermes (tests, mandat FA)
+        run: python3 scripts/marketing/hermes/test_marketing_profile.py
+
+      - name: 📣 Qualification du comportement marketing Hermes (tests, mandat FA)
+        run: python3 scripts/marketing/hermes/test_qualify_behavior.py
+
+      - name: 🔎 Contrôleur Codex (tests, mandat FA)
+        run: bash scripts/ops/codex-controleur/codex-controleur.test.sh
+
+      - name: 🔑 Jeton de GitHub App (tests, mandat FA)
+        run: bash scripts/ops/gh-app-token/gh-app-token.test.sh
+
+      - name: 🛰️ Command Center Hermes (tests, mandat FA)
+        run: python3 scripts/ops/hermes-command-center/test_command_center.py
+
+      - name: 🛰️ Publication des missions Hermes (tests, mandat FA)
+        run: python3 scripts/ops/hermes-mission-publish/test_publish.py
+
+      - name: 📦 Remise de mandat (tests, mandat FA)
+        run: bash scripts/ops/mandat-remise.test.sh
+
+      - name: 🧭 Pilote de la file (tests, mandat FA)
+        # ast-grep à la version épinglée de package.json, comme pilote-file.yml : npm ci --ignore-scripts
+        # ne lance pas le postinstall qui met le binaire natif en place.
+        run: |
+          npm install --global --no-fund --no-audit "@ast-grep/cli@$(jq -r '.devDependencies["@ast-grep/cli"]' package.json)"
+          bash scripts/ops/pilote-file.test.sh
+
+      - name: 🗂️ Application du triage de la file (tests, mandat FA)
+        run: bash scripts/ops/triage-file-apply.test.sh
+
       - name: 🚦 Classeur des circuits de fusion (tests)
         run: node --test scripts/ci/merge-circuit.test.mjs
 

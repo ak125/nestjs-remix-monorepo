@@ -6,12 +6,13 @@ description: >-
   scoring, fingerprinting, nearest-neighbor comparison, governance
   (INDEX/REVIEW/REGENERATE/REJECT). Ecrit dans 7 tables __seo_r8_* via MCP
   Supabase.
-model: sonnet
+model: inherit
 tools:
   - mcp__supabase__execute_sql
   - Read
   - Glob
   - Grep
+  - REPL
 role: R8_VEHICLE
 ---
 
