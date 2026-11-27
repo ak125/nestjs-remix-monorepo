@@ -1,0 +1,267 @@
+diff --git a/.github/workflows/skills-canon-gate.yml b/.github/workflows/skills-canon-gate.yml
+index 66e07ab..d77d714 100644
+--- a/.github/workflows/skills-canon-gate.yml
++++ b/.github/workflows/skills-canon-gate.yml
+@@ -22,6 +22,7 @@ on:
+     branches: [main]
+     paths:
+       - ".claude/skills/**"
++      - "workspaces/seo-batch/.claude/skills/**"
+       - ".spec/00-canon/ai-registry/**"
+       - "scripts/governance/validate-skills-frontmatter.js"
+       - "scripts/governance/build-skills-registry.js"
+diff --git a/scripts/governance/build-skills-registry.js b/scripts/governance/build-skills-registry.js
+index 577fb02..db753fd 100644
+--- a/scripts/governance/build-skills-registry.js
++++ b/scripts/governance/build-skills-registry.js
+@@ -3,7 +3,8 @@
+  * scripts/governance/build-skills-registry.js
+  *
+  * Builds `.spec/00-canon/ai-registry/skills.registry.json` from the
+- * frontmatters of every `.claude/skills/<name>/SKILL.md`.
++ * frontmatters of every `<root>/<name>/SKILL.md`, for each root listed in
++ * SKILL_ROOTS (`.claude/skills` plus the workspace skill roots).
+  *
+  * AI Governance Control Plane — projection layer (PR-V2 Layer 4). Mirrors
+  * the pattern used by `scripts/registry/build-canonical-registry.js` for the
+@@ -28,7 +29,12 @@ const stableStringify = require("fast-json-stable-stringify");
+ const { extractFrontmatter } = require("./validate-skills-frontmatter");
+ 
+ const MONOREPO_ROOT = path.resolve(__dirname, "..", "..");
+-const SKILLS_DIR = path.join(MONOREPO_ROOT, ".claude", "skills");
++// Skill roots, relative to the monorepo root. Workspace roots are listed
++// explicitly (no glob discovery) : adding one is a reviewed change.
++const SKILL_ROOTS = [
++  path.join(".claude", "skills"),
++  path.join("workspaces", "seo-batch", ".claude", "skills"),
++];
+ const OUTPUT_PATH = path.join(
+   MONOREPO_ROOT,
+   ".spec",
+@@ -46,8 +52,8 @@ function sha256(content) {
+   return "sha256:" + crypto.createHash("sha256").update(content).digest("hex");
+ }
+ 
+-function buildEntry(name) {
+-  const skillFile = path.join(SKILLS_DIR, name, "SKILL.md");
++function buildEntry({ name, dir }) {
++  const skillFile = path.join(dir, name, "SKILL.md");
+   const content = fs.readFileSync(skillFile, "utf8");
+   let fm;
+   try {
+@@ -91,12 +97,24 @@ function buildEntry(name) {
+ }
+ 
+ function listSkills() {
+-  if (!fs.existsSync(SKILLS_DIR)) return [];
+-  return fs
+-    .readdirSync(SKILLS_DIR, { withFileTypes: true })
+-    .filter((d) => d.isDirectory())
+-    .map((d) => d.name)
+-    .sort();
++  const seen = new Map();
++  for (const root of SKILL_ROOTS) {
++    const dir = path.join(MONOREPO_ROOT, root);
++    if (!fs.existsSync(dir)) continue;
++    for (const d of fs.readdirSync(dir, { withFileTypes: true })) {
++      if (!d.isDirectory()) continue;
++      if (seen.has(d.name)) {
++        // A skill name is the registry key : two roots must not share it.
++        throw new Error(
++          `duplicate skill name "${d.name}" in ${seen.get(d.name)} and ${root}`
++        );
++      }
++      seen.set(d.name, root);
++    }
++  }
++  return [...seen.entries()]
++    .map(([name, root]) => ({ name, dir: path.join(MONOREPO_ROOT, root) }))
++    .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+ }
+ 
+ function buildRegistry() {
+diff --git a/workspaces/seo-batch/.claude/skills/content-audit/SKILL.md b/workspaces/seo-batch/.claude/skills/content-audit/SKILL.md
+index c103fb6..76ff735 100644
+--- a/workspaces/seo-batch/.claude/skills/content-audit/SKILL.md
++++ b/workspaces/seo-batch/.claude/skills/content-audit/SKILL.md
+@@ -1,9 +1,17 @@
+ ---
+ name: content-audit
+-description: "Audit contenu R2D2 universel : Intent-First, Evidence-First, Decision-First. Adapté aux 6 rôles de page (R1-R6). Score qualité /6 + rapport structuré."
++description: "Audit contenu R2D2 universel : Intent-First, Evidence-First, Decision-First. Adapté aux 6 rôles de page (R1-R6). Score qualité /6 + rapport structuré. Use when user asks to audit the content of an SEO page, route or page role (R2D2 score)."
++type: technique
++status: experimental
++owners: ['@ak125']
++domain: D3
++runtime_class: read-only
++llm_safe: false
++last_verified: '2026-11-15'
+ argument-hint: "[/url-path, file-path, ou page-role (R1|R2|R3|R4|R5|R6)]"
+ allowed-tools: Read, Grep, Glob
+-version: "1.2"
++metadata:
++  version: "1.2"
+ ---
+ 
+ # Content Audit R2D2 — v1.1
+diff --git a/workspaces/seo-batch/.claude/skills/content-quality-gate/SKILL.md b/workspaces/seo-batch/.claude/skills/content-quality-gate/SKILL.md
+index 38e85cb..47504e0 100644
+--- a/workspaces/seo-batch/.claude/skills/content-quality-gate/SKILL.md
++++ b/workspaces/seo-batch/.claude/skills/content-quality-gate/SKILL.md
+@@ -1,6 +1,12 @@
+ ---
+ name: content-quality-gate
+ description: "[DEPRECATED → /v5-guardian] Quality gate sections __seo_gamme_conseil : scoring + verdicts WRITE/REVIEW/BLOCK. Use when user mentions vérifier qualité, audit qualité section, gap analysis, sections faibles, review queue, détection régressions."
++type: technique
++status: deprecated
++owners: ['@ak125']
++domain: D3
++runtime_class: read-only
++llm_safe: true
+ ---
+ 
+ # Content Quality Gate — Scoring et validation de contenu
+diff --git a/workspaces/seo-batch/.claude/skills/keyword-planner/SKILL.md b/workspaces/seo-batch/.claude/skills/keyword-planner/SKILL.md
+index 1a85d78..c1e8814 100644
+--- a/workspaces/seo-batch/.claude/skills/keyword-planner/SKILL.md
++++ b/workspaces/seo-batch/.claude/skills/keyword-planner/SKILL.md
+@@ -1,6 +1,12 @@
+ ---
+-name: kp
+-description: "Keyword planner SEO par gamme OU véhicule. Détecte auto le type, demande le fichier SEO, lance les KP pour TOUS les rôles R concernés. Usage : /kp <pg_alias|vehicle_slug> [--r1|--r3|--r5|--r6|--r8|--all] [--batch top10]"
++name: keyword-planner
++description: "Keyword planner SEO par gamme OU véhicule. Détecte auto le type, demande le fichier SEO, lance les KP pour TOUS les rôles R concernés. Usage : /kp <pg_alias|vehicle_slug> [--r1|--r3|--r5|--r6|--r8|--all] [--batch top10] Use when user asks for a keyword plan for a gamme or a vehicle."
++type: technique
++status: experimental
++owners: ['@ak125']
++domain: D3
++runtime_class: mutating
++llm_safe: false
+ argument-hint: "<pg_alias ou vehicle_slug> [--r1|--r3|--r5|--r6|--r8|--all] [--batch top10]"
+ ---
+ 
+diff --git a/workspaces/seo-batch/.claude/skills/kw-classify/SKILL.md b/workspaces/seo-batch/.claude/skills/kw-classify/SKILL.md
+index 811c0b6..0a454c0 100644
+--- a/workspaces/seo-batch/.claude/skills/kw-classify/SKILL.md
++++ b/workspaces/seo-batch/.claude/skills/kw-classify/SKILL.md
+@@ -1,6 +1,12 @@
+ ---
+ name: kw-classify
+-description: "Classification contextuelle par Claude des keywords bruts Google Ads KP. Lit __seo_keywords → classifie par role R1/R3/R4/R6 → écrit dans __seo_keyword_results avec vol percentile. Usage : /kw-classify <pg_alias> [--role r1|r3|r4|r6|all] [--dry-run]"
++description: "Classification contextuelle par Claude des keywords bruts Google Ads KP. Lit __seo_keywords → classifie par role R1/R3/R4/R6 → écrit dans __seo_keyword_results avec vol percentile. Usage : /kw-classify <pg_alias> [--role r1|r3|r4|r6|all] [--dry-run] Use when user asks to classify imported Google Ads keywords of a gamme by page role."
++type: technique
++status: experimental
++owners: ['@ak125']
++domain: D3
++runtime_class: mutating
++llm_safe: false
+ argument-hint: "<pg_alias> [--role r1|r3|r4|r6|all] [--dry-run]"
+ allowed-tools: Read, mcp__supabase__execute_sql, Glob
+ ---
+diff --git a/workspaces/seo-batch/.claude/skills/r8-diversity-check/SKILL.md b/workspaces/seo-batch/.claude/skills/r8-diversity-check/SKILL.md
+index 1f8b62e..c6ffc6f 100644
+--- a/workspaces/seo-batch/.claude/skills/r8-diversity-check/SKILL.md
++++ b/workspaces/seo-batch/.claude/skills/r8-diversity-check/SKILL.md
+@@ -1,6 +1,13 @@
+ ---
+ name: r8-diversity-check
+ description: "Mesure la diversité fingerprint entre pages R8 motorisations sœurs (même modele_id). Use when user mentions duplicate content motorisations, variation R8, fingerprint audit, anti-duplicate sibling véhicule, ou avant batch INDEX."
++type: technique
++status: experimental
++owners: ['@ak125']
++domain: D3
++runtime_class: read-only
++llm_safe: true
++last_verified: '2026-11-15'
+ argument-hint: "<brand|modele-id|slug|--batch> [--threshold N] [--format markdown|json]"
+ allowed-tools: Read, Bash
+ ---
+diff --git a/workspaces/seo-batch/.claude/skills/seo-content-architect/SKILL.md b/workspaces/seo-batch/.claude/skills/seo-content-architect/SKILL.md
+index 69fc776..492bd5a 100644
+--- a/workspaces/seo-batch/.claude/skills/seo-content-architect/SKILL.md
++++ b/workspaces/seo-batch/.claude/skills/seo-content-architect/SKILL.md
+@@ -1,10 +1,17 @@
+ ---
+ name: seo-content-architect
+-description: "[NEUTRALISÉ PR-C 2026-07-02 → /seo-content-loop] Corps retiré. Ce skill lisait le RAG (via /api/rag/search + frontmatter) pour générer du contenu multi-rôle — direction RAG→contenu abandonnée (ADR-031/046, RAG = chatbot only). La vérité contenu vient du WIKI. Utiliser /seo-content-loop."
++description: "[NEUTRALISÉ PR-C 2026-07-02 → /seo-content-loop] Corps retiré. Ce skill lisait le RAG (via /api/rag/search + frontmatter) pour générer du contenu multi-rôle — direction RAG→contenu abandonnée (ADR-031/046, RAG = chatbot only). La vérité contenu vient du WIKI. Utiliser /seo-content-loop. Use when an old reference names /seo-content-architect : redirect to /seo-content-loop."
++type: reference
++status: deprecated
++owners: ['@ak125']
++domain: D3
++runtime_class: read-only
++llm_safe: false
+ license: Internal - Automecanik
+-version: "2.4"
+ disable-model-invocation: true
+ allowed-tools: Read
++metadata:
++  version: "2.4"
+ ---
+ 
+ # seo-content-architect — NEUTRALISÉ (PR-C, 2026-07-02)
+diff --git a/workspaces/seo-batch/.claude/skills/seo-content-loop/SKILL.md b/workspaces/seo-batch/.claude/skills/seo-content-loop/SKILL.md
+index 285910b..3cfcc29 100644
+--- a/workspaces/seo-batch/.claude/skills/seo-content-loop/SKILL.md
++++ b/workspaces/seo-batch/.claude/skills/seo-content-loop/SKILL.md
+@@ -1,11 +1,18 @@
+ ---
+ name: seo-content-loop
+ description: "Méthode opératoire canonique du contenu SEO AutoMecanik : la BOUCLE scraping LARGE → RAW → WIKI → CONSUMER → mesure SCORE → itérer jusqu'au score. NO-RAG (RAG = chatbot only). Pointe vers le canon vault (ADR-031/046/059/083/086), ne le duplique pas. Use when: planifier/exécuter du contenu R1-R8, enrichir une gamme/motorisation, débloquer le pipeline, ou décider 'comment produire du contenu qui ranke'."
++type: reference
++status: stable
++owners: ['@ak125']
++domain: D3
++runtime_class: mutating
++llm_safe: false
+ license: Internal - Automecanik
+-version: "1.0"
+ argument-hint: "[gamme-name | vehicle-slug | status]"
+ disable-model-invocation: false
+ allowed-tools: mcp__claude_ai_Supabase__execute_sql, Read, Glob, Grep, Bash
++metadata:
++  version: "1.0"
+ ---
+ 
+ # SEO Content Loop — la boucle canonique du contenu (NO-RAG)
+diff --git a/workspaces/seo-batch/.claude/skills/seo-gamme-audit/SKILL.md b/workspaces/seo-batch/.claude/skills/seo-gamme-audit/SKILL.md
+index fee19d0..ffec4e6 100644
+--- a/workspaces/seo-batch/.claude/skills/seo-gamme-audit/SKILL.md
++++ b/workspaces/seo-batch/.claude/skills/seo-gamme-audit/SKILL.md
+@@ -1,6 +1,13 @@
+ ---
+ name: seo-gamme-audit
+ description: "Audit SEO gamme ou véhicule en lecture seule : admission WIKI → export → projection → rendu, catalogue et relations par identifiants réels, liens et blocs réellement servis, anti-duplicate existant. Mesure et recommande, n'écrit rien. Use when user wants gamme audit, vehicle SEO audit. CLI: /seo-gamme-audit <pg_alias|pg_id|type:type_id>"
++type: technique
++status: experimental
++owners: ['@ak125']
++domain: D3
++runtime_class: read-only
++llm_safe: true
++last_verified: '2026-11-15'
+ argument-hint: "<pg_alias | pg_id | type:<type_id>> [--batch gaps|qps-low] [--history]"
+ ---
+ 
+diff --git a/workspaces/seo-batch/.claude/skills/seo-vault-verify/SKILL.md b/workspaces/seo-batch/.claude/skills/seo-vault-verify/SKILL.md
+index dd38d21..a6fe41b 100644
+--- a/workspaces/seo-batch/.claude/skills/seo-vault-verify/SKILL.md
++++ b/workspaces/seo-batch/.claude/skills/seo-vault-verify/SKILL.md
+@@ -1,9 +1,17 @@
+ ---
+ name: seo-vault-verify
+ description: "Audit reproductible vault Obsidian SEO (ZIP ou dir) : 8 fichiers regen + SHA256 non-régression + cross-refs ADR. Use when user mentions vérifier vault, audit vault SEO, valider livrable Obsidian, ADR-002 maillage."
++type: technique
++status: experimental
++owners: ['@ak125']
++domain: D3
++runtime_class: mutating
++llm_safe: false
++last_verified: '2026-11-15'
+ argument-hint: "<path-zip-or-dir> [--manifest <path.yaml>]"
+ allowed-tools: Read, Bash, Glob, Grep, Agent
+-version: "1.0"
++metadata:
++  version: "1.0"
+ ---
+ 
+ # SEO Vault Verify — v1.0
