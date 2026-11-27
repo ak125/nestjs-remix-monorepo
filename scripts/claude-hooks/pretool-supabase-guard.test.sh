@@ -95,6 +95,23 @@ sql "chaîne E puis saut de ligne sans quote" 0 "SELECT E'a\\'b'
 FROM t"
 sql "continuation de chaînes standard"     0 "SELECT 'a'
 'b' AS t"
+echo "== chaîne E suivie de commentaires : verdict en temps borné (10 s)"
+# Avant le passage unique de CONT, ces entrées faisaient revenir l'expression en arrière en
+# temps exponentiel et le hook dépassait son délai. timeout rend 124 sans verdict à 10 s.
+run_t() { local rc; printf '%s' "$1" | timeout 10 bash "$HOOK" >/dev/null 2>&1; rc=$?; echo "$rc"; }
+sql_t() { check "$1" "$2" "$(run_t "$(env_of mcp__claude_ai_Supabase__execute_sql "$3")")"; }
+DASHES=$(printf '%200s' '' | tr ' ' '-')
+BLOCKS=$(printf '/**/%.0s' $(seq 200))
+sql_t "E puis ligne de 200 tirets, lecture"        0 "SELECT x FROM t WHERE y = E'a'
+-- $DASHES
+AND z = 1"
+sql_t "E puis 200 blocs de commentaire, lecture"   0 "SELECT E'a' $BLOCKS AS x"
+sql_t "E puis commentaires, sans quote ensuite"    0 "SELECT E'a' /* note */ AS x -- fin"
+sql_t "E, tirets, continuation qui cache un DROP"  2 "SELECT E'a' -- $DASHES
+'\\' x ' ; DROP TABLE y; --'"
+sql_t "E, commentaire, autre chaîne plus loin (refus fermé)" 2 "SELECT x FROM t WHERE y = E'a'
+-- $DASHES
+AND z = 'b'"
 echo "== apply_migration toujours refusé (exit 2)"
 check "apply_migration CREATE INDEX"       2 "$(run "$(env_of "$T_MIG" "CREATE INDEX CONCURRENTLY i ON pieces (piece_id)")")"
 check "apply_migration SELECT seul"        2 "$(run "$(env_of mcp__claude_ai_Supabase__apply_migration "SELECT 1")")"
