@@ -1,0 +1,164 @@
+{
+  "title": "Tri des constats du contrôleur Codex (v1)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "constats",
+    "groupes",
+    "notes"
+  ],
+  "properties": {
+    "constats": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "verdict",
+          "severity_revue",
+          "raison_gravite",
+          "preuve",
+          "methode",
+          "groupe",
+          "cause",
+          "non_tranchable_besoin",
+          "correctif_propose",
+          "risque_si_rien"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "verdict": {
+            "enum": [
+              "confirmé",
+              "faux",
+              "déjà corrigé",
+              "non tranchable"
+            ]
+          },
+          "severity_revue": {
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low",
+              "info"
+            ]
+          },
+          "raison_gravite": {
+            "type": "string"
+          },
+          "preuve": {
+            "type": "string"
+          },
+          "methode": {
+            "type": "string"
+          },
+          "groupe": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "cause": {
+            "type": "string"
+          },
+          "non_tranchable_besoin": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "correctif_propose": {
+            "type": "string"
+          },
+          "risque_si_rien": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "groupes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "groupe",
+          "titre",
+          "gravite",
+          "securite",
+          "couverture_numero",
+          "couverture_tri",
+          "couverture_note",
+          "dept_propose",
+          "dept_preuve",
+          "constat",
+          "correctif",
+          "risque"
+        ],
+        "properties": {
+          "groupe": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "titre": {
+            "type": "string"
+          },
+          "gravite": {
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low",
+              "info"
+            ]
+          },
+          "securite": {
+            "type": "boolean"
+          },
+          "couverture_numero": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "couverture_tri": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "couverture_note": {
+            "type": "string"
+          },
+          "dept_propose": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^dept:[0-9]{2}-[a-z0-9-]+$"
+          },
+          "dept_preuve": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "constat": {
+            "type": "string"
+          },
+          "correctif": {
+            "type": "string"
+          },
+          "risque": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "notes": {
+      "type": "string"
+    }
+  }
+}
