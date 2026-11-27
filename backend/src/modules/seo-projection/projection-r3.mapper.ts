@@ -24,6 +24,9 @@
  * `BlockTruthLevel` · `usefulness_target` string|null si présent). Sinon → `block_contract_invalid`,
  * **aucun composant émis** : jamais de valeur synthétique (`''` / `[]`) substituée à un champ requis.
  * Un `content` absent/non-objet rend la section illisible : le bloc ne revendique rien → `unmapped`.
+ * `qa` (exports-seo 1.2.0, ADR-107 D2) est optionnel et réservé à la section `faq` : présent, il doit
+ * être une liste non vide de paires {question terminée par `?`, answer_md non vide, source_ids ≥1}.
+ * Toute autre forme, ou un `qa` hors `faq`, est `block_contract_invalid` (jamais ignoré en silence).
  *
  * **Classification observable** : `mapped` (slot servi émis) · `unmapped` (section absente, hors
  * table, non projetée en v1, ou encadré sans procédure hôte — exclu, jamais interprété) · `invalid`
@@ -51,7 +54,9 @@ import type {
 export const R3_MAPPER_ROLE = 'R3_CONSEILS' as const;
 
 /** Version du contrat de rendu R3 (ADR-106 D1) — journalisée avec chaque verdict. */
-export const R3_RENDER_CONTRACT_VERSION = '1.0.0' as const;
+export const R3_RENDER_CONTRACT_VERSION = '1.1.0' as const;
+// 1.1.0 (ADR-107 D2/D3) : un bloc `faq` peut porter des paires `qa` typées, validées et recopiées
+// sur le composant ; elles seules alimentent FAQPage sur le chemin projeté.
 
 /** Une entrée de la table D2. */
 type R3ContractEntry =
@@ -132,20 +137,58 @@ function strcmp(a: string, b: string): number {
   return a < b ? -1 : a > b ? 1 : 0;
 }
 
+/** Paire question-réponse d'un bloc `faq` (ADR-107 D2) — recopiée verbatim. */
+export interface R3QaPair {
+  question: string;
+  answer_md: string;
+  source_ids: string[];
+}
+
+/** Seule section WIKI R3 admise à porter `qa` (ADR-107 D2 ; `selection_faq` relève de R1, ADR-111). */
+const QA_SECTION: R3WikiSection = 'faq';
+
 /** Contenu de bloc VALIDÉ contre le contrat — aucun champ requis absent ni mal typé. */
 interface ValidatedR3Content {
   content_md: string;
   source_ids: string[];
   truth_level: BlockTruthLevel;
   usefulness_target?: string | null;
+  qa?: R3QaPair[];
+}
+
+function isNonEmptyStringArray(value: unknown): value is string[] {
+  return (
+    Array.isArray(value) &&
+    value.length > 0 &&
+    value.every((s) => typeof s === 'string' && s.length > 0)
+  );
+}
+
+/** Une paire `qa` conforme au contrat exports-seo 1.2.0 (ADR-107 D2). */
+function isQaPair(value: unknown): value is R3QaPair {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    return false;
+  }
+  const pair = value as Record<string, unknown>;
+  return (
+    typeof pair.question === 'string' &&
+    pair.question.trim().endsWith('?') &&
+    typeof pair.answer_md === 'string' &&
+    pair.answer_md.trim().length > 0 &&
+    isNonEmptyStringArray(pair.source_ids)
+  );
 }
 
 /**
- * Champs du bloc hors contrat (`SeoProjectionBlock` / `exports-seo.schema.json` v1.1.0 :
- * `content_md`, `source_ids`, `truth_level` REQUIS ; `usefulness_target` optionnel `string|null`).
+ * Champs du bloc hors contrat (`SeoProjectionBlock` / `exports-seo.schema.json` v1.2.0 :
+ * `content_md`, `source_ids`, `truth_level` REQUIS ; `usefulness_target` optionnel `string|null` ;
+ * `qa` optionnel, réservé à `faq`).
  * Renvoie la liste des champs fautifs, dans un ordre fixe (déterminisme du `detail`).
  */
-function blockContractViolations(content: Record<string, unknown>): string[] {
+function blockContractViolations(
+  section: R3WikiSection,
+  content: Record<string, unknown>,
+): string[] {
   const bad: string[] = [];
   if (
     typeof content.content_md !== 'string' ||
@@ -166,6 +209,16 @@ function blockContractViolations(content: Record<string, unknown>): string[] {
   if (target !== undefined && target !== null && typeof target !== 'string') {
     bad.push('usefulness_target');
   }
+  const qa = content.qa;
+  if (
+    qa !== undefined &&
+    (section !== QA_SECTION ||
+      !Array.isArray(qa) ||
+      qa.length === 0 ||
+      !qa.every(isQaPair))
+  ) {
+    bad.push('qa');
+  }
   return bad;
 }
 
@@ -177,6 +230,8 @@ export interface R3SlotComponent {
   source_ids: string[];
   truth_level: BlockTruthLevel;
   usefulness_target: string | null;
+  /** Paires typées (ADR-107 D2), seulement sur `faq` ; `null` = FAQ en prose, donc sans FAQPage (D3). */
+  qa: R3QaPair[] | null;
 }
 
 /** Slot servi R3 : composants dans l'ordre de la table + encadrés (`safety_warnings`, D4). */
@@ -244,6 +299,14 @@ function toComponent(
     // Champ OPTIONNEL du contrat (`string | null`) : absent ⇒ null. Normalisation d'un optionnel,
     // jamais une valeur de remplacement pour un champ requis.
     usefulness_target: content.usefulness_target ?? null,
+    // Optionnel du contrat : absent ⇒ null. Copie profonde : le DTO ne partage rien avec l'entrée.
+    qa: content.qa
+      ? content.qa.map((p) => ({
+          question: p.question,
+          answer_md: p.answer_md,
+          source_ids: [...p.source_ids],
+        }))
+      : null,
   };
 }
 
@@ -314,7 +377,10 @@ export function mapR3Projection(envelope: ProjectionEnvelope): R3MapperResult {
     }
 
     // Le bloc revendique une position de la table ⇒ contrat de bloc OBLIGATOIRE (fail-closed).
-    const violations = blockContractViolations(content);
+    const violations = blockContractViolations(
+      section as R3WikiSection,
+      content,
+    );
     if (violations.length > 0) {
       invalid.push({
         kind: 'block_contract_invalid',

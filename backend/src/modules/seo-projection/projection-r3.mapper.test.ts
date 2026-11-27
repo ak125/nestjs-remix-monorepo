@@ -95,8 +95,8 @@ function realExportLayout() {
 }
 
 describe('mapR3Projection — 0. table D2 d’ADR-106', () => {
-  it('la table est exactement celle de l’ADR (version 1.0.0)', () => {
-    expect(R3_RENDER_CONTRACT_VERSION).toBe('1.0.0');
+  it('la table est exactement celle de l’ADR (version 1.1.0 : qa sur faq, ADR-107)', () => {
+    expect(R3_RENDER_CONTRACT_VERSION).toBe('1.1.0');
     expect(R3_RENDER_CONTRACT).toEqual({
       function: { kind: 'component', slot: 'S1', required: true },
       maintenance_interval: { kind: 'component', slot: 'S2', required: true },
@@ -144,7 +144,7 @@ describe('mapR3Projection — 1. disposition réelle de l’export → prête à
   it('mappe S1/S2/S8, compte les sections hors table et non projetées, ignore R4/R6', () => {
     const r = mapR3Projection(envelope(realExportLayout()));
     expect(r.role).toBe('R3_CONSEILS');
-    expect(r.renderContractVersion).toBe('1.0.0');
+    expect(r.renderContractVersion).toBe('1.1.0');
     expect(r.entityId).toBe('gamme:filtre-a-huile');
     expect(r.mapped).toEqual(['S1', 'S2', 'S8']);
     expect(r.invalid).toEqual([]);
@@ -175,6 +175,7 @@ describe('mapR3Projection — 1. disposition réelle de l’export → prête à
           source_ids: ['oem:ev-m'],
           truth_level: 'sourced',
           usefulness_target: null,
+          qa: null,
         },
         {
           wiki_section: 'failure_symptoms',
@@ -182,6 +183,7 @@ describe('mapR3Projection — 1. disposition réelle de l’export → prête à
           source_ids: ['web:ev-s'],
           truth_level: 'sourced',
           usefulness_target: null,
+          qa: null,
         },
       ],
       callouts: [],
@@ -542,5 +544,95 @@ describe('mapR3Projection — 8. bloc hors contrat → block_contract_invalid, a
       'unknown_section',
     ]);
     expect(r.ready).toBe(true);
+  });
+});
+
+describe('mapR3Projection — 9. paires qa (exports-seo 1.2.0, ADR-107 D2)', () => {
+  const pairs = [
+    {
+      question: 'Quand remplacer le filtre ?',
+      answer_md: 'Aux échéances du constructeur.',
+      source_ids: ['oem:ev-m'],
+    },
+    {
+      question: 'Faut-il huiler le joint ?',
+      answer_md: 'Oui, avec de l’huile moteur propre.',
+      source_ids: ['oem:ev-j', 'web:ev-k'],
+    },
+  ];
+  const faqWithQa = (qa: unknown, section = 'faq') => ({
+    role: R3_MAPPER_ROLE,
+    content: {
+      section,
+      content_md:
+        '**Quand remplacer le filtre ?** Aux échéances du constructeur.',
+      source_ids: ['oem:ev-j', 'oem:ev-m', 'web:ev-k'],
+      truth_level: 'sourced',
+      usefulness_target: 'faq',
+      qa,
+    },
+  });
+
+  it('qa conforme → recopié verbatim sur le composant S8, sans muter l’entrée', () => {
+    const env = envelope([...tierM(), faqWithQa(pairs)]);
+    const snapshotIn = JSON.stringify(env);
+    const r = mapR3Projection(env);
+    expect(r.ready).toBe(true);
+    expect(r.invalid).toEqual([]);
+    expect(r.slots.S8?.components[0].qa).toEqual(pairs);
+    expect(r.slots.S8?.components[0].qa).not.toBe(pairs);
+    expect(JSON.stringify(env)).toBe(snapshotIn);
+  });
+
+  it('FAQ en prose (sans qa) → qa null : aucune paire déduite du texte', () => {
+    const r = mapR3Projection(envelope(realExportLayout()));
+    expect(r.slots.S8?.components[0].qa).toBeNull();
+  });
+
+  it.each([
+    ['liste vide', []],
+    ['non-liste', 'Q ? R'],
+    ['question sans ?', [{ ...pairs[0], question: 'Quand remplacer' }]],
+    ['réponse vide', [{ ...pairs[0], answer_md: '  ' }]],
+    ['sans source', [{ ...pairs[0], source_ids: [] }]],
+    ['source non-chaîne', [{ ...pairs[0], source_ids: [7] }]],
+    ['paire non-objet', ['Quand ?']],
+  ])('qa hors contrat (%s) → block_contract_invalid, S8 non émis', (_, qa) => {
+    const r = mapR3Projection(envelope([...tierM(), faqWithQa(qa)]));
+    expect(r.slots.S8).toBeUndefined();
+    expect(r.ready).toBe(false);
+    expect(r.invalid).toEqual([
+      {
+        kind: 'block_contract_invalid',
+        section: 'faq',
+        slot: 'S8',
+        detail: 'champs hors contrat : qa',
+      },
+    ]);
+  });
+
+  it('qa hors de la section faq → block_contract_invalid (jamais ignoré)', () => {
+    const r = mapR3Projection(
+      envelope([
+        ...tierM().filter((b) => b.content.section !== 'function'),
+        faqWithQa(pairs, 'function'),
+      ]),
+    );
+    expect(r.slots.S1).toBeUndefined();
+    expect(r.invalid).toEqual([
+      {
+        kind: 'block_contract_invalid',
+        section: 'function',
+        slot: 'S1',
+        detail: 'champs hors contrat : qa',
+      },
+      {
+        kind: 'required_slot_missing',
+        section: 'function',
+        slot: 'S1',
+        detail:
+          'composant obligatoire function (tier M ADR-086) non livré : slot S1 incomplet',
+      },
+    ]);
   });
 });

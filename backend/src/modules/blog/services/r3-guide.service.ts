@@ -254,10 +254,15 @@ export class R3GuideService {
     if (ctx === null) return null;
 
     const decision = await this.projectionDecision.decide(pg_alias);
-    const body: R3GuideBody =
+    const presented =
       decision.projectionStatus === 'READY_FOR_RENDER'
+        ? presentR3Projection(decision.slots)
+        : null;
+    const body: R3GuideBody =
+      presented !== null
         ? {
-            ...presentR3Projection(decision.slots),
+            s1Sections: presented.s1Sections,
+            bodySections: presented.bodySections,
             // Aucune section META sur le chemin projeté (ADR-106 D8) : le bloc « Pour aller
             // plus loin » est un contenu legacy, hors contrat WIKI.
             metaSections: [],
@@ -272,6 +277,8 @@ export class R3GuideService {
     const payload = await this.assemblePayload(ctx, body);
     return {
       ...payload,
+      // FAQPage du chemin projeté : paires typées seulement (ADR-107 D3) ; absent sur FALLBACK.
+      ...(presented !== null ? { projectionFaq: presented.faqPairs } : {}),
       projectionMeta: {
         projectionStatus: decision.projectionStatus,
         servedBodySource: decision.servedBodySource,

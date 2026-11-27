@@ -74,6 +74,15 @@ export interface R3ProjectionMeta {
   invalidCount: number;
 }
 
+/**
+ * Paire question-réponse d'une FAQ projetée (ADR-107 D2), rendue par le renderer gouverné
+ * d'ADR-106 D6. Source UNIQUE de FAQPage sur le chemin projeté (ADR-107 D3).
+ */
+export interface R3ProjectedFaqPair {
+  questionHtml: string;
+  answerHtml: string;
+}
+
 export interface R3GuidePayload {
   page: R3GuidePage;
   s1Sections: R3GuideSection[];
@@ -90,4 +99,11 @@ export interface R3GuidePayload {
   };
   /** Voir {@link R3ProjectionMeta} — absent hors canary (donc absent partout tant que les flags sont OFF). */
   projectionMeta?: R3ProjectionMeta;
+  /**
+   * Présent UNIQUEMENT quand le corps est servi depuis la projection (`servedBodySource:
+   * 'projection'`) : paires typées de la FAQ projetée, éventuellement vides (FAQ en prose ou
+   * absente ⇒ aucune FAQPage, ADR-107 D3). Absent sur le chemin legacy, dont la FAQPage reste
+   * lue dans le HTML de S8.
+   */
+  projectionFaq?: R3ProjectedFaqPair[];
 }

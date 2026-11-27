@@ -14,7 +14,11 @@
  *     contenu legacy ; le maillage du contenu projeté passe par les liens Markdown `[t](/…)`) ;
  *   - provenance non affichée (`sources: []`) : les `source_ids` sont des références internes
  *     (RAW, DB), pas des citations publiques (D8) ;
- *   - ordre = `CANONICAL_ORDER` de la page ; S1 séparée du corps, comme en legacy.
+ *   - ordre = `CANONICAL_ORDER` de la page ; S1 séparée du corps, comme en legacy ;
+ *   - FAQ à paires `qa` (ADR-107 D2) : chaque paire est rendue en `<details><summary>` (balisage
+ *     que la page affiche déjà en accordéon) et les paires sont exposées telles quelles dans
+ *     `faqPairs`, seule source de FAQPage sur ce chemin (D3). Une FAQ en prose reste une prose :
+ *     aucune question n'en est extraite, `faqPairs` reste vide.
  *
  * Exhaustivité : le mapper n'émet de slot que pour une entrée `component` de la table, et la table
  * des titres est typée sur ces mêmes entrées — aucun slot émis ne peut manquer de titre.
@@ -24,11 +28,19 @@
 import type { PlannableSection } from '@config/keyword-plan.constants';
 import {
   R3_RENDER_CONTRACT,
+  type R3QaPair,
   type R3Slot,
+  type R3SlotComponent,
   type R3WikiSection,
 } from '@modules/seo-projection/projection-r3.mapper';
-import { renderProjectionMarkdown } from '@modules/seo-projection/projection-markdown.renderer';
-import type { R3GuideSection } from '../interfaces/r3-guide.interfaces';
+import {
+  renderProjectionInline,
+  renderProjectionMarkdown,
+} from '@modules/seo-projection/projection-markdown.renderer';
+import type {
+  R3GuideSection,
+  R3ProjectedFaqPair,
+} from '../interfaces/r3-guide.interfaces';
 import { CANONICAL_ORDER, slugifyTitle } from './html-normalize.utils';
 
 type R3ComponentEntry = Extract<
@@ -61,6 +73,28 @@ const PROJECTED_SECTIONS_IN_PAGE_ORDER = (
 export interface PresentedR3Sections {
   s1Sections: R3GuideSection[];
   bodySections: R3GuideSection[];
+  /** Paires typées des composants FAQ, dans l'ordre du WIKI ; vide si aucune FAQ à `qa`. */
+  faqPairs: R3ProjectedFaqPair[];
+}
+
+/** Une paire `qa` rendue : question inline, réponse par le renderer gouverné. */
+function presentQaPair(pair: R3QaPair): R3ProjectedFaqPair {
+  return {
+    questionHtml: renderProjectionInline(pair.question),
+    answerHtml: renderProjectionMarkdown(pair.answer_md),
+  };
+}
+
+/** HTML d'un composant : paires `qa` en accordéon si présentes, sinon le Markdown du bloc. */
+function componentHtml(c: R3SlotComponent): string {
+  if (c.qa === null) return renderProjectionMarkdown(c.content_md);
+  return c.qa
+    .map(presentQaPair)
+    .map(
+      (p) =>
+        `<details><summary><b>${p.questionHtml}</b></summary>${p.answerHtml}</details>`,
+    )
+    .join('');
 }
 
 /** HTML d'un slot : encadrés d'abord (avertissements avant la procédure), puis composants. */
@@ -68,9 +102,7 @@ function slotHtml(slot: R3Slot): string {
   const callouts = slot.callouts.map(
     (c) => `<blockquote>${renderProjectionMarkdown(c.content_md)}</blockquote>`,
   );
-  const components = slot.components.map((c) =>
-    renderProjectionMarkdown(c.content_md),
-  );
+  const components = slot.components.map(componentHtml);
   return [...callouts, ...components].join('');
 }
 
@@ -79,10 +111,14 @@ export function presentR3Projection(
 ): PresentedR3Sections {
   const s1Sections: R3GuideSection[] = [];
   const bodySections: R3GuideSection[] = [];
+  const faqPairs: R3ProjectedFaqPair[] = [];
 
   for (const section of PROJECTED_SECTIONS_IN_PAGE_ORDER) {
     const slot = slots[section];
     if (!slot) continue;
+    for (const c of slot.components) {
+      if (c.qa !== null) faqPairs.push(...c.qa.map(presentQaPair));
+    }
     const title = R3_PROJECTED_SECTION_TITLES[section];
     const target = section === 'S1' ? s1Sections : bodySections;
     target.push({
@@ -96,5 +132,5 @@ export function presentR3Projection(
     });
   }
 
-  return { s1Sections, bodySections };
+  return { s1Sections, bodySections, faqPairs };
 }

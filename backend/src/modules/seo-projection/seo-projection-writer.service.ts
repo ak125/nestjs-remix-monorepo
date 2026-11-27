@@ -112,6 +112,9 @@ export function mapExportBlockToDbBlock(
   if (b.applies_to != null) content.applies_to = b.applies_to;
   if (b.last_verified_at != null) content.last_verified_at = b.last_verified_at;
   if (b.consumer_pages != null) content.consumer_pages = b.consumer_pages;
+  // ADR-107 D2 : paires qa recopiées verbatim (forme validée par le schéma d'export 1.2.0 côté WIKI,
+  // puis par le contrat de bloc du consommateur). Absentes ⇒ clé omise : hash des blocs sans qa inchangé.
+  if (b.qa != null) content.qa = b.qa;
 
   // Hash déterministe = sha256 sur une sérialisation à ordre de clés STABLE
   // (`fast-json-stable-stringify`, convention repo cf. seo-control.service.ts). Remplace
