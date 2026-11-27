@@ -139,3 +139,54 @@ describe("PiecesHeader R2 — parité <h1> rendu == buildR2H1Emitted", () => {
     expect(container.querySelectorAll("h1")).toHaveLength(1);
   });
 });
+
+/**
+ * H1 R2 propre (mandat EN) : `h1Display` calculé par le backend est rendu tel
+ * quel ; vide ou absent (réponse antérieure encore en cache), le H1 historique
+ * reste servi, au byte près.
+ */
+describe("PiecesHeader R2 — H1 propre (mandat EN)", () => {
+  const vehicle = makeR2Vehicle({
+    marque: "MINI",
+    modele: "PACEMAN (R61)",
+    type: "Cooper D ALL4",
+    typeName: "Cooper D ALL4",
+    typeId: 53236,
+    typePowerPs: 112,
+  });
+  const gamme = makeGamme({ id: 402, name: "Plaquette de frein" });
+  const h1Display = "Plaquette de frein Mini Paceman (R61) 2.0 Cooper D ALL4";
+
+  it("rend h1Display, sans suffixe ni majuscules forcées", () => {
+    const { container } = render(
+      <PiecesHeader
+        vehicle={vehicle}
+        gamme={gamme}
+        count={12}
+        compSwitch2={["préserver le véhicule"]}
+        h1Display={h1Display}
+      />,
+    );
+    expect(container.querySelectorAll("h1")).toHaveLength(1);
+    expect(container.querySelector("h1")?.textContent).toBe(h1Display);
+  });
+
+  it.each([undefined, "", "   "])(
+    "h1Display %j → H1 historique inchangé",
+    (value) => {
+      const compSwitch2 = ["préserver le véhicule"] as const;
+      const { container } = render(
+        <PiecesHeader
+          vehicle={vehicle}
+          gamme={gamme}
+          count={12}
+          compSwitch2={compSwitch2}
+          h1Display={value}
+        />,
+      );
+      expect(container.querySelector("h1")?.textContent).toBe(
+        expectedH1({ vehicle, gamme, compSwitch2 }),
+      );
+    },
+  );
+});

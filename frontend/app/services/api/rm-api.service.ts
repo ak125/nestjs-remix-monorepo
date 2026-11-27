@@ -196,6 +196,9 @@ export interface RmSeoData {
   /** Per-pg_id technique variations from `__seo_gamme_car_switch.sgcs_alias=2`.
    * Exposed by backend pour rotation H1 suffix via @repo/seo-types pickH1Suffix. */
   compSwitch2?: string[];
+  /** H1 R2 propre (mandat EN), calculé par le backend
+   * (`R2TitleCollisionService.buildHeading`). Absent : H1 historique. */
+  h1Display?: string;
 }
 
 export interface RmCrossSelling {
