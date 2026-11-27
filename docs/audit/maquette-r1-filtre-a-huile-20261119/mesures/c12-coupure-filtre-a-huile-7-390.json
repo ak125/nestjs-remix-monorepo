@@ -1,0 +1,147 @@
+{
+  "url": "http://127.0.0.1:3029/pieces/filtre-a-huile-7.html",
+  "viewport": "390x844",
+  "at": "2026-11-20T14:55:04.209Z",
+  "lignes": [
+    {
+      "titre": "FIAT 500",
+      "texte": "Début de fabrication : 2007",
+      "libelle": [
+        {
+          "x": 159,
+          "top": -1052,
+          "w": 137
+        }
+      ],
+      "annees": [
+        {
+          "x": 159,
+          "top": -1032,
+          "w": 35
+        }
+      ],
+      "p": {
+        "w": 168,
+        "x": 159
+      },
+      "largeurNaturelle": 181,
+      "parent": {
+        "tag": "DIV",
+        "classes": "flex-1 min-w-0",
+        "display": "block",
+        "flexDirection": "row",
+        "w": 168
+      },
+      "pStyle": {
+        "display": "block",
+        "flex": "0 1 auto",
+        "whiteSpace": "normal"
+      }
+    },
+    {
+      "titre": "DACIA SANDERO I",
+      "texte": "Début de fabrication : 2008",
+      "libelle": [
+        {
+          "x": 159,
+          "top": -216,
+          "w": 137
+        }
+      ],
+      "annees": [
+        {
+          "x": 159,
+          "top": -196,
+          "w": 36
+        }
+      ],
+      "p": {
+        "w": 168,
+        "x": 159
+      },
+      "largeurNaturelle": 183,
+      "parent": {
+        "tag": "DIV",
+        "classes": "flex-1 min-w-0",
+        "display": "block",
+        "flexDirection": "row",
+        "w": 168
+      },
+      "pStyle": {
+        "display": "block",
+        "flex": "0 1 auto",
+        "whiteSpace": "normal"
+      }
+    },
+    {
+      "titre": "SUZUKI SWIFT IV",
+      "texte": "Début de fabrication : 2010",
+      "libelle": [
+        {
+          "x": 159,
+          "top": 1120,
+          "w": 137
+        }
+      ],
+      "annees": [
+        {
+          "x": 159,
+          "top": 1140,
+          "w": 32
+        }
+      ],
+      "p": {
+        "w": 168,
+        "x": 159
+      },
+      "largeurNaturelle": 179,
+      "parent": {
+        "tag": "DIV",
+        "classes": "flex-1 min-w-0",
+        "display": "block",
+        "flexDirection": "row",
+        "w": 168
+      },
+      "pStyle": {
+        "display": "block",
+        "flex": "0 1 auto",
+        "whiteSpace": "normal"
+      }
+    },
+    {
+      "titre": "HONDA CIVIC IX",
+      "texte": "Début de fabrication : 2012",
+      "libelle": [
+        {
+          "x": 159,
+          "top": 1548,
+          "w": 137
+        }
+      ],
+      "annees": [
+        {
+          "x": 159,
+          "top": 1568,
+          "w": 30
+        }
+      ],
+      "p": {
+        "w": 168,
+        "x": 159
+      },
+      "largeurNaturelle": 177,
+      "parent": {
+        "tag": "DIV",
+        "classes": "flex-1 min-w-0",
+        "display": "block",
+        "flexDirection": "row",
+        "w": 168
+      },
+      "pStyle": {
+        "display": "block",
+        "flex": "0 1 auto",
+        "whiteSpace": "normal"
+      }
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "label": "apres-412x915",
+  "url": "http://127.0.0.1:3027/pieces/filtre-a-huile-7.html",
+  "viewport": "412x915",
+  "scroll": false,
+  "at": "2026-11-19T18:14:03.361Z",
+  "runs": [
+    {
+      "run": 1,
+      "status": 200,
+      "loadMs": 10831,
+      "fcp": 1832,
+      "lcp": 2716,
+      "lcpEl": "IMG.block w-full h-full object-cover",
+      "lcpSize": 59249,
+      "lcpTop": 761,
+      "cls": 0,
+      "shifts": 0,
+      "tbt": 76,
+      "longtasks": 5
+    },
+    {
+      "run": 2,
+      "status": 200,
+      "loadMs": 10812,
+      "fcp": 1768,
+      "lcp": 2704,
+      "lcpEl": "IMG.block w-full h-full object-cover",
+      "lcpSize": 59249,
+      "lcpTop": 761,
+      "cls": 0,
+      "shifts": 0,
+      "tbt": 78,
+      "longtasks": 4
+    },
+    {
+      "run": 3,
+      "status": 200,
+      "loadMs": 10806,
+      "fcp": 1780,
+      "lcp": 2712,
+      "lcpEl": "IMG.block w-full h-full object-cover",
+      "lcpSize": 59249,
+      "lcpTop": 761,
+      "cls": 0,
+      "shifts": 0,
+      "tbt": 60,
+      "longtasks": 5
+    }
+  ],
+  "median": {
+    "lcp": 2712,
+    "cls": 0,
+    "tbt": 76,
+    "fcp": 1780
+  }
+}

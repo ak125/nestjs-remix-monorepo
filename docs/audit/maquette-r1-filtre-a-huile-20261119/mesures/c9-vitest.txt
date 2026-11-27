@@ -1,0 +1,11 @@
+npm warn Unknown project config "puppeteer-skip-download". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+
+ RUN  v4.1.9 <worktree>
+
+
+ Test Files  6 passed (6)
+      Tests  160 passed (160)
+   Start at  10:01:06
+   Duration  4.71s (transform 6.06s, setup 0ms, import 8.33s, tests 3.12s, environment 4.40s)
+

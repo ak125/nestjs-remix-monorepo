@@ -1,0 +1,31 @@
+{
+  "url": "http://127.0.0.1:3000/pieces/filtre-a-huile-7.html",
+  "version": "avant (DEV, main)",
+  "at": "2026-11-19",
+  "methode": "HTML rendu côté serveur, sans JavaScript (curl), ce que lit un robot avant rendu",
+  "title": "Filtre à huile | Trouvez la référence compatible | AutoMeca…",
+  "meta_description": "Filtre à huile voiture pas cher dès 5€. Sélectionnez votre véhicule pour voir les références compatibles. En stock, livraison 24-48h.",
+  "h1": [
+    "Filtre à huile compatible avec votre véhicule"
+  ],
+  "liens_a_href_total": 90,
+  "liens_a_href_vers_pages_vehicule": 12,
+  "itemlist_urls": 19,
+  "itemlist_urls_sans_lien_a_href_dans_le_html": [
+    "/pieces/filtre-a-huile-7/volkswagen-173/touran-i-173141/1-9-tdi-17768.html",
+    "/pieces/filtre-a-huile-7/toyota-164/yaris-ii-164387/1-4-d-4d-19255.html",
+    "/pieces/filtre-a-huile-7/mercedes-benz-108/classe-c-w204-108039/c-200-cdi-2-1-22457.html",
+    "/pieces/filtre-a-huile-7/suzuki-158/swift-iv-158049/1-3-ddis-57.html",
+    "/pieces/filtre-a-huile-7/mazda-105/mazda-3-ii-105058/1-6-mzr-cd-31077.html",
+    "/pieces/filtre-a-huile-7/honda-74/civic-ix-74048/2-2-i-dtec-13927.html",
+    "/pieces/filtre-a-huile-7/kia-88/picanto-ii-88042/1-2-7072.html"
+  ],
+  "navigation_rapide_element": "button",
+  "classes_animation": [
+    "animate-ping",
+    "animate-pulse",
+    "animate-shimmer",
+    "animate-subtle-float"
+  ],
+  "occurrences_motion_reduce": 0
+}

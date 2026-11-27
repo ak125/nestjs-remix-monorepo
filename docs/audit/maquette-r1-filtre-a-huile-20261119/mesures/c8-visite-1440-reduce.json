@@ -1,0 +1,127 @@
+{
+  "base": "http://127.0.0.1:3029",
+  "viewport": "1440x900",
+  "mouvementReduit": true,
+  "at": "2026-11-20T01:50:35.759Z",
+  "navigateur": "153.0.8010.47",
+  "avantVisiteRepos": {
+    "classeNoVisited": true,
+    "elementAuCentreDuLibelle": "bouton",
+    "reflet": {
+      "animations": 0,
+      "visibility": "visible",
+      "animationName": "none"
+    },
+    "temoin": "#020817",
+    "affiche": {
+      "fondDominant": "#f98331",
+      "pixelDuTexteLePlusContraste": "#1a1a1a",
+      "pixelsNoirsPurs": 0,
+      "ratioAuPixel": 6.89
+    },
+    "couleurReelle": {
+      "texte": "#1d1d1d",
+      "pixelsPleins": 784,
+      "fondPlein": "#f98331",
+      "fondBoutonCalcule": "#f97316",
+      "ratioTexteContreFondPlein": 6.67,
+      "ratioTexteContreFondCalcule": 6.01
+    },
+    "fondSeul": {
+      "pixelLePlusClair": "#f98432",
+      "pixelLePlusSombre": "#f8802d",
+      "ratioNoirContreClair": 8.37,
+      "ratioNoirContreSombre": 8.11
+    }
+  },
+  "avantVisiteSurvol": {
+    "classeNoVisited": true,
+    "elementAuCentreDuLibelle": "bouton",
+    "reflet": {
+      "animations": 0,
+      "visibility": "visible",
+      "animationName": "none"
+    },
+    "temoin": "#020817",
+    "affiche": {
+      "fondDominant": "#ec6b28",
+      "pixelDuTexteLePlusContraste": "#1a1a1a",
+      "pixelsNoirsPurs": 0,
+      "ratioAuPixel": 5.55
+    },
+    "couleurReelle": {
+      "texte": "#1d1d1d",
+      "pixelsPleins": 784,
+      "fondPlein": "#ec6b28",
+      "fondBoutonCalcule": "#ea580c",
+      "ratioTexteContreFondPlein": 5.37,
+      "ratioTexteContreFondCalcule": 4.73
+    },
+    "fondSeul": {
+      "pixelLePlusClair": "#ec6c29",
+      "pixelLePlusSombre": "#eb6824",
+      "ratioNoirContreClair": 6.74,
+      "ratioNoirContreSombre": 6.53
+    }
+  },
+  "apresVisiteRepos": {
+    "classeNoVisited": true,
+    "elementAuCentreDuLibelle": "bouton",
+    "reflet": {
+      "animations": 0,
+      "visibility": "visible",
+      "animationName": "none"
+    },
+    "temoin": "#9810fa",
+    "affiche": {
+      "fondDominant": "#f98331",
+      "pixelDuTexteLePlusContraste": "#1a1a1a",
+      "pixelsNoirsPurs": 0,
+      "ratioAuPixel": 6.89
+    },
+    "couleurReelle": {
+      "texte": "#1d1d1d",
+      "pixelsPleins": 784,
+      "fondPlein": "#f98331",
+      "fondBoutonCalcule": "#f97316",
+      "ratioTexteContreFondPlein": 6.67,
+      "ratioTexteContreFondCalcule": 6.01
+    },
+    "fondSeul": {
+      "pixelLePlusClair": "#f98432",
+      "pixelLePlusSombre": "#f8802d",
+      "ratioNoirContreClair": 8.37,
+      "ratioNoirContreSombre": 8.11
+    }
+  },
+  "apresVisiteSurvol": {
+    "classeNoVisited": true,
+    "elementAuCentreDuLibelle": "bouton",
+    "reflet": {
+      "animations": 0,
+      "visibility": "visible",
+      "animationName": "none"
+    },
+    "temoin": "#9810fa",
+    "affiche": {
+      "fondDominant": "#ec6b28",
+      "pixelDuTexteLePlusContraste": "#1a1a1a",
+      "pixelsNoirsPurs": 0,
+      "ratioAuPixel": 5.55
+    },
+    "couleurReelle": {
+      "texte": "#1d1d1d",
+      "pixelsPleins": 784,
+      "fondPlein": "#ec6b28",
+      "fondBoutonCalcule": "#ea580c",
+      "ratioTexteContreFondPlein": 5.37,
+      "ratioTexteContreFondCalcule": 4.73
+    },
+    "fondSeul": {
+      "pixelLePlusClair": "#ec6c29",
+      "pixelLePlusSombre": "#eb6824",
+      "ratioNoirContreClair": 6.74,
+      "ratioNoirContreSombre": 6.53
+    }
+  }
+}

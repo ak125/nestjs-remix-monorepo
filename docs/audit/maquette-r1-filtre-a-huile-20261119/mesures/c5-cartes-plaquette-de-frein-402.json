@@ -1,0 +1,95 @@
+{
+  "url": "http://127.0.0.1:3029/pieces/plaquette-de-frein-402.html",
+  "status": 200,
+  "at": "2026-11-19T22:51:47.184Z",
+  "n": 17,
+  "distinctes": 17,
+  "toutesDansHtmlSsr": true,
+  "cards": [
+    {
+      "titre": "RENAULT MEGANE III",
+      "phrase": "Plaquette de frein compatible MEGANE III 1.5 dCi 95 ch, pour préserver le véhicule.",
+      "lien": "/pieces/plaquette-de-frein-402/renault-140/megane-iii-140049/1-5-dci-77310.html"
+    },
+    {
+      "titre": "CITROËN BERLINGO II - BERLINGO MULTISPACE (B9)",
+      "phrase": "Plaquette de frein compatible BERLINGO II - BERLINGO MULTISPACE (B9) 1.6 HDi-BlueHDi 75 ch, pour optimiser les performances.",
+      "lien": "/pieces/plaquette-de-frein-402/citroen-46/berlingo-ii-46007/1-6-bluehdi-65057.html"
+    },
+    {
+      "titre": "RENAULT CLIO II",
+      "phrase": "Plaquette de frein compatible CLIO II 1.5 dCi 65 ch, pour garantir la sécurité.",
+      "lien": "/pieces/plaquette-de-frein-402/renault-140/clio-ii-140003/1-5-dci-16108.html"
+    },
+    {
+      "titre": "RENAULT CLIO II",
+      "phrase": "Plaquette de frein compatible CLIO II 1.5 dCi CAMPUS 84 ch, pour dissiper l'énergie.",
+      "lien": "/pieces/plaquette-de-frein-402/renault-140/clio-ii-140003/1-5-dci-campus-30936.html"
+    },
+    {
+      "titre": "PEUGEOT 307",
+      "phrase": "Plaquette de frein compatible 307 1.6 HDI 90 ch, pour prolonger la durée de vie.",
+      "lien": "/pieces/plaquette-de-frein-402/peugeot-128/307-128035/1-6-hdi-19341.html"
+    },
+    {
+      "titre": "PEUGEOT 307",
+      "phrase": "Plaquette de frein compatible 307 1.6 HDI 109 ch, pour maintenir en bon état.",
+      "lien": "/pieces/plaquette-de-frein-402/peugeot-128/307-128035/1-6-hdi-17989.html"
+    },
+    {
+      "titre": "PEUGEOT 307",
+      "phrase": "Plaquette de frein compatible 307 2.0 HDI 90 ch, pour améliorer la fiabilité.",
+      "lien": "/pieces/plaquette-de-frein-402/peugeot-128/307-128035/2-0-hdi-15903.html"
+    },
+    {
+      "titre": "AUDI A4 III B7",
+      "phrase": "Plaquette de frein compatible A4 III B7 1.9 TDI 116 ch, pour préserver le véhicule.",
+      "lien": "/pieces/plaquette-de-frein-402/audi-22/a4-iii-22042/1-9-tdi-18400.html"
+    },
+    {
+      "titre": "AUDI A4 III B7",
+      "phrase": "Plaquette de frein compatible A4 III B7 2.0 TDI 121 ch, pour prolonger la durée de vie.",
+      "lien": "/pieces/plaquette-de-frein-402/audi-22/a4-iii-22042/2-0-tdi-26547.html"
+    },
+    {
+      "titre": "AUDI A4 III B7",
+      "phrase": "Plaquette de frein compatible A4 III B7 2.0 TDI 126 ch, pour garantir la sécurité.",
+      "lien": "/pieces/plaquette-de-frein-402/audi-22/a4-iii-22042/2-0-tdi-27326.html"
+    },
+    {
+      "titre": "VOLKSWAGEN GOLF IV",
+      "phrase": "Plaquette de frein compatible GOLF IV 1.9 TDI 90 ch, pour préserver le véhicule.",
+      "lien": "/pieces/plaquette-de-frein-402/volkswagen-173/golf-iv-173039/1-9-tdi-8456.html"
+    },
+    {
+      "titre": "VOLKSWAGEN GOLF IV",
+      "phrase": "Plaquette de frein compatible GOLF IV 1.9 TDI 110 ch, pour préserver le véhicule.",
+      "lien": "/pieces/plaquette-de-frein-402/volkswagen-173/golf-iv-173039/1-9-tdi-8461.html"
+    },
+    {
+      "titre": "VOLKSWAGEN GOLF IV",
+      "phrase": "Plaquette de frein compatible GOLF IV 1.9 TDI 115 ch, pour améliorer la fiabilité.",
+      "lien": "/pieces/plaquette-de-frein-402/volkswagen-173/golf-iv-173039/1-9-tdi-13100.html"
+    },
+    {
+      "titre": "BMW Série 1 (E81)",
+      "phrase": "Plaquette de frein compatible Série 1 (E81) 116 d 90 ch, pour optimiser les performances.",
+      "lien": "/pieces/plaquette-de-frein-402/bmw-33/serie-1-e81-33017/2-0-116-d-58963.html"
+    },
+    {
+      "titre": "BMW Série 1 (E81)",
+      "phrase": "Plaquette de frein compatible Série 1 (E81) 116 d 116 ch, pour maintenir en bon état.",
+      "lien": "/pieces/plaquette-de-frein-402/bmw-33/serie-1-e81-33017/2-0-116-d-31672.html"
+    },
+    {
+      "titre": "BMW Série 1 (E81)",
+      "phrase": "Plaquette de frein compatible Série 1 (E81) 118 d 136 ch, pour ralentir le véhicule.",
+      "lien": "/pieces/plaquette-de-frein-402/bmw-33/serie-1-e81-33017/2-0-118-d-32172.html"
+    },
+    {
+      "titre": "HONDA CIVIC IX",
+      "phrase": "Plaquette de frein compatible CIVIC IX 1.6 DTEC 120 ch, pour ralentir le véhicule.",
+      "lien": "/pieces/plaquette-de-frein-402/honda-74/civic-ix-74048/1-6-i-dtec-58791.html"
+    }
+  ]
+}

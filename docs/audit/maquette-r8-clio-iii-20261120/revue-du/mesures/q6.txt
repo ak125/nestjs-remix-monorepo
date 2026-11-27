@@ -1,0 +1,11 @@
+ pg_id |              nom              | pieces_liees | sitemap_has_item 
+-------+-------------------------------+--------------+------------------
+    39 | Attelage                      |           84 |                 
+    50 | Rétroviseur  extérieur        |          411 |                 
+   259 | Feu avant                     |          157 |                 
+   300 | Tringlerie d'essuie-glace     |           17 |                 
+  1289 | Capteur niveau d'huile moteur |            4 |                 
+  1367 | Neiman                        |           17 |                 
+  1385 | Commande de ventilation       |            8 |                 
+(7 rows)
+

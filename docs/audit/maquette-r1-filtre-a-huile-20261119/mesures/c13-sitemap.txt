@@ -1,0 +1,22 @@
+SET
+SET
+ type_id |    type_name    | type_year_from | type_year_to | type_display | type_modele_id | lignes_sitemap_toutes_gammes | gammes_liees 
+---------+-----------------+----------------+--------------+--------------+----------------+------------------------------+--------------
+ 16108   | 1.5 dCi         | 2001           | 2009         | 1            | 140003         |                           51 |          374
+ 65057   | 1.6 HDi-BlueHDi | 2008           |              | 1            | 46007          |                            0 |          349
+ 77310   | 1.5 dCi         | 2013           | 2015         | 1            | 140049         |                            0 |          311
+(3 rows)
+
+ lignes | type_id_max | types 
+--------+-------------+-------
+ 472917 |      134362 | 12514
+(1 row)
+
+psql:<scratchpad>/c13-sitemap.sql:6: WARNING:  database "postgres" has a collation version mismatch
+DETAIL:  The database was created using collation version 153.120, but the operating system provides version 153.121.
+HINT:  Rebuild all objects in this database that use the default collation and run ALTER DATABASE postgres REFRESH COLLATION VERSION, or build PostgreSQL with the right library version.
+ types_au_dessus_65000_dans_sitemap 
+------------------------------------
+                               3545
+(1 row)
+

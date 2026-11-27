@@ -1,0 +1,39 @@
+// Complément n° 7 : état « lien visité » du bouton, dans un profil Chrome persistant temporaire (historique réel).
+// Témoin : un lien ajouté sans classe de couleur vers /diagnostic-auto (prouve que :visited s'applique).
+// Usage : CHROME=/usr/bin/google-chrome PW=... node visite2-du7.cjs <base> <width> <height> <profil> <out.json>
+const fs = require("node:fs");
+const { chromium } = require(process.env.PW);
+const { PNG } = require(require.resolve("pngjs", { paths: [process.env.PW] }));
+const [, , base, W, H, prof, out] = process.argv;
+const lum = (r, g, b) => { const c = [r, g, b].map((v) => v / 255).map((v) => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+const ratio = (a, b) => { const [x, y] = [a, b].sort((p, q) => q - p); return Math.floor(((x + 0.05) / (y + 0.05)) * 100) / 100; };
+const hx = (d, i) => "#" + [d[i], d[i + 1], d[i + 2]].map((v) => v.toString(16).padStart(2, "0")).join("");
+async function mesure(p, tag) {
+  await p.goto(base + "/pieces/filtre-a-huile-7.html", { waitUntil: "load", timeout: 120000 }); await p.waitForTimeout(2500); await p.mouse.move(1, 1);
+  const a = p.locator('a[href="/diagnostic-auto"]', { hasText: "Lancer le diagnostic" }).first(); await a.scrollIntoViewIfNeeded(); await p.waitForTimeout(600);
+  if (process.env.SIM_NOVISITED) await a.evaluate((el) => el.classList.add("no-visited")); // simulation de la correction, dans ce navigateur seulement
+  await p.waitForTimeout(200);
+  const r = await a.evaluate((el) => { const tn = [...el.childNodes].find((c) => c.nodeType === 3 && c.textContent.trim()); const rg = document.createRange(); rg.selectNodeContents(tn); const t = rg.getBoundingClientRect(); return { x: Math.round(t.x), y: Math.round(t.y), w: Math.round(t.width), h: Math.round(t.height) }; });
+  const buf = await p.screenshot({ clip: { x: r.x - 26, y: r.y - 2, width: r.w + 28, height: r.h + 4 } }); fs.writeFileSync(out.replace(/\.json$/, `-${tag}.png`), buf);
+  const img = PNG.sync.read(buf); const counts = new Map(); let ext = null, extD = -1, fondL = null;
+  for (let i = 0; i < img.data.length; i += 4) { const k = hx(img.data, i); counts.set(k, (counts.get(k) || 0) + 1); }
+  const top = [...counts.entries()].sort((x, y) => y[1] - x[1]); const fond = top[0][0]; const fv = [1, 3, 5].map((i) => parseInt(fond.slice(i, i + 2), 16)); fondL = lum(...fv);
+  // pixel du texte = le plus éloigné du fond (en couleur), puis son rapport au fond
+  for (let i = 0; i < img.data.length; i += 4) { const d = Math.abs(img.data[i] - fv[0]) + Math.abs(img.data[i + 1] - fv[1]) + Math.abs(img.data[i + 2] - fv[2]); if (d > extD) { extD = d; ext = [img.data[i], img.data[i + 1], img.data[i + 2]]; } }
+  const tb = await p.evaluate(() => { const t = document.createElement("a"); t.href = "/diagnostic-auto"; t.textContent = "TEMOIN"; t.style.cssText = "position:fixed;top:0;left:0;z-index:99999;font:700 40px sans-serif;background:#fff;padding:4px"; document.body.appendChild(t); const q = t.getBoundingClientRect(); return { x: q.x, y: q.y, width: q.width, height: q.height }; });
+  await p.waitForTimeout(300); const ti = PNG.sync.read(await p.screenshot({ clip: tb })); let tc = null, tcD = -1;
+  for (let i = 0; i < ti.data.length; i += 4) { const d = 765 - (ti.data[i] + ti.data[i + 1] + ti.data[i + 2]); if (d > tcD) { tcD = d; tc = hx(ti.data, i); } }
+  return { fondDominant: fond, pixelDuTexte: "#" + ext.map((v) => v.toString(16).padStart(2, "0")).join(""), ratioTexteFond: ratio(lum(...ext), fondL), temoinCouleur: tc };
+}
+(async () => {
+  fs.rmSync(prof, { recursive: true, force: true });
+  const ctx = await chromium.launchPersistentContext(prof, { executablePath: process.env.CHROME, viewport: { width: +W, height: +H }, deviceScaleFactor: 1, reducedMotion: "reduce" });
+  await ctx.route("**/*", (r) => (/google-analytics|googletagmanager|doubleclick|clarity\.ms|facebook|hotjar/.test(r.request().url()) ? r.abort() : r.continue()));
+  const p = ctx.pages()[0] || (await ctx.newPage()); const res = {};
+  res.avantVisite = await mesure(p, "avant-visite");
+  await p.goto(base + "/pieces/filtre-a-huile-7.html", { waitUntil: "load" }); await p.waitForTimeout(2000);
+  const a0 = p.locator('a[href="/diagnostic-auto"]', { hasText: "Lancer le diagnostic" }).first(); await a0.scrollIntoViewIfNeeded();
+  await Promise.all([p.waitForURL(/diagnostic-auto/, { timeout: 60000 }), a0.click()]); await p.waitForTimeout(2000);
+  res.apresVisite = await mesure(p, "apres-visite");
+  fs.writeFileSync(out, JSON.stringify(res, null, 2)); console.log(JSON.stringify(res)); await ctx.close(); fs.rmSync(prof, { recursive: true, force: true });
+})().catch((e) => { console.error(e); process.exit(1); });

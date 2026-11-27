@@ -1,0 +1,331 @@
+{
+  "base": "http://127.0.0.1:3029",
+  "lien": "conseils",
+  "selecteur": "#reference a[href=\"/blog-pieces-auto/conseils/filtre-a-huile\"]",
+  "viewport": "390x844",
+  "at": "2026-11-20T08:56:59.136Z",
+  "navigateur": "153.0.8010.47",
+  "avantVisite": {
+    "cible": {
+      "boites": [
+        {
+          "x": 193,
+          "y": 401,
+          "w": 170,
+          "h": 18
+        },
+        {
+          "x": 16,
+          "y": 424,
+          "w": 150,
+          "h": 18
+        }
+      ],
+      "display": "inline",
+      "parent": "p",
+      "hauteurLigneParagraphe": "22.75px",
+      "taillePolice": "14px",
+      "texteAvant": "dange, filtre à air et huile moteur adaptée à votre spécification constructeur. ",
+      "texteApres": ".",
+      "autresLiensDuParagraphe": [
+        {
+          "texte": "bouchon de vidange",
+          "x": 16,
+          "y": 356,
+          "w": 345,
+          "h": 41
+        },
+        {
+          "texte": "filtre à air",
+          "x": 74,
+          "y": 379,
+          "w": 62,
+          "h": 18
+        }
+      ]
+    },
+    "repos": {
+      "etat": "repos",
+      "calcule": {
+        "couleur": "#155dfc",
+        "soulignement": "underline",
+        "couleurSoulignement": "#155dfc",
+        "epaisseur": "auto",
+        "decalage": "2px",
+        "contour": "none 3px #155dfc décalage 0px",
+        "classes": null,
+        "parent": "p",
+        "couleurTexteVoisin": "#45556c",
+        "taille": "14px",
+        "graisse": "400",
+        "hauteurLigneParagraphe": "22.75px",
+        "matchFocusVisible": false,
+        "matchHover": false
+      },
+      "premiereLigne": {
+        "x": 193,
+        "y": 401,
+        "w": 170,
+        "h": 18
+      },
+      "fondDominant": "#f8fafc",
+      "pixelLePlusContraste": "#155dfc",
+      "ratioAuPixel": 5.01,
+      "soulignementAuPixel": [
+        {
+          "rangee": 17,
+          "couverture": 0.99,
+          "couleur": "#155dfc"
+        }
+      ],
+      "couleurReelle": {
+        "texte": "#155dfc",
+        "pixelsPleins": 728,
+        "fondPlein": "#f8fafc",
+        "ratioContreFond": 5.01,
+        "texteVoisin": "#45556c",
+        "ratioContreTexteVoisin": 1.44
+      }
+    },
+    "survol": {
+      "etat": "survol",
+      "calcule": {
+        "couleur": "#193cb8",
+        "soulignement": "underline",
+        "couleurSoulignement": "#193cb8",
+        "epaisseur": "auto",
+        "decalage": "2px",
+        "contour": "none 3px #193cb8 décalage 0px",
+        "classes": null,
+        "parent": "p",
+        "couleurTexteVoisin": "#45556c",
+        "taille": "14px",
+        "graisse": "400",
+        "hauteurLigneParagraphe": "22.75px",
+        "matchFocusVisible": false,
+        "matchHover": true
+      },
+      "premiereLigne": {
+        "x": 193,
+        "y": 401,
+        "w": 170,
+        "h": 18
+      },
+      "fondDominant": "#f8fafc",
+      "pixelLePlusContraste": "#193cb8",
+      "ratioAuPixel": 8.43,
+      "soulignementAuPixel": [
+        {
+          "rangee": 17,
+          "couverture": 0.99,
+          "couleur": "#193cb8"
+        }
+      ],
+      "couleurReelle": {
+        "texte": "#193cb8",
+        "pixelsPleins": 559,
+        "fondPlein": "#f8fafc",
+        "ratioContreFond": 8.43,
+        "texteVoisin": "#45556c",
+        "ratioContreTexteVoisin": 1.16
+      }
+    },
+    "focus": {
+      "actif": true,
+      "toujoursActif": true,
+      "calcule": {
+        "couleur": "#155dfc",
+        "soulignement": "underline",
+        "couleurSoulignement": "#155dfc",
+        "epaisseur": "auto",
+        "decalage": "2px",
+        "contour": "solid 2px #0f1e38 décalage 2px",
+        "classes": null,
+        "parent": "p",
+        "couleurTexteVoisin": "#45556c",
+        "taille": "14px",
+        "graisse": "400",
+        "hauteurLigneParagraphe": "22.75px",
+        "matchFocusVisible": true,
+        "matchHover": false,
+        "ombre": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(255, 255, 255) 0px 0px 0px 2px, rgb(15, 30, 56) 0px 0px 0px 4px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+      },
+      "pixelsAnneau": 804,
+      "couleurAnneau": "#0f1e38",
+      "fond": "#f8fafc",
+      "ratioAnneauContreFond": 15.89,
+      "couleurReelle": {
+        "texte": "#155dfc",
+        "pixelsPleins": 728,
+        "fondPlein": "#f8fafc",
+        "ratioContreFond": 5.01,
+        "texteVoisin": "#45556c",
+        "ratioContreTexteVoisin": 1.44
+      }
+    },
+    "temoin": "#020817"
+  },
+  "visite": {
+    "url": "/blog-pieces-auto/conseils/filtre-a-huile"
+  },
+  "apresVisite": {
+    "cible": {
+      "boites": [
+        {
+          "x": 193,
+          "y": 401,
+          "w": 170,
+          "h": 18
+        },
+        {
+          "x": 16,
+          "y": 424,
+          "w": 150,
+          "h": 18
+        }
+      ],
+      "display": "inline",
+      "parent": "p",
+      "hauteurLigneParagraphe": "22.75px",
+      "taillePolice": "14px",
+      "texteAvant": "dange, filtre à air et huile moteur adaptée à votre spécification constructeur. ",
+      "texteApres": ".",
+      "autresLiensDuParagraphe": [
+        {
+          "texte": "bouchon de vidange",
+          "x": 16,
+          "y": 356,
+          "w": 345,
+          "h": 41
+        },
+        {
+          "texte": "filtre à air",
+          "x": 74,
+          "y": 379,
+          "w": 62,
+          "h": 18
+        }
+      ]
+    },
+    "repos": {
+      "etat": "repos",
+      "calcule": {
+        "couleur": "#155dfc",
+        "soulignement": "underline",
+        "couleurSoulignement": "#155dfc",
+        "epaisseur": "auto",
+        "decalage": "2px",
+        "contour": "none 3px #155dfc décalage 0px",
+        "classes": null,
+        "parent": "p",
+        "couleurTexteVoisin": "#45556c",
+        "taille": "14px",
+        "graisse": "400",
+        "hauteurLigneParagraphe": "22.75px",
+        "matchFocusVisible": false,
+        "matchHover": false
+      },
+      "premiereLigne": {
+        "x": 193,
+        "y": 401,
+        "w": 170,
+        "h": 18
+      },
+      "fondDominant": "#f8fafc",
+      "pixelLePlusContraste": "#9810fa",
+      "ratioAuPixel": 5.29,
+      "soulignementAuPixel": [
+        {
+          "rangee": 17,
+          "couverture": 0.99,
+          "couleur": "#9810fa"
+        }
+      ],
+      "couleurReelle": {
+        "texte": "#9810fa",
+        "pixelsPleins": 745,
+        "fondPlein": "#f8fafc",
+        "ratioContreFond": 5.29,
+        "texteVoisin": "#45556c",
+        "ratioContreTexteVoisin": 1.36
+      }
+    },
+    "survol": {
+      "etat": "survol",
+      "calcule": {
+        "couleur": "#193cb8",
+        "soulignement": "underline",
+        "couleurSoulignement": "#193cb8",
+        "epaisseur": "auto",
+        "decalage": "2px",
+        "contour": "none 3px #193cb8 décalage 0px",
+        "classes": null,
+        "parent": "p",
+        "couleurTexteVoisin": "#45556c",
+        "taille": "14px",
+        "graisse": "400",
+        "hauteurLigneParagraphe": "22.75px",
+        "matchFocusVisible": false,
+        "matchHover": true
+      },
+      "premiereLigne": {
+        "x": 193,
+        "y": 401,
+        "w": 170,
+        "h": 18
+      },
+      "fondDominant": "#f8fafc",
+      "pixelLePlusContraste": "#9810fa",
+      "ratioAuPixel": 5.29,
+      "soulignementAuPixel": [
+        {
+          "rangee": 17,
+          "couverture": 0.99,
+          "couleur": "#9810fa"
+        }
+      ],
+      "couleurReelle": {
+        "texte": "#9810fa",
+        "pixelsPleins": 745,
+        "fondPlein": "#f8fafc",
+        "ratioContreFond": 5.29,
+        "texteVoisin": "#45556c",
+        "ratioContreTexteVoisin": 1.36
+      }
+    },
+    "focus": {
+      "actif": true,
+      "toujoursActif": true,
+      "calcule": {
+        "couleur": "#155dfc",
+        "soulignement": "underline",
+        "couleurSoulignement": "#155dfc",
+        "epaisseur": "auto",
+        "decalage": "2px",
+        "contour": "solid 2px #0f1e38 décalage 2px",
+        "classes": null,
+        "parent": "p",
+        "couleurTexteVoisin": "#45556c",
+        "taille": "14px",
+        "graisse": "400",
+        "hauteurLigneParagraphe": "22.75px",
+        "matchFocusVisible": true,
+        "matchHover": false,
+        "ombre": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(255, 255, 255) 0px 0px 0px 2px, rgb(15, 30, 56) 0px 0px 0px 4px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+      },
+      "pixelsAnneau": 804,
+      "couleurAnneau": "#0f1e38",
+      "fond": "#f8fafc",
+      "ratioAnneauContreFond": 15.89,
+      "couleurReelle": {
+        "texte": "#9810fa",
+        "pixelsPleins": 745,
+        "fondPlein": "#f8fafc",
+        "ratioContreFond": 5.29,
+        "texteVoisin": "#45556c",
+        "ratioContreTexteVoisin": 1.36
+      }
+    },
+    "temoin": "#9810fa"
+  }
+}

@@ -1,0 +1,591 @@
+{
+  "url": "http://127.0.0.1:3029/pieces/plaquette-de-frein-402.html",
+  "status": 200,
+  "viewport": "1440x900",
+  "reducedMotion": true,
+  "axe": "4.12.1",
+  "at": "2026-11-19T22:58:05.716Z",
+  "violations": [
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "count": 5,
+      "nodes": [
+        {
+          "target": ".mt-3 > .text-white\\/30.text-\\[12px\\]",
+          "zone": "GLOBAL pied de page",
+          "text": "Service client disponibleLun-Ven 9h-18h, Sam 9h-13",
+          "data": {
+            "fg": "#576174",
+            "bg": "#0f1e38",
+            "ratio": 2.66,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".md\\:flex-row > .text-white\\/30.text-\\[12px\\]",
+          "zone": "GLOBAL pied de page",
+          "text": "© 2026 AutoMecanik. Tous droits réservés.",
+          "data": {
+            "fg": "#576174",
+            "bg": "#0f1e38",
+            "ratio": 2.66,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".text-white\\/30.no-style[href$=\"cgv\"]",
+          "zone": "GLOBAL pied de page",
+          "text": "CGV",
+          "data": {
+            "fg": "#576174",
+            "bg": "#0f1e38",
+            "ratio": 2.66,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".text-white\\/30.no-style[href$=\"privacy\"]",
+          "zone": "GLOBAL pied de page",
+          "text": "Confidentialité",
+          "data": {
+            "fg": "#576174",
+            "bg": "#0f1e38",
+            "ratio": 2.66,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".text-white\\/30:nth-child(5)",
+          "zone": "GLOBAL pied de page",
+          "text": "Paiement sécurisé · Livraison 24-48h",
+          "data": {
+            "fg": "#576174",
+            "bg": "#0f1e38",
+            "ratio": 2.66,
+            "size": "9.0pt (12px)"
+          }
+        }
+      ]
+    },
+    {
+      "id": "region",
+      "impact": "moderate",
+      "count": 4,
+      "nodes": [
+        {
+          "target": ".text-emerald-300",
+          "zone": "R1 body",
+          "text": "Livraison gratuite dès 150€"
+        },
+        {
+          "target": ".text-white\\/40.whitespace-nowrap:nth-child(3)",
+          "zone": "R1 body",
+          "text": "Retours 30j"
+        },
+        {
+          "target": ".lg\\:inline",
+          "zone": "R1 body",
+          "text": "·"
+        },
+        {
+          "target": ".text-white\\/40.lg\\:flex[href=\"tel:+33148479627\"]",
+          "zone": "R1 body",
+          "text": "01 48 47 96 27"
+        }
+      ]
+    }
+  ],
+  "colorContrastIncomplete": 23,
+  "contrasteDirect": [
+    {
+      "idx": 0,
+      "zone": "R1 main",
+      "token": "text-success",
+      "text": "Conseils entretien",
+      "fontPx": 12,
+      "weight": 500,
+      "fg": "#1e8449",
+      "bg": "#f8fafc",
+      "ratio": 4.51,
+      "bgImages": [],
+      "bgPixel": "#f8fafc",
+      "ratioPixel": 4.51
+    },
+    {
+      "idx": 1,
+      "zone": "R1 #bien-choisir",
+      "token": "text-neutral-400",
+      "text": "Avant (supporte 70% de l'effort de freinage) ou ar",
+      "fontPx": 10,
+      "weight": 400,
+      "fg": "#6b7280",
+      "bg": "#fbfcfd",
+      "ratio": 4.71,
+      "bgImages": [],
+      "bgPixel": "#fbfcfd",
+      "ratioPixel": 4.71
+    },
+    {
+      "idx": 2,
+      "zone": "R1 #bien-choisir",
+      "token": "text-neutral-400",
+      "text": "Semi-métallique (polyvalent), céramique (silencieu",
+      "fontPx": 10,
+      "weight": 400,
+      "fg": "#6b7280",
+      "bg": "#fbfcfd",
+      "ratio": 4.71,
+      "bgImages": [],
+      "bgPixel": "#fbfcfd",
+      "ratioPixel": 4.71
+    },
+    {
+      "idx": 3,
+      "zone": "R1 #bien-choisir",
+      "token": "text-neutral-400",
+      "text": "Vérifier que les plaquettes portent l'homologation",
+      "fontPx": 10,
+      "weight": 400,
+      "fg": "#6b7280",
+      "bg": "#fbfcfd",
+      "ratio": 4.71,
+      "bgImages": [],
+      "bgPixel": "#fbfcfd",
+      "ratioPixel": 4.71
+    },
+    {
+      "idx": 4,
+      "zone": "R1 #bien-choisir",
+      "token": "text-neutral-400",
+      "text": "Toujours commander 1 jeu complet de 4 plaquettes (",
+      "fontPx": 10,
+      "weight": 400,
+      "fg": "#6b7280",
+      "bg": "#fbfcfd",
+      "ratio": 4.71,
+      "bgImages": [],
+      "bgPixel": "#fbfcfd",
+      "ratioPixel": 4.71
+    },
+    {
+      "idx": 5,
+      "zone": "R1 #bien-choisir",
+      "token": "text-neutral-400",
+      "text": "Brembo, ATE et Ferodo en premium, TRW et Bosch cou",
+      "fontPx": 10,
+      "weight": 400,
+      "fg": "#6b7280",
+      "bg": "#fbfcfd",
+      "ratio": 4.71,
+      "bgImages": [],
+      "bgPixel": "#fbfcfd",
+      "ratioPixel": 4.71
+    },
+    {
+      "idx": 6,
+      "zone": "R1 main",
+      "token": "text-cta-700",
+      "text": "2 min",
+      "fontPx": 10,
+      "weight": 600,
+      "fg": "#c2410c",
+      "bg": "#fff7ed",
+      "ratio": 4.88,
+      "bgImages": [],
+      "bgPixel": "#fff7ed",
+      "ratioPixel": 4.88
+    },
+    {
+      "idx": 7,
+      "zone": "R1 #aller-plus-loin",
+      "token": "text-cta-700",
+      "text": "Voir les références",
+      "fontPx": 12,
+      "weight": 500,
+      "fg": "#c2410c",
+      "bg": "#f5f7fa",
+      "ratio": 4.83,
+      "bgImages": [],
+      "bgPixel": "#f5f7fa",
+      "ratioPixel": 4.83
+    },
+    {
+      "idx": 8,
+      "zone": "R1 #aller-plus-loin",
+      "token": "text-cta-700",
+      "text": "Lire plus",
+      "fontPx": 12,
+      "weight": 500,
+      "fg": "#c2410c",
+      "bg": "#f5f7fa",
+      "ratio": 4.83,
+      "bgImages": [],
+      "bgPixel": "#f5f7fa",
+      "ratioPixel": 4.83
+    },
+    {
+      "idx": 9,
+      "zone": "R1 #aller-plus-loin",
+      "token": "text-cta-700",
+      "text": "Trouver la pièce compatible",
+      "fontPx": 12,
+      "weight": 500,
+      "fg": "#c2410c",
+      "bg": "#f5f7fa",
+      "ratio": 4.83,
+      "bgImages": [],
+      "bgPixel": "#f5f7fa",
+      "ratioPixel": 4.83
+    },
+    {
+      "idx": 10,
+      "zone": "R1 #aller-plus-loin",
+      "token": "text-cta-700",
+      "text": "Sélectionner par véhicule",
+      "fontPx": 12,
+      "weight": 500,
+      "fg": "#c2410c",
+      "bg": "#f5f7fa",
+      "ratio": 4.83,
+      "bgImages": [],
+      "bgPixel": "#f5f7fa",
+      "ratioPixel": 4.83
+    },
+    {
+      "idx": 11,
+      "zone": "R1 #aller-plus-loin",
+      "token": "text-cta-700",
+      "text": "Voir les prix",
+      "fontPx": 12,
+      "weight": 500,
+      "fg": "#c2410c",
+      "bg": "#f5f7fa",
+      "ratio": 4.83,
+      "bgImages": [],
+      "bgPixel": "#f5f7fa",
+      "ratioPixel": 4.83
+    },
+    {
+      "idx": 12,
+      "zone": "R1 #aller-plus-loin",
+      "token": "text-cta-700",
+      "text": "Voir les références",
+      "fontPx": 12,
+      "weight": 500,
+      "fg": "#c2410c",
+      "bg": "#f5f7fa",
+      "ratio": 4.83,
+      "bgImages": [],
+      "bgPixel": "#f5f7fa",
+      "ratioPixel": 4.83
+    },
+    {
+      "idx": 13,
+      "zone": "R1 #aller-plus-loin",
+      "token": "text-cta-700",
+      "text": "Trouver la pièce compatible",
+      "fontPx": 12,
+      "weight": 500,
+      "fg": "#c2410c",
+      "bg": "#f5f7fa",
+      "ratio": 4.83,
+      "bgImages": [],
+      "bgPixel": "#f5f7fa",
+      "ratioPixel": 4.83
+    },
+    {
+      "idx": 14,
+      "zone": "R1 #aller-plus-loin",
+      "token": "text-cta-700",
+      "text": "Lire plus",
+      "fontPx": 12,
+      "weight": 500,
+      "fg": "#c2410c",
+      "bg": "#f5f7fa",
+      "ratio": 4.83,
+      "bgImages": [],
+      "bgPixel": "#f5f7fa",
+      "ratioPixel": 4.83
+    },
+    {
+      "idx": 15,
+      "zone": "R1 #aller-plus-loin",
+      "token": "text-cta-700",
+      "text": "Sélectionner par véhicule",
+      "fontPx": 12,
+      "weight": 500,
+      "fg": "#c2410c",
+      "bg": "#f5f7fa",
+      "ratio": 4.83,
+      "bgImages": [],
+      "bgPixel": "#f5f7fa",
+      "ratioPixel": 4.83
+    },
+    {
+      "idx": 16,
+      "zone": "R1 #aller-plus-loin",
+      "token": "text-cta-700",
+      "text": "Voir les prix",
+      "fontPx": 12,
+      "weight": 500,
+      "fg": "#c2410c",
+      "bg": "#f5f7fa",
+      "ratio": 4.83,
+      "bgImages": [],
+      "bgPixel": "#f5f7fa",
+      "ratioPixel": 4.83
+    },
+    {
+      "idx": 17,
+      "zone": "R1 #aller-plus-loin",
+      "token": "text-cta-700",
+      "text": "Voir les références",
+      "fontPx": 12,
+      "weight": 500,
+      "fg": "#c2410c",
+      "bg": "#f5f7fa",
+      "ratio": 4.83,
+      "bgImages": [],
+      "bgPixel": "#f5f7fa",
+      "ratioPixel": 4.83
+    },
+    {
+      "idx": 18,
+      "zone": "R1 #aller-plus-loin",
+      "token": "text-cta-700",
+      "text": "Lire plus",
+      "fontPx": 12,
+      "weight": 500,
+      "fg": "#c2410c",
+      "bg": "#f5f7fa",
+      "ratio": 4.83,
+      "bgImages": [],
+      "bgPixel": "#f5f7fa",
+      "ratioPixel": 4.83
+    },
+    {
+      "idx": 19,
+      "zone": "R1 #aller-plus-loin",
+      "token": "text-cta-700",
+      "text": "Trouver la pièce compatible",
+      "fontPx": 12,
+      "weight": 500,
+      "fg": "#c2410c",
+      "bg": "#f5f7fa",
+      "ratio": 4.83,
+      "bgImages": [],
+      "bgPixel": "#f5f7fa",
+      "ratioPixel": 4.83
+    },
+    {
+      "idx": 20,
+      "zone": "R1 #aller-plus-loin",
+      "token": "text-cta-700",
+      "text": "Sélectionner par véhicule",
+      "fontPx": 12,
+      "weight": 500,
+      "fg": "#c2410c",
+      "bg": "#f5f7fa",
+      "ratio": 4.83,
+      "bgImages": [],
+      "bgPixel": "#f5f7fa",
+      "ratioPixel": 4.83
+    },
+    {
+      "idx": 21,
+      "zone": "R1 #aller-plus-loin",
+      "token": "text-cta-700",
+      "text": "Lire plus",
+      "fontPx": 12,
+      "weight": 500,
+      "fg": "#c2410c",
+      "bg": "#f5f7fa",
+      "ratio": 4.83,
+      "bgImages": [],
+      "bgPixel": "#f5f7fa",
+      "ratioPixel": 4.83
+    },
+    {
+      "idx": 22,
+      "zone": "R1 #aller-plus-loin",
+      "token": "text-cta-700",
+      "text": "Voir les prix",
+      "fontPx": 12,
+      "weight": 500,
+      "fg": "#c2410c",
+      "bg": "#f5f7fa",
+      "ratio": 4.83,
+      "bgImages": [],
+      "bgPixel": "#f5f7fa",
+      "ratioPixel": 4.83
+    },
+    {
+      "idx": 23,
+      "zone": "R1 #aller-plus-loin",
+      "token": "text-cta-700",
+      "text": "Lire plus",
+      "fontPx": 12,
+      "weight": 500,
+      "fg": "#c2410c",
+      "bg": "#f5f7fa",
+      "ratio": 4.83,
+      "bgImages": [],
+      "bgPixel": "#f5f7fa",
+      "ratioPixel": 4.83
+    }
+  ],
+  "cibles": {
+    "sous24": [
+      {
+        "zone": "R1 body",
+        "tag": "a",
+        "text": "01 48 47 96 27",
+        "w": 101,
+        "h": 16,
+        "display": "flex",
+        "dansUnePhrase": false,
+        "srOnly": false,
+        "classes": "hidden lg:flex items-center gap-1.5 text-white/40 hover:text-white transition-co",
+        "distanceCentreVoisin": 101
+      },
+      {
+        "zone": "R1 main",
+        "tag": "a",
+        "text": "Aller au contenu principal",
+        "w": 1,
+        "h": 1,
+        "display": "block",
+        "dansUnePhrase": false,
+        "srOnly": true,
+        "classes": "sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-4 focus:left-4 foc",
+        "distanceCentreVoisin": 122
+      },
+      {
+        "zone": "R1 #bien-choisir",
+        "tag": "a",
+        "text": "disque de frein",
+        "w": 98,
+        "h": 18,
+        "display": "inline",
+        "dansUnePhrase": true,
+        "phrase": "Attention : ne confondez pas la plaquette de frein avec le disque de frein (le plateau mét",
+        "srOnly": false,
+        "classes": "",
+        "distanceCentreVoisin": 85
+      },
+      {
+        "zone": "R1 #bien-choisir",
+        "tag": "a",
+        "text": "mâchoire de frein",
+        "w": 114,
+        "h": 18,
+        "display": "inline",
+        "dansUnePhrase": true,
+        "phrase": "Attention : ne confondez pas la plaquette de frein avec le disque de frein (le plateau mét",
+        "srOnly": false,
+        "classes": "",
+        "distanceCentreVoisin": 73
+      },
+      {
+        "zone": "R1 #bien-choisir",
+        "tag": "a",
+        "text": "guide d'achat plaquettes de frein",
+        "w": 216,
+        "h": 18,
+        "display": "inline",
+        "dansUnePhrase": true,
+        "phrase": "Attention : ne confondez pas la plaquette de frein avec le disque de frein (le plateau mét",
+        "srOnly": false,
+        "classes": "",
+        "distanceCentreVoisin": 73
+      },
+      {
+        "zone": "R1 #qualite-prix",
+        "tag": "a",
+        "text": "spécifications techniques des plaquettes de frein",
+        "w": 322,
+        "h": 18,
+        "display": "inline",
+        "dansUnePhrase": true,
+        "phrase": "Pour un usage quotidien en ville, les plaquettes BOSCH ou TRW offrent un excellent rapport",
+        "srOnly": false,
+        "classes": "",
+        "distanceCentreVoisin": 364
+      },
+      {
+        "zone": "R1 #qualite-prix",
+        "tag": "a",
+        "text": "disques de frein",
+        "w": 105,
+        "h": 18,
+        "display": "inline",
+        "dansUnePhrase": true,
+        "phrase": "Un jeu de plaquettes avant coûte généralement plus cher que l'arrière, car les dimensions ",
+        "srOnly": false,
+        "classes": "",
+        "distanceCentreVoisin": 364
+      },
+      {
+        "zone": "GLOBAL pied de page",
+        "tag": "a",
+        "text": "01 48 47 96 27",
+        "w": 86,
+        "h": 20.8,
+        "display": "block",
+        "dansUnePhrase": false,
+        "srOnly": false,
+        "classes": "text-[13px] text-white/60 hover:text-white transition-colors",
+        "distanceCentreVoisin": 52
+      },
+      {
+        "zone": "GLOBAL pied de page",
+        "tag": "a",
+        "text": "contact@automecanik.com",
+        "w": 166,
+        "h": 20.8,
+        "display": "block",
+        "dansUnePhrase": false,
+        "srOnly": false,
+        "classes": "text-[13px] text-white/60 hover:text-white transition-colors",
+        "distanceCentreVoisin": 52
+      },
+      {
+        "zone": "GLOBAL pied de page",
+        "tag": "a",
+        "text": "CGV",
+        "w": 26,
+        "h": 19.2,
+        "display": "block",
+        "dansUnePhrase": false,
+        "srOnly": false,
+        "classes": "no-style no-visited text-white/30 hover:text-white transition-colors",
+        "distanceCentreVoisin": 90
+      },
+      {
+        "zone": "GLOBAL pied de page",
+        "tag": "a",
+        "text": "Confidentialité",
+        "w": 85,
+        "h": 19.2,
+        "display": "block",
+        "dansUnePhrase": false,
+        "srOnly": false,
+        "classes": "no-style no-visited text-white/30 hover:text-white transition-colors",
+        "distanceCentreVoisin": 90
+      }
+    ],
+    "de24a44": 22,
+    "total": 98
+  },
+  "animations": [],
+  "boucles": [],
+  "htmlScrollBehavior": "smooth",
+  "defilementNavRapide": {
+    "bouton": "Voir aussi",
+    "y0": 0,
+    "y60": 7156,
+    "y1500": 7144,
+    "instantane": false
+  }
+}

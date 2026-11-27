@@ -1,0 +1,474 @@
+{
+  "url": "http://127.0.0.1:3029/pieces/filtre-a-huile-7.html",
+  "viewport": "390x844",
+  "at": "2026-11-20T14:56:45.114Z",
+  "fixes": [
+    {
+      "tag": "BUTTON",
+      "label": "Retour en haut",
+      "classes": "fixed bottom-40 right-4 md:bottom-24 md:right-8 z-[9999] w-12 h-12 rounded-full shadow-2xl flex items-center justify-cen",
+      "x": 326,
+      "y": 636,
+      "w": 48,
+      "h": 48
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Ouvrir le chat",
+      "classes": "fixed bottom-24 md:bottom-6 right-4 md:right-6 w-14 h-14 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounde",
+      "x": 318,
+      "y": 692,
+      "w": 56,
+      "h": 56
+    }
+  ],
+  "lignes": [
+    {
+      "i": 0,
+      "titre": "RENAULT CLIO III",
+      "texte": "Fabrication : 2005–2012",
+      "anneesDroite": 319,
+      "anneesGauche": 243,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 1,
+          "pixelsCouverts": 2,
+          "verif": {
+            "couverts": 2,
+            "largeurAnnees": 76,
+            "yCentre": 720
+          }
+        }
+      ]
+    },
+    {
+      "i": 1,
+      "titre": "PEUGEOT 206",
+      "texte": "Fabrication : 2002–2007",
+      "anneesDroite": 323,
+      "anneesGauche": 243,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 5,
+          "pixelsCouverts": 5,
+          "verif": {
+            "couverts": 5,
+            "largeurAnnees": 79,
+            "yCentre": 720
+          }
+        }
+      ]
+    },
+    {
+      "i": 2,
+      "titre": "AUDI A3 II",
+      "texte": "Fabrication : 2005–2008",
+      "anneesDroite": 325,
+      "anneesGauche": 243,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 7,
+          "pixelsCouverts": 7,
+          "verif": {
+            "couverts": 7,
+            "largeurAnnees": 81,
+            "yCentre": 720
+          }
+        }
+      ]
+    },
+    {
+      "i": 3,
+      "titre": "ALFA ROMEO 159",
+      "texte": "Fabrication : 2005–2011",
+      "anneesDroite": 316,
+      "anneesGauche": 243,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        }
+      ]
+    },
+    {
+      "i": 4,
+      "titre": "FORD FIESTA V",
+      "texte": "Fabrication : 2001–2008",
+      "anneesDroite": 321,
+      "anneesGauche": 243,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 3,
+          "pixelsCouverts": 3,
+          "verif": {
+            "couverts": 3,
+            "largeurAnnees": 77,
+            "yCentre": 720
+          }
+        }
+      ]
+    },
+    {
+      "i": 5,
+      "titre": "FIAT 500",
+      "texte": "Début de fabrication : 2007",
+      "anneesDroite": 194,
+      "anneesGauche": 159,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        }
+      ]
+    },
+    {
+      "i": 6,
+      "titre": "OPEL CORSA C",
+      "texte": "Fabrication : 2003–2009",
+      "anneesDroite": 325,
+      "anneesGauche": 243,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 7,
+          "pixelsCouverts": 7,
+          "verif": {
+            "couverts": 7,
+            "largeurAnnees": 81,
+            "yCentre": 720
+          }
+        }
+      ]
+    },
+    {
+      "i": 7,
+      "titre": "SEAT IBIZA III",
+      "texte": "Fabrication : 2002–2005",
+      "anneesDroite": 324,
+      "anneesGauche": 243,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 6,
+          "pixelsCouverts": 7,
+          "verif": {
+            "couverts": 7,
+            "largeurAnnees": 81,
+            "yCentre": 720
+          }
+        }
+      ]
+    },
+    {
+      "i": 8,
+      "titre": "JEEP CHEROKEE III",
+      "texte": "Fabrication : 2004–2008",
+      "anneesDroite": 325,
+      "anneesGauche": 243,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 7,
+          "pixelsCouverts": 7,
+          "verif": {
+            "couverts": 7,
+            "largeurAnnees": 81,
+            "yCentre": 720
+          }
+        }
+      ]
+    },
+    {
+      "i": 9,
+      "titre": "DACIA SANDERO I",
+      "texte": "Début de fabrication : 2008",
+      "anneesDroite": 195,
+      "anneesGauche": 159,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        }
+      ]
+    },
+    {
+      "i": 10,
+      "titre": "BMW Série 3 (E46)",
+      "texte": "Fabrication : 2001–2005",
+      "anneesDroite": 321,
+      "anneesGauche": 243,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 3,
+          "pixelsCouverts": 3,
+          "verif": {
+            "couverts": 3,
+            "largeurAnnees": 77,
+            "yCentre": 720
+          }
+        }
+      ]
+    },
+    {
+      "i": 11,
+      "titre": "NISSAN QASHQAI+2 (J10)",
+      "texte": "Fabrication : 2011–2013",
+      "anneesDroite": 310,
+      "anneesGauche": 243,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        }
+      ]
+    },
+    {
+      "i": 12,
+      "titre": "VOLKSWAGEN TOURAN I",
+      "texte": "Fabrication : 2003–2010",
+      "anneesDroite": 320,
+      "anneesGauche": 243,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 2,
+          "pixelsCouverts": 3,
+          "verif": {
+            "couverts": 3,
+            "largeurAnnees": 77,
+            "yCentre": 720
+          }
+        }
+      ]
+    },
+    {
+      "i": 13,
+      "titre": "TOYOTA YARIS II",
+      "texte": "Fabrication : 2005–2012",
+      "anneesDroite": 319,
+      "anneesGauche": 243,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 1,
+          "pixelsCouverts": 2,
+          "verif": {
+            "couverts": 2,
+            "largeurAnnees": 76,
+            "yCentre": 720
+          }
+        }
+      ]
+    },
+    {
+      "i": 14,
+      "titre": "MERCEDES CLASSE C (W204)",
+      "texte": "Fabrication : 2007–2009",
+      "anneesDroite": 323,
+      "anneesGauche": 243,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 5,
+          "pixelsCouverts": 6,
+          "verif": {
+            "couverts": 6,
+            "largeurAnnees": 80,
+            "yCentre": 720
+          }
+        }
+      ]
+    },
+    {
+      "i": 15,
+      "titre": "SUZUKI SWIFT IV",
+      "texte": "Début de fabrication : 2010",
+      "anneesDroite": 191,
+      "anneesGauche": 159,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        }
+      ]
+    },
+    {
+      "i": 16,
+      "titre": "MAZDA 3 II",
+      "texte": "Fabrication : 2008–2013",
+      "anneesDroite": 319,
+      "anneesGauche": 243,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 1,
+          "pixelsCouverts": 2,
+          "verif": {
+            "couverts": 2,
+            "largeurAnnees": 76,
+            "yCentre": 720
+          }
+        }
+      ]
+    },
+    {
+      "i": 17,
+      "titre": "HONDA CIVIC IX",
+      "texte": "Début de fabrication : 2012",
+      "anneesDroite": 189,
+      "anneesGauche": 159,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        }
+      ]
+    },
+    {
+      "i": 18,
+      "titre": "KIA PICANTO II",
+      "texte": "Fabrication : 2011–2017",
+      "anneesDroite": 309,
+      "anneesGauche": 243,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+SET
+ type_ids | sans_fin_texte | sans_fin_entier | modele_sans_fin | debut_min | debut_max 
+----------+----------------+-----------------+-----------------+-----------+-----------
+       86 |             86 |              86 |              86 | 2001      | 2014
+(1 row)
+

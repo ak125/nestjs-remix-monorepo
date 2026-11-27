@@ -1,0 +1,37 @@
+{
+  "http://127.0.0.1:3029/pieces/filtre-a-huile-7.html": {
+    "n": 19,
+    "hits": {
+      "canon getForbiddenOverlap(R1) (début de mot)": [],
+      "backend FORBIDDEN_KEYWORDS_R1 (sous-chaîne)": [],
+      "r1-router-validator.md (absolus + lexique dominant)": [],
+      "mandat (prix, achat, achetez, stock, livraison, promo, pas cher, €)": [],
+      "procédure de montage": [],
+      "garde front r1-copy-gate.ts": []
+    }
+  },
+  "http://127.0.0.1:3029/pieces/plaquette-de-frein-402.html": {
+    "n": 17,
+    "hits": {
+      "canon getForbiddenOverlap(R1) (début de mot)": [],
+      "backend FORBIDDEN_KEYWORDS_R1 (sous-chaîne)": [],
+      "r1-router-validator.md (absolus + lexique dominant)": [],
+      "mandat (prix, achat, achetez, stock, livraison, promo, pas cher, €)": [],
+      "procédure de montage": [],
+      "garde front r1-copy-gate.ts": [
+        {
+          "phrase": "Plaquette de frein compatible 307 1.6 HDI 90 ch, pour prolonger la durée de vie.",
+          "hit": [
+            "/\\bdurée\\s+de\\s+vie\\b/i"
+          ]
+        },
+        {
+          "phrase": "Plaquette de frein compatible A4 III B7 2.0 TDI 121 ch, pour prolonger la durée de vie.",
+          "hit": [
+            "/\\bdurée\\s+de\\s+vie\\b/i"
+          ]
+        }
+      ]
+    }
+  }
+}

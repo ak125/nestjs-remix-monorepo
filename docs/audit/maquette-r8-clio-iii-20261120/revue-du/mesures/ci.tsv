@@ -1,0 +1,47 @@
+skipped	🔔 Notify on Failure
+skipped	🔦 Lighthouse Performance Audit
+skipped	🧪 Deploy PREPROD
+skipped	🎭 E2E Smoke Tests
+failure	CodeQL
+skipped	🔐 Armement de la fusion automatique (App)
+skipped	🤖 Revue Claude (circuit moyen)
+failure	🚦 Circuit de fusion
+failure	🧾 DoD self-evaluation present
+skipped	🐳 build / 🐳 Build
+skipped	🔍 Docker Image Scan
+skipped	🚦 Gate check (snapshots ≥ auto_types)
+success	🛡️ Import Firewall
+success	🗄️ Migration Safety
+success	🔒 Core Build Only
+success	🧪 Backend Tests
+success	🛡️ ADR-010 Governance
+success	🧪 Frontend Tests
+success	🔒 Security Audit
+success	⬣ ESLint
+success	ʦ TypeScript
+success	Block new / stale orphan files (G3)
+success	🕸️ No new deep PR-stacks
+success	🔐 Secrets Detection
+success	🛡️ RPC Safety Gate
+success	url-immutability
+success	🛡️ Deterministic gates
+failure	Registry freshness (warn-only, Phase 1)
+success	Block-new (owner + domain required)
+success	Repo Map Drift Check
+success	validate-top-priorities.sh (ADR-081)
+success	check-role-purity.ts (role-vocabulary purity, source comments)
+failure	check-cart-conversion-r-role.sh (R-role invariant)
+success	🔍 CWV Performance Check
+success	validate-exploration-probe.sh (ADR-081 G10)
+success	Refuser SEO_CHAIN_R*_MODE=on dans la config
+success	🔍 DEV Safety (Observe)
+success	Block forbidden DEV/PREPROD/PROD formulations in .md
+success	🛡️ Contract Gate
+failure	🧾 DoD self-evaluation present
+success	🔬 CodeQL Scan (javascript-typescript)
+success	🔒 DEV Safety (Blocking)
+success	Impeccable count ≤ committed baseline
+success	Verify ADR canon references have vault backing
+skipped	auto-merge
+skipped	review
+success	Calcul du circuit

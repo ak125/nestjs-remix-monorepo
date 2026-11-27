@@ -1,0 +1,4 @@
+API : pages avec cartes 57, sans cartes 66, cartes 891
+API : lignes par cas {'Fabrication': 703, 'Début de fabrication': 185, 'Fabrication (une année)': 3} ; pages avec au moins un « Début de fabrication » : 54
+HTML servi : 57 pages, 618 lignes rendues, par libellé {'Fabrication': 510, 'Début de fabrication': 108}
+HTML servi : occurrences de « dès AAAA » : 0 ; pages dont les lignes diffèrent de l'attendu : 0

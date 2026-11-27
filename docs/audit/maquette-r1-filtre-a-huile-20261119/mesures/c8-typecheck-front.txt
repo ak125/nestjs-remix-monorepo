@@ -1,0 +1,11 @@
+npm warn Unknown project config "puppeteer-skip-download". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> typecheck
+> react-router typegen && tsc
+
+The `envFile` option is deprecated, please use `envDir: false` instead.
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+The `envFile` option is deprecated, please use `envDir: false` instead.
+The `envFile` option is deprecated, please use `envDir: false` instead.
+typecheck exit=0

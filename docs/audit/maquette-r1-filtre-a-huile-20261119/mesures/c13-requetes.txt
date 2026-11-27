@@ -1,0 +1,84 @@
+ pg_id | types_avec_requete | volume_total 
+-------+--------------------+--------------
+     7 |                154 |         6650
+   402 |                661 |        18500
+(2 rows)
+
+ pg_id | rang_carte | type_id |  etat   | rang_demande | vol_tot |                 kw                  
+-------+------------+---------+---------+--------------+---------+-------------------------------------
+     7 |          1 |   19052 | visible |              |         | 
+     7 |          2 |   30091 | visible |              |         | 
+     7 |          3 |   19966 | visible |              |         | 
+     7 |          4 |   18929 | visible |              |         | 
+     7 |          5 |   16102 | visible |           27 |      50 | filtre à huile ford fiesta 1.4 tdci
+     7 |          6 |   23175 | visible |              |         | 
+     7 |          7 |   17696 | visible |              |         | 
+     7 |          8 |   17079 | visible |              |         | 
+     7 |          9 |   18793 | visible |              |         | 
+     7 |         10 |   31083 | visible |              |         | 
+     7 |         11 |   16201 | visible |              |         | 
+     7 |         12 |   11758 | visible |              |         | 
+     7 |         13 |   17768 | repliée |              |         | 
+     7 |         14 |   19255 | repliée |              |         | 
+     7 |         15 |   22457 | repliée |              |         | 
+     7 |         16 |      57 | repliée |              |         | 
+     7 |         17 |   31077 | repliée |              |         | 
+     7 |         18 |   13927 | repliée |              |         | 
+     7 |         19 |    7072 | repliée |              |         | 
+   402 |          1 |   77310 | visible |              |         | 
+   402 |          2 |   65057 | visible |              |         | 
+   402 |          3 |   16108 | visible |           17 |     250 | plaquette clio 2
+   402 |          4 |   30936 | visible |              |         | 
+   402 |          5 |   19341 | visible |              |         | 
+   402 |          6 |   17989 | visible |           43 |      50 | disque de frein 307 1.6 hdi
+   402 |          7 |   15903 | visible |           17 |     250 | disque de frein arrière 307 hdi 90
+   402 |          8 |   18400 | visible |              |         | 
+   402 |          9 |   26547 | visible |              |         | 
+   402 |         10 |   27326 | visible |              |         | 
+   402 |         11 |    8456 | visible |              |         | 
+   402 |         12 |    8461 | visible |              |         | 
+   402 |         13 |   13100 | repliée |              |         | 
+   402 |         14 |   58963 | repliée |              |         | 
+   402 |         15 |   31672 | repliée |              |         | 
+   402 |         16 |   32172 | repliée |              |         | 
+   402 |         17 |   58791 | repliée |              |         | 
+(36 rows)
+
+ pg_id | type_id | vol_tot |                       kw                        
+-------+---------+---------+-------------------------------------------------
+     7 |   11056 |     550 | filtre à huile clio 3
+     7 |    2132 |     500 | filtre à huile twingo 1
+     7 |   19352 |     300 | filtre à huile 207 1.6 hdi 90
+     7 |   23382 |     200 | filtre à huile 308 1.6 hdi
+     7 |   19051 |     200 | filtre à huile clio 3 1.5 dci 85
+     7 |   57281 |     150 | filtre à huile clio 4 1.5 dci
+     7 |   55134 |     150 | filtre à huile c4 1.6 hdi 110
+     7 |   55133 |     100 | filtre à huile citroen c4
+     7 |   13002 |     100 | filtre à huile 307
+     7 |   13004 |     100 | filtre à huile peugeot 207
+     7 |   19026 |     100 | filtre à huile berlingo 1.6 hdi
+     7 |     371 |     100 | filtre à huile megane 3
+     7 |    5283 |     100 | filtre à huile twingo 2
+     7 |    5853 |     100 | filtre à huile scenic 3 1.5 dci 110
+     7 |   30821 |     100 | filtre à huile 3008
+     7 |   16331 |     100 | filtre à huile c3 diesel
+     7 |   17961 |     100 | filtre à huile xsara picasso 1.6 hdi
+     7 |    5890 |     100 | filtre à huile citroën c3
+     7 |   23379 |     100 | filtre à huile 308
+     7 |    6442 |     100 | filtre à huile c4 picasso 1.6 hdi
+     7 |    7244 |     100 | filtre à huile c3 picasso 1.6 hdi
+     7 |    8456 |     100 | filtre à huile golf 4 tdi 130
+     7 |    8683 |     100 | filtre à huile peugeot 208
+     7 |   15573 |     100 | filtre à huile kangoo 2
+     7 |   17989 |     100 | filtre à huile 307 1.6 hdi 90
+     7 |   24496 |     100 | filtre à huile audi a3 2.0 tdi 140
+   402 |   57281 |    2300 | disque de frein clio 4
+   402 |   19052 |    1750 | disque et plaquette clio 3
+   402 |     371 |    1450 | disque de frein arrière megane 3 avec roulement
+   402 |   13004 |    1000 | disque de frein 207
+   402 |   11056 |     900 | disque de frein clio 3
+   402 |    9040 |     750 | disque de frein clio 2
+   402 |   76381 |     650 | prix disque et plaquette de frein peugeot 208
+   402 |   23383 |     600 | prix disque et plaquette de frein peugeot 308
+(34 rows)
+
