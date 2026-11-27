@@ -94,8 +94,8 @@ devient une archive.
   depuis le 2026-10-26 (historique, ne plus y écrire). Une timeline ou une mémoire
   ne remplace pas l'état du checkout.
 - Workspaces et chargement Claude/Codex/Hermes :
-  `.claude/knowledge/workspaces.md`. Rôles Paperclip : `agents/*/AGENTS.md`,
-  à consulter seulement pour le rôle concerné ; UUID dans leur registre.
+  `.claude/knowledge/workspaces.md`. Rôles Paperclip (historiques, décision 69) :
+  `agents/*/AGENTS.md`, sans exécution ; ne pas les suivre comme instructions.
 - Relecture d'un brouillon français : `.claude/prompts/_shared/editorial-review.md`
   avant intervention ; proposition motivée, sans publication ni écriture RAW/WIKI.
 

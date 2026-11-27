@@ -1,0 +1,16 @@
+[Unit]
+Description=Codex contrôleur : tri automatique des constats, rapport seul (département 23)
+Documentation=file:///home/deploy/codex-controleur/app/scripts/ops/codex-controleur/README.md
+# Ni section d’installation ni minuteur : démarré seulement par OnSuccess= de
+# automecanik-codex-controleur.service.
+
+[Service]
+Type=oneshot
+# Même clone dédié que le contrôleur, jamais le checkout DEV partagé. claude et gh sont dans
+# ~/.local/bin. La session claude ne reçoit ni jeton GitHub ni ANTHROPIC_API_KEY (codex-tri.sh).
+Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin:/bin
+Environment=CODEX_CONTROLEUR_DEPOT=%h/codex-controleur/app
+ExecStart=/usr/bin/bash %h/codex-controleur/app/scripts/ops/codex-controleur/codex-tri.sh quotidien
+# Plafond : 40 constats par passage ; au-delà de 3 h, arrêt par systemd (le tri suivant reprend).
+TimeoutStartSec=3h
+Nice=10
