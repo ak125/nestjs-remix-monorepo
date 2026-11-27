@@ -31,15 +31,14 @@ Niveaux : **BLOCK** (refusé, guard local) · **WARN** (averti, autorisé) · **
 |---|---|---|
 | `git push origin main` / `--force` / `reset --hard` / `npm install` | **BLOCK** | bash-guard G1/G3/G4/G5 |
 | `docker down/stop/rm` (prod) | **BLOCK** | bash-guard G2 |
-| `DROP` / `TRUNCATE` / `DISABLE RLS` | **BLOCK** | supabase-guard G1-G3 |
+| Toute instruction hors lecture via `execute_sql` (DDL, DML, `GRANT`, `DO`, `COPY`, `SET`…) et tout `apply_migration` | **BLOCK** | supabase-guard — liste d'autorisation : `SELECT`, `WITH` sans écriture, `VALUES`, `TABLE`, `SHOW`, `EXPLAIN` d'une lecture ; migration = fichier + workflow ([db-migration](../skills/db-migration/SKILL.md)) |
 | `.env` / `.github` / docker / lock / build config | **BLOCK** | file-guard G1-G4 |
 | `backend/src/modules/rm/` | **BLOCK** | file-guard G5 |
 | `supabase.rpc` direct (commerce) / order-cart status writes | **BLOCK** *(code)* | ast-grep `commerce-*` |
-| `ALTER TABLE DROP COLUMN` / `CREATE TABLE` sans RLS | **WARN** | supabase-guard G4-G5 |
 | `payments/` edits | **WARN** | file-guard G3 + [payments.md](../rules/payments.md) |
 | `gh pr merge` → main | **GATED (CI)** | branch protection : checks stricts + `enforce_admins` (merge = PREPROD ; PROD tag-gated) |
 | `git tag v*` / `push --tags` / deploy-prod | **BLOCK** | bash-guard G6 (#879) — tag = décision opérateur ([deployment.md](../rules/deployment.md)) |
-| `UPDATE`/`DELETE` `pieces` / `pieces_price` / `__seo_*` via execute_sql | **BLOCK** | supabase-guard G6 (#879) — passer par module/RPC gouverné |
+| Mutation métier (`pieces`, `pieces_price`, `__seo_*`…) | **BLOCK** | supabase-guard (ci-dessus, #879) — passer par module/RPC gouverné |
 
 > #879 = durcissement owner-gated — **renforcer, jamais affaiblir** un guard.
 
