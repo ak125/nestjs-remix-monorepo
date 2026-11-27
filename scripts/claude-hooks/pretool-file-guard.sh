@@ -24,7 +24,14 @@ if ! FILE_PATH=$(jq -ers '
 fi
 
 # Guard 1: Block editing blast-radius / system files
-if echo "$FILE_PATH" | grep -qE '(^|/)\.env($|/)|\.github/|docker-compose|Caddyfile$|Dockerfile$|\.dockerignore$'; then
+# .env.* files hold secrets like .env (.env.production, .env.vps, .env.backup-*): blocked
+# too, except templates, i.e. a file name ending in .example or .template.
+# The .env tests below read the whole path (no pipe, not line by line). A path component
+# named .env or .env.* is blocked wherever it sits, not only as the file name:
+# "backend/.env.vps/" still reaches the file itself. Only the last component makes a template.
+if echo "$FILE_PATH" | grep -qE '(^|/)\.env($|/)|\.github/|docker-compose|Caddyfile$|Dockerfile$|\.dockerignore$' \
+  || [[ "/$FILE_PATH/" == */.env/* || "/$FILE_PATH" == */.env.*/* ]] \
+  || [[ "/$FILE_PATH" == */.env.* && "$FILE_PATH" != *.example && "$FILE_PATH" != *.template ]]; then
   echo "BLOCKED: Fichier protege ($FILE_PATH). Modification reservee a l'owner : fournir le diff, il l'applique." >&2
   exit 2
 fi
