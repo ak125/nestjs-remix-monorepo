@@ -24,6 +24,7 @@ import { TicketsService } from './services/tickets.service';
 import { OrderActionsService } from './services/order-actions.service';
 import { OrderLineSupplierService } from './services/order-line-supplier.service';
 import { SupplierOrderPreparationService } from './services/supplier-order-preparation.service';
+import { RuptureEquivalentsService } from './services/rupture-equivalents.service';
 import { SupplierLiveQuoteService } from '../supplier-truth';
 import { OrderCleanupService } from './services/order-cleanup.service';
 
@@ -86,6 +87,7 @@ import { OrderEmailListener } from './listeners/order-email.listener';
     OrderActionsService, // Actions backoffice
     OrderLineSupplierService, // Décision 50 : proposition fournisseur (lecture)
     SupplierOrderPreparationService, // Mandat BK : commande fournisseur préparée (essai, sans envoi)
+    RuptureEquivalentsService, // Mandat CL : équivalents d'une ligne en rupture (lecture)
     {
       // Mandat BK : relecture live d'un portail (lecture seule). Fabrique :
       // ses dépendances (connecteurs, identifiants) sont des fonctions.

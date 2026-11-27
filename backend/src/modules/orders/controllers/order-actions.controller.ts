@@ -48,6 +48,15 @@ const PrepareSupplierOrderSchema = z
   })
   .strict();
 
+/** Mandat CL : le corps reprend l'équivalent affiché ; tout écart → 409. */
+const RetainEquivalentSchema = z
+  .object({
+    pieceId: z.number().int().positive(),
+    splId: z.string().regex(/^[0-9]{1,9}$/),
+    prixAchatUnitHt: z.number().positive(),
+  })
+  .strict();
+
 function identifiant(valeur: string, nom: string): string {
   if (!IDENTIFIANT_TEXTE.test(valeur)) {
     throw new BadRequestException(`${nom} invalide`);
@@ -183,6 +192,47 @@ export class OrderActionsController {
     return this.supplierOrderPreparation.getPrepared(
       identifiant(orderId, 'orderId'),
       identifiant(lineId, 'lineId'),
+    );
+  }
+
+  /**
+   * GET /api/admin/orders/:orderId/lines/:lineId/rupture-equivalents
+   * Mandat CL : équivalents classés d'une ligne en rupture, avec leurs preuves
+   * (référence croisée, type véhicule, critères), l'achat et la marge au prix
+   * payé, et le texte du mail à copier. Lecture seule.
+   */
+  @Get(':orderId/lines/:lineId/rupture-equivalents')
+  @RequirePermission('canValidate')
+  async getRuptureEquivalents(
+    @Param('orderId') orderId: string,
+    @Param('lineId') lineId: string,
+  ) {
+    return this.orderActionsService.getRuptureEquivalents(
+      identifiant(orderId, 'orderId'),
+      identifiant(lineId, 'lineId'),
+    );
+  }
+
+  /**
+   * POST /api/admin/orders/:orderId/lines/:lineId/retain-equivalent
+   * Mandat CL : équivalent retenu en un clic. Prix payé conservé ; pièce,
+   * fournisseur et prix d'achat enregistrés. Aucun mail, aucune commande.
+   */
+  @Post(':orderId/lines/:lineId/retain-equivalent')
+  @RequirePermission('canValidate')
+  async retainEquivalent(
+    @Param('orderId') orderId: string,
+    @Param('lineId') lineId: string,
+    @Body() body: unknown,
+    @Req() req: Request,
+  ) {
+    const attendu = valider(RetainEquivalentSchema, body);
+    const userId = (req.user as { id?: unknown } | undefined)?.id;
+    return this.orderActionsService.retainRuptureEquivalent(
+      identifiant(orderId, 'orderId'),
+      identifiant(lineId, 'lineId'),
+      attendu,
+      userId != null ? String(userId) : undefined,
     );
   }
 

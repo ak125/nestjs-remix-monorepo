@@ -14,6 +14,7 @@ import type {
   OrderLineSupplierService,
   PropositionLigne,
 } from './order-line-supplier.service';
+import type { RuptureEquivalentsService } from './rupture-equivalents.service';
 import { ORDER_EVENTS } from '../events/order.events';
 
 /** Constructeur de requête factice : enregistre les appels, rend `resultat`. */
@@ -69,6 +70,7 @@ function sujet(
     { emit } as unknown as EventEmitter2,
     {} as OrdersService,
     lineSupplier,
+    {} as RuptureEquivalentsService,
   );
   const { client, appels } = requeteFactice(resultat);
   Object.defineProperty(service, 'supabase', { value: client });

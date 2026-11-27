@@ -4,6 +4,7 @@ import {
   Injectable,
   BadRequestException,
   ConflictException,
+  InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -14,6 +15,12 @@ import {
   type PropositionLigne,
 } from './order-line-supplier.service';
 import { PROCEDURE_RUPTURE } from './order-line-supplier-proposal';
+import {
+  ACTION_EQUIVALENT_RETENU,
+  RuptureEquivalentsService,
+  type EquivalentRetenu,
+  type VueEquivalents,
+} from './rupture-equivalents.service';
 import {
   ORDER_EVENTS,
   type OrderStatusChangedEvent,
@@ -50,6 +57,7 @@ export class OrderActionsService extends SupabaseBaseService {
     private readonly eventEmitter: EventEmitter2,
     private readonly ordersService: OrdersService,
     private readonly lineSupplier: OrderLineSupplierService,
+    private readonly ruptureEquivalents: RuptureEquivalentsService,
   ) {
     super();
   }
@@ -228,6 +236,163 @@ export class OrderActionsService extends SupabaseBaseService {
       procedure: PROCEDURE_RUPTURE,
       proposition: lue.proposition,
     };
+  }
+
+  /**
+   * Mandat CL — équivalent retenu en un clic sur une ligne en rupture.
+   *
+   * Les équivalents sont RECALCULÉS au clic : l'équivalent demandé doit être
+   * encore proposé, RETENABLE (sans perte au prix payé), au même fournisseur et
+   * au même prix d'achat, sinon 409 avec la vue à jour. La ligne garde le prix
+   * payé ; seules ses colonnes fournisseur (`orl_spl_*`) sont écrites (décision
+   * 50), conditionnellement au statut 4 et à un fournisseur non posé. La pièce
+   * retenue est enregistrée par une trace `__admin_audit_log` : la ligne n'a pas
+   * de colonne pour elle (`orl_equiv_id` désigne une ligne, flux 91–94 hors
+   * service). Si la trace échoue, l'écriture de la ligne est annulée.
+   * Aucun statut de ligne, aucun prix de vente, aucun mail, aucune commande
+   * fournisseur : l'accord du client reste à obtenir (texte à copier).
+   */
+  async retainRuptureEquivalent(
+    orderId: string,
+    lineId: string,
+    attendu: { pieceId: number; splId: string; prixAchatUnitHt: number },
+    retainedBy?: string,
+  ): Promise<{ success: true; retenu: EquivalentRetenu }> {
+    const vue = await this.ruptureEquivalents.getEquivalents(orderId, lineId);
+    const refus = (message: string): never => {
+      throw new ConflictException({ message, current: vue });
+    };
+    if (statutTexte(vue.statutLigne) !== STATUT_RUPTURE) {
+      refus(
+        `Ligne au statut ${vue.statutLigne} : seule une rupture (4) reçoit un équivalent`,
+      );
+    }
+    if (vue.fournisseurPose || vue.retenu) {
+      refus('Fournisseur ou équivalent déjà posé sur cette ligne');
+    }
+    const e = vue.resultat?.equivalents.find(
+      (x) => x.pieceId === attendu.pieceId,
+    );
+    if (
+      !e ||
+      e.statut !== 'RETENABLE' ||
+      e.achat.splId !== attendu.splId ||
+      e.achat.prixAchatUnitHt !== attendu.prixAchatUnitHt
+    ) {
+      return refus("L'équivalent a changé depuis son affichage");
+    }
+
+    const a = e.achat;
+    const ttc = (ht: number) =>
+      a.tauxTva == null
+        ? null
+        : (Math.round(ht * (1 + a.tauxTva) * 100) / 100).toString();
+    const ecritLe = new Date().toISOString();
+    const { data, error } = await this.supabase
+      .from(TABLES.xtr_order_line)
+      .update({
+        orl_spl_id: a.splId,
+        orl_spl_name: a.fournisseur,
+        orl_spl_date: ecritLe,
+        orl_spl_price_buy_unit_ht: a.prixAchatUnitHt.toString(),
+        orl_spl_price_buy_ht: a.prixAchatHt.toString(),
+        orl_spl_price_buy_unit_ttc: ttc(a.prixAchatUnitHt),
+        orl_spl_price_buy_ttc: ttc(a.prixAchatHt),
+      })
+      .eq('orl_id', vue.lineId)
+      .eq('orl_ord_id', vue.orderId)
+      .eq('orl_orls_id', STATUT_RUPTURE)
+      .or('orl_spl_id.is.null,orl_spl_id.in.("","0")')
+      .select('orl_id');
+    if (error) {
+      throw new BadRequestException(error.message);
+    }
+    if (!data || data.length !== 1) {
+      throw new ConflictException(
+        'Ligne modifiée pendant le choix : recharger les équivalents',
+      );
+    }
+
+    const valeur: Omit<EquivalentRetenu, 'traceId' | 'le' | 'par'> = {
+      pieceId: e.pieceId,
+      marque: e.marque,
+      ref: e.ref,
+      splId: a.splId,
+      fournisseur: a.fournisseur,
+      prixAchatUnitHt: a.prixAchatUnitHt,
+      prixAchatHt: a.prixAchatHt,
+      quantite: a.quantite,
+      dateTarif: a.origine.dateTarif,
+    };
+    const trace = await this.supabase
+      .from('__admin_audit_log')
+      .insert({
+        aal_action: ACTION_EQUIVALENT_RETENU,
+        aal_entity_type: 'order_line',
+        aal_entity_id: vue.lineId,
+        aal_user_id: retainedBy ?? null,
+        aal_old_value: {
+          pieceId: vue.pieceId,
+          marque: vue.commandee.marque,
+          ref: vue.commandee.ref,
+        },
+        aal_new_value: valeur,
+        aal_metadata: {
+          orderId: vue.orderId,
+          preuve: e.preuve,
+          margeAuPrixPaye: e.margeAuPrixPaye,
+          origine: a.origine,
+          toleranceMm: vue.toleranceMm,
+        },
+      })
+      .select('aal_id, aal_created_at')
+      .single();
+    if (trace.error || !trace.data) {
+      // Sans trace, la pièce retenue serait perdue : on défait l'écriture.
+      const retour = await this.supabase
+        .from(TABLES.xtr_order_line)
+        .update({
+          orl_spl_id: null,
+          orl_spl_name: null,
+          orl_spl_date: null,
+          orl_spl_price_buy_unit_ht: null,
+          orl_spl_price_buy_ht: null,
+          orl_spl_price_buy_unit_ttc: null,
+          orl_spl_price_buy_ttc: null,
+        })
+        .eq('orl_id', vue.lineId)
+        .eq('orl_ord_id', vue.orderId)
+        .eq('orl_spl_id', a.splId)
+        .eq('orl_spl_date', ecritLe)
+        .select('orl_id');
+      this.logger.error(
+        `Ligne ${vue.lineId} : trace d'équivalent impossible (${trace.error?.message ?? 'vide'}), écriture annulée : ${retour.error ? `ÉCHEC ${retour.error.message}` : `${retour.data?.length ?? 0} ligne(s)`}`,
+      );
+      throw new InternalServerErrorException(
+        "Trace de l'équivalent impossible : rien n'est retenu",
+      );
+    }
+    const t = trace.data as { aal_id: string | number; aal_created_at: string };
+    this.logger.log(
+      `Ligne ${vue.lineId} : équivalent ${e.pieceId} retenu chez ${a.splId} (mandat CL)`,
+    );
+    return {
+      success: true,
+      retenu: {
+        traceId: String(t.aal_id),
+        le: t.aal_created_at,
+        par: retainedBy ?? null,
+        ...valeur,
+      },
+    };
+  }
+
+  /** Mandat CL — lecture des équivalents d'une ligne en rupture. */
+  getRuptureEquivalents(
+    orderId: string,
+    lineId: string,
+  ): Promise<VueEquivalents> {
+    return this.ruptureEquivalents.getEquivalents(orderId, lineId);
   }
 
   /**
