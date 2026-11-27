@@ -252,8 +252,34 @@ de l'activation). L'activation **vendable** (`'1'` en stock, `'2'` stock faible,
 Dispo tenue à jour par la sentinelle (capée `SUPPLIER_SYNC_MAX_REFS_PER_RUN`,
 incrémentale). Re-contrôle remise / achat / quantité par sous-famille.
 
+## 6 bis — Images des pièces vendables (règle de Marwane, 19/11/2026 — proposé, à ratifier)
+> « on importe uniquement les images des pièces vendues sur le site, donc on lance
+> l'import image après la 1re mise à jour tarif et pour les autres mises à jour on
+> contrôle s'il manque des images » (Marwane, 19/11/2026).
+
+- **Après la 1re mise à jour complète du tarif** (décision 51) : rapport à blanc
+  `python3 scripts/recover-tecdoc-images.py --marque <pm_id> --rapport <dossier>`
+  (lecture seule), revue, puis **exécution réelle par Marwane seul**, un fournisseur
+  à la fois (`--marque <pm_id> --commit`, Bosch d'abord). Voie inchangée : catalogue
+  web TecDoc → CDN → `rack-images/<pmi_folder>/<pmi_name>` (nom jamais modifié).
+- **Sélection** = images affichables manquantes des seules pièces **vendables**,
+  par la requête unique `scripts/recover-tecdoc-images.sql`, qui appelle
+  `public.piece_est_vendable` (PR #2191, définition unique) sans recopier ses
+  conditions. Tant que #2191 n'est pas appliquée en base, la requête échoue (code 2).
+- Pièce vendable **sans image affichable** (aucune ligne `pieces_media_img`) :
+  signalée au rapport, non récupérable par nom ; à traiter par le catalogue.
+- Identifiants TecDoc et clé Storage : environnement seulement, posés par Marwane.
+- Dépendances : `scripts/requirements-recover-tecdoc-images.txt` (environnement
+  virtuel dédié).
+
 ## 7 — Mises à jour suivantes
 **INCRÉMENTAL — nouvelles réfs only**, même profil, jamais tout le fichier.
+**Contrôle des images manquantes** (proposé, à ratifier) : après chaque mise à jour,
+rapport à blanc du même script pour la marque ; s'il manque des images, même
+procédure qu'en 6 bis (exécution réelle par Marwane). Ce contrôle et la ligne
+« pièce sans image » du contrôle quotidien du lot vendable (décision 49,
+département 10) lisent **la même requête** `scripts/recover-tecdoc-images.sql` —
+pas de seconde définition, pas de second mécanisme.
 
 ## 8 — Deltas catalogue (new refs / pièce disparue) — CONSIGNÉ, à part, gated `[CRITICAL]`
 

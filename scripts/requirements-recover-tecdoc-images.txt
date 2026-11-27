@@ -1,0 +1,11 @@
+# Dépendances de scripts/recover-tecdoc-images.py (mandat DC, 2026-11-19).
+# Installer dans un environnement virtuel dédié, jamais dans le système :
+#   python3 -m venv .venv-images && .venv-images/bin/pip install -r scripts/requirements-recover-tecdoc-images.txt
+#   .venv-images/bin/playwright install chromium     # exécution réelle seulement
+# Le rapport à blanc hors ligne (--inventaire-csv) n'a besoin que de PyYAML.
+PyYAML>=6.0,<7
+psycopg2-binary>=2.9,<3
+requests>=2.31,<3
+playwright>=1.40,<2
+# tests
+pytest>=7.4,<9

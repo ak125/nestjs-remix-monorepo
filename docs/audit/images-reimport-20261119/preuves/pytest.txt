@@ -1,0 +1,46 @@
+# 2026-11-19T06:25:00Z — python3 -m pytest scripts/test_recover_tecdoc_images.py -v (sans réseau ni base)
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-7.4.4, pluggy-1.4.0 -- /usr/bin/python3
+rootdir: /home/deploy/worktrees/claude-dc-images-reimport-20261119
+collecting ... collected 37 items
+
+scripts/test_recover_tecdoc_images.py::test_requete_appelle_la_definition_unique_une_seule_fois PASSED [  2%]
+scripts/test_recover_tecdoc_images.py::test_requete_ne_recopie_pas_les_conditions_vendables[pri_dispo] PASSED [  5%]
+scripts/test_recover_tecdoc_images.py::test_requete_ne_recopie_pas_les_conditions_vendables[FROZEN] PASSED [  8%]
+scripts/test_recover_tecdoc_images.py::test_requete_ne_recopie_pas_les_conditions_vendables[pricing_state] PASSED [ 10%]
+scripts/test_recover_tecdoc_images.py::test_requete_ne_recopie_pas_les_conditions_vendables[pri_vente_ttc] PASSED [ 13%]
+scripts/test_recover_tecdoc_images.py::test_requete_ne_recopie_pas_les_conditions_vendables[piece_display] PASSED [ 16%]
+scripts/test_recover_tecdoc_images.py::test_module_ne_recopie_pas_les_conditions_vendables PASSED [ 18%]
+scripts/test_recover_tecdoc_images.py::test_parametres_de_la_requete PASSED [ 21%]
+scripts/test_recover_tecdoc_images.py::test_requete_en_lecture_seule PASSED [ 24%]
+scripts/test_recover_tecdoc_images.py::test_lecture_csv_ignore_set_et_entete_et_garde_les_virgules PASSED [ 27%]
+scripts/test_recover_tecdoc_images.py::test_plan_par_fournisseur PASSED  [ 29%]
+scripts/test_recover_tecdoc_images.py::test_artnr_repli_sur_le_nom_si_reference_vide PASSED [ 32%]
+scripts/test_recover_tecdoc_images.py::test_reprise_ignore_recuperees_et_echecs_definitifs PASSED [ 35%]
+scripts/test_recover_tecdoc_images.py::test_etat_dun_autre_format_refuse PASSED [ 37%]
+scripts/test_recover_tecdoc_images.py::test_filtre_dossier_garde_les_sans_image_de_la_marque_du_dossier PASSED [ 40%]
+scripts/test_recover_tecdoc_images.py::test_correspondance_exacte_casse_radical PASSED [ 43%]
+scripts/test_recover_tecdoc_images.py::test_type_contenu[x.JPG--image/jpeg] PASSED [ 45%]
+scripts/test_recover_tecdoc_images.py::test_type_contenu[x.bmp--image/bmp] PASSED [ 48%]
+scripts/test_recover_tecdoc_images.py::test_type_contenu[x.GIF--image/gif] PASSED [ 51%]
+scripts/test_recover_tecdoc_images.py::test_type_contenu[x.webp--image/webp] PASSED [ 54%]
+scripts/test_recover_tecdoc_images.py::test_type_contenu[x.png-image/png; charset=binary-image/png] PASSED [ 56%]
+scripts/test_recover_tecdoc_images.py::test_type_contenu[x.jpg-text/html-image/jpeg] PASSED [ 59%]
+scripts/test_recover_tecdoc_images.py::test_extraire_images_filtre_le_fournisseur PASSED [ 62%]
+scripts/test_recover_tecdoc_images.py::test_recuperation_noms_et_chemins_inchanges PASSED [ 64%]
+scripts/test_recover_tecdoc_images.py::test_erreurs_techniques_comptees PASSED [ 67%]
+scripts/test_recover_tecdoc_images.py::test_disjoncteur_et_reconnexion PASSED [ 70%]
+scripts/test_recover_tecdoc_images.py::test_erreur_isolee_ne_declenche_pas_le_disjoncteur PASSED [ 72%]
+scripts/test_recover_tecdoc_images.py::test_commit_exige_un_fournisseur PASSED [ 75%]
+scripts/test_recover_tecdoc_images.py::test_a_blanc_hors_ligne_ecrit_le_rapport PASSED [ 78%]
+scripts/test_recover_tecdoc_images.py::test_base_sans_dsn_sort_en_2 PASSED [ 81%]
+scripts/test_recover_tecdoc_images.py::test_connexion_refusee_sort_en_4 PASSED [ 83%]
+scripts/test_recover_tecdoc_images.py::test_disjoncteur_sort_en_3 PASSED [ 86%]
+scripts/test_recover_tecdoc_images.py::test_identifiants_jamais_journalises PASSED [ 89%]
+scripts/test_recover_tecdoc_images.py::test_variable_absente_nommee_sans_valeur PASSED [ 91%]
+scripts/test_recover_tecdoc_images.py::test_connexion_base_echouee_sans_detail PASSED [ 94%]
+scripts/test_recover_tecdoc_images.py::test_verrou_exclusif PASSED       [ 97%]
+scripts/test_recover_tecdoc_images.py::test_noms_invalides_storage PASSED [100%]
+
+============================== 37 passed in 1.28s ==============================
+rc=0
