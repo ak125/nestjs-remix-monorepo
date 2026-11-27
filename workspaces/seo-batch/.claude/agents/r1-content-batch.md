@@ -4,6 +4,7 @@ disable-model-invocation: true
 description: "[NEUTRALISÉ 2026-07-19 → seo-content-loop, ADR-031/046] Corps opératoire retiré. Cet agent lisait le RAG (/opt/automecanik/rag/knowledge/gammes/*.md) puis ÉCRIVAIT du contenu R1_ROUTER dans __seo_r1_gamme_slots via MCP Supabase — direction RAG→source-de-contenu interdite. La vérité contenu vient du WIKI (RAW→WIKI→projection). Méthode canon : skill seo-content-loop (NO-RAG)."
 tools:
   - Read
+  - REPL
 role: R1_ROUTER
 ---
 

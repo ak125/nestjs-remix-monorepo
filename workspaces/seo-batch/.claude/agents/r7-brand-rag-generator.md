@@ -4,6 +4,7 @@ disable-model-invocation: true
 description: "[NEUTRALISÉ 2026-07-19 → wiki-proposal-writer, ADR-031/046] Corps opératoire retiré. Cet agent lisait la DB + le RAG (/opt/automecanik/rag/knowledge/gammes) puis ÉCRIVAIT des artefacts constructeur (brand.md + role_map.json) dans /opt/automecanik/rag/knowledge/constructeurs/ — direction RAG→source-de-contenu abandonnée. La vérité contenu vient du WIKI (RAW→WIKI→projection). Successeur : wiki-proposal-writer (entity_type=constructeur, ADR-033)."
 tools:
   - Read
+  - REPL
 role: R7_BRAND
 ---
 

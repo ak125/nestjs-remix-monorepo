@@ -4,12 +4,13 @@ description: >-
   Orchestrateur canon-aware de planification editoriale SEO. Resout le role
   canonique, verifie l'admissibilite, prepare la strategie de generation ou de
   refresh, puis route vers le pipeline metier adapte.
-model: sonnet
+model: inherit
 tools:
   - mcp__supabase__execute_sql
   - Read
   - Glob
   - Grep
+  - REPL
 role: FOUNDATION
 ---
 
