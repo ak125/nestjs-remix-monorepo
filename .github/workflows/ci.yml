@@ -615,6 +615,9 @@ jobs:
       - name: 🔎 Contrôleur Codex (tests, mandat FA)
         run: bash scripts/ops/codex-controleur/codex-controleur.test.sh
 
+      - name: 🔎 Tri du contrôleur Codex (tests, mandat FW)
+        run: bash scripts/ops/codex-controleur/codex-tri.test.sh
+
       - name: 🔑 Jeton de GitHub App (tests, mandat FA)
         run: bash scripts/ops/gh-app-token/gh-app-token.test.sh
 
