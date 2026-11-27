@@ -1,0 +1,296 @@
+{
+  "depot": "ak125/nestjs-remix-monorepo",
+  "fenetre": {
+    "du": "2026-11-12",
+    "au": "2026-11-18",
+    "fuseau": "Europe/Paris"
+  },
+  "genere_le": "2026-11-19T13:30:17.557Z",
+  "total": {
+    "fusions": 132,
+    "pret_vers_fusion_h": {
+      "mediane": 0.2,
+      "p90": 11
+    },
+    "creation_vers_fusion_h": {
+      "mediane": 6.2,
+      "p90": 24.7
+    },
+    "maj_main_par_fusion": 1.82
+  },
+  "jours": [
+    {
+      "jour": "2026-11-12",
+      "fusions": 29,
+      "pret_vers_fusion_h": {
+        "mediane": 0.3,
+        "p90": 18.4
+      },
+      "creation_vers_fusion_h": {
+        "mediane": 12.2,
+        "p90": 25.1
+      },
+      "en_attente_plus_24h": 11,
+      "maj_main_par_fusion": 2.24,
+      "maj_detail": {
+        "commits_de_fusion": 65,
+        "poussees_forcees": 0
+      },
+      "pr_fusionnees": [
+        2003,
+        2004,
+        2006,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025,
+        2026,
+        2027,
+        2028,
+        2029,
+        2030,
+        2031,
+        2032,
+        2033
+      ]
+    },
+    {
+      "jour": "2026-11-13",
+      "fusions": 14,
+      "pret_vers_fusion_h": {
+        "mediane": 5.4,
+        "p90": 9.2
+      },
+      "creation_vers_fusion_h": {
+        "mediane": 5.7,
+        "p90": 10.1
+      },
+      "en_attente_plus_24h": 11,
+      "maj_main_par_fusion": 1.5,
+      "maj_detail": {
+        "commits_de_fusion": 21,
+        "poussees_forcees": 0
+      },
+      "pr_fusionnees": [
+        2035,
+        2037,
+        2038,
+        2039,
+        2040,
+        2042,
+        2044,
+        2045,
+        2046,
+        2047,
+        2048,
+        2049,
+        2051,
+        2052
+      ]
+    },
+    {
+      "jour": "2026-11-14",
+      "fusions": 14,
+      "pret_vers_fusion_h": {
+        "mediane": 0.5,
+        "p90": 20.3
+      },
+      "creation_vers_fusion_h": {
+        "mediane": 12.3,
+        "p90": 129.5
+      },
+      "en_attente_plus_24h": 10,
+      "maj_main_par_fusion": 3.64,
+      "maj_detail": {
+        "commits_de_fusion": 50,
+        "poussees_forcees": 1
+      },
+      "pr_fusionnees": [
+        1966,
+        1967,
+        2041,
+        2043,
+        2050,
+        2053,
+        2054,
+        2055,
+        2056,
+        2058,
+        2061,
+        2064,
+        2065,
+        2066
+      ]
+    },
+    {
+      "jour": "2026-11-15",
+      "fusions": 14,
+      "pret_vers_fusion_h": {
+        "mediane": 0.9,
+        "p90": 22.7
+      },
+      "creation_vers_fusion_h": {
+        "mediane": 3.2,
+        "p90": 23.5
+      },
+      "en_attente_plus_24h": 10,
+      "maj_main_par_fusion": 1.71,
+      "maj_detail": {
+        "commits_de_fusion": 24,
+        "poussees_forcees": 0
+      },
+      "pr_fusionnees": [
+        2059,
+        2060,
+        2068,
+        2069,
+        2070,
+        2071,
+        2072,
+        2074,
+        2075,
+        2077,
+        2083,
+        2084,
+        2085,
+        2086
+      ]
+    },
+    {
+      "jour": "2026-11-16",
+      "fusions": 11,
+      "pret_vers_fusion_h": {
+        "mediane": 0.8,
+        "p90": 3.5
+      },
+      "creation_vers_fusion_h": {
+        "mediane": 1.3,
+        "p90": 6.2
+      },
+      "en_attente_plus_24h": 13,
+      "maj_main_par_fusion": 0.91,
+      "maj_detail": {
+        "commits_de_fusion": 9,
+        "poussees_forcees": 1
+      },
+      "pr_fusionnees": [
+        2082,
+        2093,
+        2098,
+        2100,
+        2105,
+        2106,
+        2107,
+        2108,
+        2109,
+        2110,
+        2111
+      ]
+    },
+    {
+      "jour": "2026-11-17",
+      "fusions": 29,
+      "pret_vers_fusion_h": {
+        "mediane": 0.1,
+        "p90": 0.3
+      },
+      "creation_vers_fusion_h": {
+        "mediane": 2.1,
+        "p90": 26.1
+      },
+      "en_attente_plus_24h": 12,
+      "maj_main_par_fusion": 1.24,
+      "maj_detail": {
+        "commits_de_fusion": 36,
+        "poussees_forcees": 0
+      },
+      "pr_fusionnees": [
+        2076,
+        2088,
+        2094,
+        2095,
+        2096,
+        2101,
+        2104,
+        2112,
+        2114,
+        2115,
+        2117,
+        2118,
+        2119,
+        2121,
+        2122,
+        2123,
+        2125,
+        2126,
+        2128,
+        2130,
+        2131,
+        2132,
+        2133,
+        2134,
+        2135,
+        2140,
+        2141,
+        2155,
+        2156
+      ]
+    },
+    {
+      "jour": "2026-11-18",
+      "fusions": 21,
+      "pret_vers_fusion_h": {
+        "mediane": 0.1,
+        "p90": 0.4
+      },
+      "creation_vers_fusion_h": {
+        "mediane": 3.2,
+        "p90": 10
+      },
+      "en_attente_plus_24h": 12,
+      "maj_main_par_fusion": 1.57,
+      "maj_detail": {
+        "commits_de_fusion": 33,
+        "poussees_forcees": 0
+      },
+      "pr_fusionnees": [
+        2137,
+        2139,
+        2142,
+        2148,
+        2151,
+        2153,
+        2154,
+        2162,
+        2163,
+        2165,
+        2167,
+        2168,
+        2172,
+        2175,
+        2176,
+        2178,
+        2180,
+        2181,
+        2188,
+        2190,
+        2192
+      ]
+    }
+  ],
+  "avertissements": []
+}
