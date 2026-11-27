@@ -1,0 +1,68 @@
+pg_id	pg_alias	pg_level	pg_relfollow	nb_liens	liens_sans_identifiant
+7	filtre-a-huile	1	1	5	/pieces/bouchon-de-vidange /pieces/filtre-a-air /pieces/filtre-a-carburant /pieces/filtre-de-boite-auto
+620	recepteur-d-embrayage	1	1	3	/pieces/emetteur-d-embrayage /pieces/kit-d-embrayage
+234	emetteur-d-embrayage	1	1	3	/pieces/kit-d-embrayage /pieces/recepteur-d-embrayage
+316	thermostat	1	1	3	/pieces/durite-de-refroidissement /pieces/pompe-a-eau /pieces/radiateur-de-refroidissement
+475	durite-de-refroidissement	1	1	3	/pieces/pompe-a-eau /pieces/radiateur-de-refroidissement /pieces/thermostat
+1260	pompe-a-eau	1	1	3	/pieces/durite-de-refroidissement /pieces/kit-de-distribution /pieces/thermostat
+12	pompe-de-direction-assistee	1	1	3	/pieces/cremailliere-de-direction /pieces/soufflet-de-direction
+286	cremailliere-de-direction	1	1	3	/pieces/pompe-de-direction-assistee /pieces/rotule-de-direction /pieces/soufflet-de-direction
+123	tambour-de-frein	1	1	3	/pieces/cable-de-frein-a-main /pieces/cylindre-de-roue /pieces/machoires-de-frein
+306	courroie-de-distribution	1	1	3	/pieces/kit-de-distribution /pieces/pompe-a-eau
+48	butee-d-embrayage	1	1	3	/pieces/emetteur-d-embrayage /pieces/kit-d-embrayage
+307	kit-de-distribution	1	1	3	/pieces/courroie-de-distribution /pieces/galet-tendeur-de-courroie-de-distribution /pieces/pompe-a-eau
+653	moyeu-de-roue	1	1	2	/pieces/capteur-abs /pieces/roulement-de-roue
+685	faisceau-d-allumage	1	1	2	/pieces/bobine-d-allumage /pieces/bougie-d-allumage
+26	silencieux	1	0	2	/pieces/catalyseur /pieces/tube-d-echappement
+274	barre-stabilisatrice	1	1	2	/pieces/biellette-de-barre-stabilisatrice
+277	cylindre-de-roue	1	1	2	/pieces/machoires-de-frein /pieces/tambour-de-frein
+285	barre-de-direction	1	1	2	/pieces/cremailliere-de-direction /pieces/soufflet-de-direction
+9	filtre-a-carburant	1	1	2	/pieces/filtre-a-air /pieces/filtre-a-huile
+310	galet-tendeur-de-courroie-d-accessoire	1	1	2	/pieces/courroie-d-accessoire /pieces/galet-enrouleur-de-courroie-d-accessoire
+312	galet-enrouleur-de-courroie-d-accessoire	1	1	2	/pieces/courroie-d-accessoire /pieces/galet-tendeur-de-courroie-d-accessoire
+851	bouteille-deshydratante	1	1	2	/pieces/compresseur-de-climatisation /pieces/condenseur-de-climatisation
+1256	fap	1	1	2	/pieces/catalyseur /pieces/vanne-egr
+397	vase-d-expansion	1	1	2	/pieces/durite-de-refroidissement /pieces/thermostat
+1108	poulie-d-alternateur	1	1	2	/pieces/alternateur /pieces/courroie-d-accessoire
+158	corps-papillon	1	1	2	/pieces/debitmetre-d-air /pieces/vanne-egr
+10	courroie-d-accessoire	1	1	2	/pieces/galet-enrouleur-de-courroie-d-accessoire /pieces/galet-tendeur-de-courroie-d-accessoire
+447	compresseur-de-climatisation	1	1	2	/pieces/condenseur-de-climatisation /pieces/filtre-d-habitacle
+429	catalyseur	1	1	2	/pieces/fap /pieces/sonde-lambda
+448	condenseur-de-climatisation	1	1	2	/pieces/compresseur-de-climatisation /pieces/filtre-d-habitacle
+191	soufflet-de-direction	1	1	2	/pieces/barre-de-direction /pieces/rotule-de-direction
+1145	vanne-egr	1	1	2	/pieces/corps-papillon /pieces/fap
+1182	butee-elastique-d-amortisseur	1	0	2	/pieces/amortisseur /pieces/kit-de-butee-de-suspension
+508	ventilateur-de-refroidissement	1	1	2	/pieces/radiateur-de-refroidissement /pieces/sonde-de-refroidissement
+830	sonde-de-refroidissement	1	1	2	/pieces/durite-de-refroidissement /pieces/thermostat
+249	support-de-boite-vitesse	1	0	2	/pieces/support-moteur
+577	volant-moteur	1	1	2	/pieces/kit-d-embrayage
+592	carter-d-huile	1	1	2	/pieces/bouchon-de-vidange /pieces/joint-de-carter-d-huile
+74	servo-frein	1	1	2	/pieces/maitre-cylindre-de-frein /pieces/pompe-a-vide-de-freinage
+258	maitre-cylindre-de-frein	1	1	2	/pieces/flexible-de-frein /pieces/servo-frein
+318	joint-de-culasse	1	1	1	/pieces/pochette-joints-moteur
+1123	chaine-de-distribution	1	1	1	/pieces/kit-de-chaine-de-distribution
+1389	kit-de-chaine-de-distribution	1	1	1	/pieces/kit-de-distribution
+17	tube-d-echappement	1	1	1	/pieces/joint-d-echappement
+193	soufflet-de-cardan	1	1	1	/pieces/cardan
+243	bougie-de-prechauffage	1	1	1	/pieces/bobine-d-allumage
+259	feu-avant	1	1	1	/pieces/correcteur-de-portee
+290	feu-arriere	1	1	1	/pieces/ampoule-feu-arriere
+1	batterie	1	0	1	/pieces/alternateur
+321	joint-de-cache-culbuteurs	1	1	1	/pieces/joint-de-culasse
+40	joint-de-collecteur	1	1	1	/pieces/collecteur-d-echappement
+407	temoin-d-usure	1	1	1	/pieces/plaquette-de-frein
+412	capteur-abs	1	1	1	/pieces/roulement-de-roue
+458	pompe-a-carburant	1	1	1	/pieces/filtre-a-carburant
+467	radiateur-de-chauffage	1	1	1	/pieces/thermostat
+478	cable-d-embrayage	1	1	1	/pieces/kit-d-embrayage
+479	kit-d-embrayage	1	1	1	/pieces/convertisseur-de-couple
+566	arbre-a-came	1	1	1	/pieces/poussoir-de-soupape
+624	bague-d-etancheite-cardan	1	1	1	/pieces/soufflet-de-cardan
+655	roulement-de-roue	1	1	1	/pieces/disque-de-frein
+686	bougie-d-allumage	1	1	1	/pieces/bobine-d-allumage
+689	bobine-d-allumage	1	1	1	/pieces/bougie-d-allumage
+83	flexible-de-frein	1	1	1	/pieces/liquide-de-frein
+308	galet-tendeur-de-courroie-de-distribution	2	0	2	/pieces/courroie-de-distribution /pieces/kit-de-distribution
+560	pochette-joints-moteur	2	0	2	/pieces/joint-de-cache-culbuteurs /pieces/joint-de-culasse
+596	pompe-a-huile	2	0	2	/pieces/filtre-a-huile /pieces/pressostat-d-huile
+313	galet-enrouleur-de-courroie-de-distribution	2	0	1	/pieces/kit-de-distribution
