@@ -102,7 +102,13 @@ const DraftSchema = z.object({
     brand: z.string(),
     model: z.string(),
     brandId: z.number().int().positive().optional(),
+    brandAlias: z.string().min(1).optional(),
     modelId: z.number().int().positive().optional(),
+    modelAlias: z.string().min(1).optional(),
+    typeId: z.number().int().positive().optional(),
+    typeName: z.string().min(1).optional(),
+    typeAlias: z.string().min(1).optional(),
+    engine: z.string().min(1).optional(),
     year: z.number().int().min(1970).max(2030).optional(),
     mileage_km: z.number().finite().nonnegative().optional(),
     fuel: z.string().optional(),
@@ -330,6 +336,9 @@ export function DiagnosticWizard() {
         if (draft.vehicle.brandId) {
           vehicleSelector.fetchModels(draft.vehicle.brandId);
         }
+        if (draft.vehicle.modelId) {
+          vehicleSelector.fetchTypes(draft.vehicle.modelId);
+        }
       }
       if (draft.usageProfile || draft.lastServiceKm != null) {
         dispatch({
@@ -535,8 +544,10 @@ export function DiagnosticWizard() {
         intent_type: "diagnostic_symptom",
         system_scope: state.systemScope,
         vehicle_context: {
+          type_id: state.vehicle.typeId,
           brand: state.vehicle.brand || undefined,
           model: state.vehicle.model || undefined,
+          engine: state.vehicle.engine || undefined,
           year: state.vehicle.year || undefined,
           mileage_km: state.vehicle.mileage_km ?? undefined,
           fuel: state.vehicle.fuel || undefined,
