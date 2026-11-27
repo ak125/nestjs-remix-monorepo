@@ -1345,6 +1345,27 @@ assert_exit "agent-guard: 2e subagent, même session, autre parent → BLOCK"   
 comm -13 <(printf '%s\n' "$AG_BEFORE") <(ls /tmp/claude-agent-count-* 2>/dev/null | sort) | xargs -r rm -f
 
 # ============================================================
+# Réglages : onFailure "block" sur les gardes PreToolUse (contrôle statique)
+# ============================================================
+
+echo ""
+echo "=== settings.json : onFailure \"block\" sur les gardes PreToolUse ==="
+
+# Sans cette clé, une garde qui ne démarre pas, plante (code autre que 0 ou 2) ou dépasse
+# son délai laisse passer l'action. Contrôle statique des fichiers suivis seulement : il
+# ne prouve pas le comportement de Claude Code, qui n'est pas exercé par cette suite.
+PRETOOL_GUARDS="pretool-agent-guard.sh pretool-bash-guard.sh pretool-file-guard.sh pretool-supabase-guard.sh"
+SETTINGS_SEEN=0
+while IFS= read -r settings_file; do
+  SETTINGS_SEEN=$((SETTINGS_SEEN+1))
+  assert_exit "$settings_file : les 4 gardes PreToolUse portent onFailure block" "$PRETOOL_GUARDS" \
+    "$(jq -r '[.hooks.PreToolUse[]?.hooks[]? | select(.onFailure == "block") | .command | split("/") | last] | sort | join(" ")' "$settings_file" 2>&1)"
+  assert_exit "$settings_file : aucun hook PreToolUse sans onFailure block" "0" \
+    "$(jq -r '[.hooks.PreToolUse[]?.hooks[]? | select(.onFailure != "block")] | length' "$settings_file" 2>&1)"
+done < <(git ls-files -- '.claude/settings.json' 'workspaces/*/.claude/settings.json')
+assert_exit "settings.json suivis contrôlés : racine et 3 workspaces" "4" "$SETTINGS_SEEN"
+
+# ============================================================
 # Résumé
 # ============================================================
 
