@@ -42,3 +42,49 @@ export function mapAnalyzeInputToVehicleContextPayload(
   const parsed = VehicleContextPayloadSchema.safeParse(candidate);
   return parsed.success ? parsed.data : null;
 }
+
+type KnownMotorisation = Pick<
+  VehicleContextPayload,
+  'type_id' | 'brand_slug' | 'model_slug' | 'engine_slug'
+>;
+
+const sameLabel = (a?: string, b?: string): boolean =>
+  typeof a === 'string' &&
+  typeof b === 'string' &&
+  a.trim().toLowerCase() === b.trim().toLowerCase();
+
+/**
+ * Keeps the motorisation of the context the visitor already carries when a
+ * new analyze names the same brand and model without one. Without it, a
+ * diagnostic run without motorisation rewrote a vehicle_ctx holding type_id
+ * with brand + model only (mandat GE, constat DEV du 27 nov.).
+ *
+ * The motorisation is carried over only when brand and model are known on
+ * both sides and equal, and when the new input names no other engine; any
+ * doubt writes the new payload as sent.
+ */
+export function keepKnownMotorisation(
+  existing: KnownMotorisation | null | undefined,
+  next: VehicleContextPayload,
+): VehicleContextPayload {
+  if (
+    !existing ||
+    typeof existing.type_id !== 'number' ||
+    typeof next.type_id === 'number' ||
+    !sameLabel(existing.brand_slug, next.brand_slug) ||
+    !sameLabel(existing.model_slug, next.model_slug) ||
+    (next.engine_slug !== undefined &&
+      !sameLabel(existing.engine_slug, next.engine_slug))
+  ) {
+    return next;
+  }
+
+  const parsed = VehicleContextPayloadSchema.safeParse({
+    ...next,
+    type_id: existing.type_id,
+    ...(existing.engine_slug !== undefined && next.engine_slug === undefined
+      ? { engine_slug: existing.engine_slug }
+      : {}),
+  });
+  return parsed.success ? parsed.data : next;
+}

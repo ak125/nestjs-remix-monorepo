@@ -16,8 +16,16 @@ export interface WizardState {
   vehicle: {
     brand: string;
     brandId?: number;
+    brandAlias?: string;
     model: string;
     modelId?: number;
+    modelAlias?: string;
+    // Motorisation chosen in the catalogue list. Names alone are ambiguous:
+    // one model often has several engines sharing a name and alias.
+    typeId?: number;
+    typeName?: string;
+    typeAlias?: string;
+    engine?: string;
     year?: number;
     mileage_km?: number;
     fuel?: string;
@@ -35,6 +43,16 @@ export type WizardAction =
   | { type: "SET_MODE"; payload: "diagnostic" | "maintenance" }
   | { type: "SET_MAINTENANCE_RECORDS"; payload: MaintenanceRecord[] }
   | { type: "SET_VEHICLE"; payload: WizardState["vehicle"] }
+  | {
+      type: "SET_TYPE_DETAILS";
+      payload: {
+        typeId: number;
+        details?: Pick<
+          WizardState["vehicle"],
+          "typeName" | "typeAlias" | "engine" | "fuel"
+        >;
+      };
+    }
   | { type: "SET_USAGE"; payload: { profile?: string; lastServiceKm?: number } }
   | { type: "SET_SYSTEM"; payload: string }
   | { type: "SET_SYMPTOMS"; payload: string[] }
