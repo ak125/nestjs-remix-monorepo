@@ -14,7 +14,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash /opt/automecanik/app/scripts/claude-hooks/pretool-bash-guard.sh"
+            "command": "bash /opt/automecanik/app/scripts/claude-hooks/pretool-bash-guard.sh",
+            "onFailure": "block"
           }
         ]
       },
@@ -23,7 +24,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash /opt/automecanik/app/scripts/claude-hooks/pretool-file-guard.sh"
+            "command": "bash /opt/automecanik/app/scripts/claude-hooks/pretool-file-guard.sh",
+            "onFailure": "block"
           }
         ]
       },
@@ -32,7 +34,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash /opt/automecanik/app/scripts/claude-hooks/pretool-supabase-guard.sh"
+            "command": "bash /opt/automecanik/app/scripts/claude-hooks/pretool-supabase-guard.sh",
+            "onFailure": "block"
           }
         ]
       },
@@ -41,7 +44,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash /opt/automecanik/app/scripts/claude-hooks/pretool-agent-guard.sh"
+            "command": "bash /opt/automecanik/app/scripts/claude-hooks/pretool-agent-guard.sh",
+            "onFailure": "block"
           }
         ]
       }
