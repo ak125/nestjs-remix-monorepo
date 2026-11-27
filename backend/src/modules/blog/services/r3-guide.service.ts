@@ -53,8 +53,11 @@ import {
  *  (sinon les payloads v2 cachés continueraient de servir le JSON 24 h).
  *  La clé porte ensuite le segment du drapeau R6 (`r6c0`/`r6c1`, ADR-103 D5) :
  *  les liens vers les guides dépendent du drapeau. Drapeau R4 allumé (mandat ER),
- *  le segment est suffixé (`r6c0.r4c1`) : les liens vers les pages R4 en dépendent. */
-const R3_CACHE_PREFIX = 'r3-guide:v3:';
+ *  le segment est suffixé (`r6c0.r4c1`) : les liens vers les pages R4 en dépendent.
+ *  v4 (2026-11-27, mandat GB) : la règle des liens R4 s'applique aussi au `content`
+ *  des articles croisés et adjacents (sinon les payloads v3 cachés drapeau allumé
+ *  continueraient de servir ces liens 24 h). Drapeau éteint, payload identique. */
+const R3_CACHE_PREFIX = 'r3-guide:v4:';
 
 /** Motif de rejet d'une section META hors contrat « liens ». */
 type MetaSectionRejection = 'empty' | 'json' | 'meta_tag' | 'no_link';
@@ -458,6 +461,24 @@ export class R3GuideService {
       section.html = r4Out.html;
       referenceLinksChanged += r4Out.changed;
     }
+    // Même règle sur le `content` (`__blog_advice.ba_content`) des articles croisés
+    // et adjacents, sérialisé dans les données du loader (mandat GB). Objet d'origine
+    // rendu tel quel quand aucun lien ne change.
+    const withReferenceLinkRule = (a: BlogArticle): BlogArticle => {
+      if (typeof a.content !== 'string') return a;
+      const out = applyReferenceLinkRuleToHtml(
+        a.content,
+        r4Snapshot,
+        guideLinkCtx.currentPath,
+      );
+      referenceLinksChanged += out.changed;
+      return out.changed === 0 ? a : { ...a, content: out.html };
+    };
+    const related = (relatedArticles || []).map(withReferenceLinkRule);
+    const previous = adjacent.previous
+      ? withReferenceLinkRule(adjacent.previous)
+      : null;
+    const next = adjacent.next ? withReferenceLinkRule(adjacent.next) : null;
     if (referenceLinksChanged > 0) {
       this.logger.log(
         `[R4-LINKS] pg_alias=${pg_alias} contenu=${referenceLinksChanged} lien(s) modifié(s)`,
@@ -538,13 +559,10 @@ export class R3GuideService {
       s1Sections,
       bodySections,
       metaSections,
-      related: relatedArticles || [],
+      related,
       vehicles: vehicles || [],
       seoSwitches: seoSwitches || [],
-      adjacent: {
-        previous: adjacent.previous || null,
-        next: adjacent.next || null,
-      },
+      adjacent: { previous, next },
     };
   }
 

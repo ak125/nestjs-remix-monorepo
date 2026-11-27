@@ -234,7 +234,7 @@ describe('R3GuideService — cache + single-flight + invalidation (PR-A)', () =>
       const result = await service.getR3GuidePayload('inconnu');
 
       expect(result).toBeNull();
-      expect(await cache.get('r3-guide:v3:r6c0:inconnu')).toBeNull();
+      expect(await cache.get('r3-guide:v4:r6c0:inconnu')).toBeNull();
     });
   });
 
@@ -879,14 +879,14 @@ describe('R3GuideService — sections META servies seulement si conformes au con
     expect(warn).not.toHaveBeenCalledWith(expect.stringContaining('[r3-meta]'));
   });
 
-  it('payload filtré mis en cache sous la clé v3 (les payloads v2 servaient le JSON)', async () => {
+  it('payload filtré mis en cache sous la clé v4 (v3 : les payloads v2 servaient le JSON)', async () => {
     const { service, cache, seoService } = await buildService();
     seoService.getGammeConseil.mockResolvedValue([body, JSON_META]);
 
     await service.getR3GuidePayload(PG_ALIAS);
 
     const cached = await cache.get<{ metaSections: unknown[] }>(
-      `r3-guide:v3:r6c0:${PG_ALIAS}`,
+      `r3-guide:v4:r6c0:${PG_ALIAS}`,
     );
     expect(cached?.metaSections).toEqual([]);
     expect(await cache.get(`r3-guide:v2:${PG_ALIAS}`)).toBeNull();
@@ -991,7 +991,7 @@ describe("R3GuideService — liens vers les guides d'achat (ADR-103 D5)", () => 
       await buildService();
 
     await service.getR3GuidePayload(PG_ALIAS);
-    expect(await cache.get(`r3-guide:v3:r6c0:${PG_ALIAS}`)).not.toBeNull();
+    expect(await cache.get(`r3-guide:v4:r6c0:${PG_ALIAS}`)).not.toBeNull();
 
     guideLinkPolicy.cacheKeySegment.mockReturnValue('r6c1');
     guideLinkPolicy.getSnapshot.mockResolvedValue(guideLinkSnapshot(true));
@@ -999,18 +999,18 @@ describe("R3GuideService — liens vers les guides d'achat (ADR-103 D5)", () => 
 
     expect(dataService.getArticleByGamme).toHaveBeenCalledTimes(2);
     expect(flipped?.page.buyingGuideHref).toBeNull();
-    expect(await cache.get(`r3-guide:v3:r6c1:${PG_ALIAS}`)).not.toBeNull();
+    expect(await cache.get(`r3-guide:v4:r6c1:${PG_ALIAS}`)).not.toBeNull();
   });
 
   it('un événement article invalide la clé des deux règles', async () => {
     const { service, cache } = await buildService();
-    await cache.set(`r3-guide:v3:r6c0:${PG_ALIAS}`, { x: 1 }, 60);
-    await cache.set(`r3-guide:v3:r6c1:${PG_ALIAS}`, { x: 1 }, 60);
+    await cache.set(`r3-guide:v4:r6c0:${PG_ALIAS}`, { x: 1 }, 60);
+    await cache.set(`r3-guide:v4:r6c1:${PG_ALIAS}`, { x: 1 }, 60);
 
     await service.onArticleChanged({ pg_alias: PG_ALIAS });
 
-    expect(await cache.get(`r3-guide:v3:r6c0:${PG_ALIAS}`)).toBeNull();
-    expect(await cache.get(`r3-guide:v3:r6c1:${PG_ALIAS}`)).toBeNull();
+    expect(await cache.get(`r3-guide:v4:r6c0:${PG_ALIAS}`)).toBeNull();
+    expect(await cache.get(`r3-guide:v4:r6c1:${PG_ALIAS}`)).toBeNull();
   });
 });
 
@@ -1046,7 +1046,7 @@ describe('R3GuideService — liens vers les pages R4 redirigées (mandat ER)', (
     const payload = await service.getR3GuidePayload(PG_ALIAS);
 
     expect(payload?.bodySections[0].html).toBe(S2.content);
-    expect(await cache.get(`r3-guide:v3:r6c0:${PG_ALIAS}`)).not.toBeNull();
+    expect(await cache.get(`r3-guide:v4:r6c0:${PG_ALIAS}`)).not.toBeNull();
   });
 
   it('drapeau allumé : lien vers sa propre page R4 déplié, autre page redirigée → conseils, page non redirigée gardée', async () => {
@@ -1063,8 +1063,8 @@ describe('R3GuideService — liens vers les pages R4 redirigées (mandat ER)', (
     expect(payload?.bodySections[0].html).toBe(
       `<p>Voir la définition, <a href="${CONSEILS('thermostat')}">le thermostat</a> et <a href="${REF('alternateur')}">l'alternateur</a>.</p>`,
     );
-    expect(await cache.get(`r3-guide:v3:r6c0.r4c1:${PG_ALIAS}`)).not.toBeNull();
-    expect(await cache.get(`r3-guide:v3:r6c0:${PG_ALIAS}`)).toBeNull();
+    expect(await cache.get(`r3-guide:v4:r6c0.r4c1:${PG_ALIAS}`)).not.toBeNull();
+    expect(await cache.get(`r3-guide:v4:r6c0:${PG_ALIAS}`)).toBeNull();
   });
 
   it('drapeau allumé, garde en panne : page servie sans redirection de lien, rien en cache sous .r4c1', async () => {
@@ -1083,20 +1083,188 @@ describe('R3GuideService — liens vers les pages R4 redirigées (mandat ER)', (
     const payload = await service.getR3GuidePayload(PG_ALIAS);
 
     expect(payload?.bodySections[0].html).toBe(S2.content);
-    expect(await cache.get(`r3-guide:v3:r6c0.r4c1:${PG_ALIAS}`)).toBeNull();
-    expect(await cache.get(`r3-guide:v3:r6c0:${PG_ALIAS}`)).toBeNull();
+    expect(await cache.get(`r3-guide:v4:r6c0.r4c1:${PG_ALIAS}`)).toBeNull();
+    expect(await cache.get(`r3-guide:v4:r6c0:${PG_ALIAS}`)).toBeNull();
   });
 
   it('un événement article invalide aussi les clés drapeau R4 allumé', async () => {
     const { service, cache } = await buildService();
     for (const seg of ['r6c0', 'r6c1', 'r6c0.r4c1', 'r6c1.r4c1']) {
-      await cache.set(`r3-guide:v3:${seg}:${PG_ALIAS}`, { x: 1 }, 60);
+      await cache.set(`r3-guide:v4:${seg}:${PG_ALIAS}`, { x: 1 }, 60);
     }
 
     await service.onArticleChanged({ pg_alias: PG_ALIAS });
 
     for (const seg of ['r6c0', 'r6c1', 'r6c0.r4c1', 'r6c1.r4c1']) {
-      expect(await cache.get(`r3-guide:v3:${seg}:${PG_ALIAS}`)).toBeNull();
+      expect(await cache.get(`r3-guide:v4:${seg}:${PG_ALIAS}`)).toBeNull();
     }
+  });
+});
+
+/**
+ * Mandat GB : la règle des liens R4 vaut aussi pour le `content` des articles
+ * croisés et adjacents, sérialisé dans les données du loader. Extraits réels de
+ * la page /blog-pieces-auto/conseils/arbre-a-came (PROD, 27 nov. 2026, bloc
+ * « Pour aller plus loin » de `__blog_advice.ba_content`).
+ */
+describe('R3GuideService — liens R4 du contenu des articles croisés et adjacents (mandat GB)', () => {
+  const ALIAS = 'arbre-a-came';
+  const REF = (s: string) => `/reference-auto/${s}`;
+  const CONSEILS = (a: string) => `/blog-pieces-auto/conseils/${a}`;
+  const plusLoin = (slug: string, label: string, pgId: number) =>
+    `<h3>Pour aller plus loin</h3>\n<ul>\n<li><a href="${REF(slug)}">En savoir plus : ${label} — définition et rôle mécanique</a></li>\n<li><a href="/blog-pieces-auto/guide-achat/${slug}">Guide d’achat ${label} : choisir la bonne référence</a></li>\n<li><a href="/pieces/${slug}-${pgId}.html">Trouver votre ${label} compatible avec votre véhicule</a></li>\n</ul>`;
+  const article = (slug: string, content: string) => ({
+    ...articleStub,
+    id: `advice_${slug}`,
+    slug: `comment-changer-${slug}`,
+    pg_alias: slug,
+    content,
+  });
+  const RELATED = [
+    article(
+      'courroie-de-distribution',
+      `<p>Une courroie usée.</p>\n${plusLoin('courroie-de-distribution', 'courroie de distribution', 306)}`,
+    ),
+    article(
+      'kit-de-chaine-de-distribution',
+      `<p>Un kit usé.</p>\n${plusLoin('kit-de-chaine-de-distribution', 'kit de chaîne de distribution', 1389)}`,
+    ),
+    // Article croisé qui lie la page R4 de la page courante : lien déplié.
+    article(
+      'poulie-d-arbre-a-came',
+      `<p>Voir la <a href="${REF(ALIAS)}">fiche technique Arbre à came</a>.</p>`,
+    ),
+  ];
+  const ADJACENT = {
+    // carter-d-huile n'est pas redirigée : lien gardé.
+    previous: article(
+      'carter-d-huile',
+      plusLoin('carter-d-huile', "carter d'huile", 592),
+    ),
+    next: article(
+      'kit-de-distribution',
+      plusLoin('kit-de-distribution', 'kit de distribution', 307),
+    ),
+  };
+  const S4 = {
+    title: 'Démontage',
+    content: `<p class="text-sm mb-3">📖 Avant de démonter, consultez la <a href="${REF(ALIAS)}">fiche technique Arbre à came</a> pour connaître les spécifications.</p>`,
+    sectionType: 'S4_DEPOSE',
+    order: 4,
+    qualityScore: null,
+    sources: [],
+  };
+  const REDIRECTED = [
+    ALIAS,
+    'courroie-de-distribution',
+    'kit-de-chaine-de-distribution',
+    'kit-de-distribution',
+    'poulie-d-arbre-a-came',
+  ];
+  const r4On = () => ({
+    enabled: true,
+    redirects: new Map(REDIRECTED.map((s) => [s, CONSEILS(s)])),
+    degraded: false,
+  });
+  const clone = <T>(v: T): T => JSON.parse(JSON.stringify(v)) as T;
+
+  async function setup(flagOn: boolean) {
+    const built = await buildService();
+    built.dataService.getRelatedArticles.mockResolvedValue(clone(RELATED));
+    built.dataService.getAdjacentArticles.mockResolvedValue(clone(ADJACENT));
+    built.seoService.getGammeConseil.mockResolvedValue([clone(S4)]);
+    if (flagOn) {
+      built.r4Consolidation.cacheKeySegment.mockImplementation(
+        (base: string) => `${base}.r4c1`,
+      );
+      built.r4Consolidation.getSnapshot.mockResolvedValue(r4On());
+    }
+    return built;
+  }
+  const refsOf = (s: string) =>
+    [...s.matchAll(/\/reference-auto\/([a-z0-9-]+)/g)].map((m) => m[1]);
+
+  it('drapeau éteint : articles croisés et adjacents servis tels quels', async () => {
+    const { service, cache } = await setup(false);
+
+    const payload = await service.getR3GuidePayload(ALIAS);
+
+    expect(payload?.related).toEqual(RELATED);
+    expect(payload?.adjacent).toEqual(ADJACENT);
+    expect(payload?.bodySections[0].html).toBe(S4.content);
+    expect(await cache.get(`r3-guide:v4:r6c0:${ALIAS}`)).not.toBeNull();
+  });
+
+  it('drapeau allumé : plus aucun lien vers une page R4 redirigée, liens vers la page conseils cible', async () => {
+    const { service, cache } = await setup(true);
+
+    const payload = await service.getR3GuidePayload(ALIAS);
+    const json = JSON.stringify(payload);
+
+    for (const slug of REDIRECTED) expect(json).not.toContain(REF(slug));
+    expect(payload?.related[0].content).toContain(
+      `<li><a href="${CONSEILS('courroie-de-distribution')}">En savoir plus : courroie de distribution — définition et rôle mécanique</a></li>`,
+    );
+    expect(payload?.related[1].content).toContain(
+      `<a href="${CONSEILS('kit-de-chaine-de-distribution')}">`,
+    );
+    expect(payload?.adjacent.next?.content).toContain(
+      `<a href="${CONSEILS('kit-de-distribution')}">`,
+    );
+    // Les autres liens du bloc ne changent pas.
+    expect(payload?.related[0].content).toContain(
+      '<a href="/blog-pieces-auto/guide-achat/courroie-de-distribution">',
+    );
+    expect(payload?.related[0].content).toContain(
+      '<a href="/pieces/courroie-de-distribution-306.html">',
+    );
+    // Page non redirigée : lien gardé.
+    expect(refsOf(json)).toEqual(['carter-d-huile']);
+    expect(payload?.adjacent.previous).toEqual(ADJACENT.previous);
+    expect(await cache.get(`r3-guide:v4:r6c0.r4c1:${ALIAS}`)).not.toBeNull();
+  });
+
+  it('drapeau allumé, sur la page cible elle-même : lien retiré, texte gardé', async () => {
+    const { service } = await setup(true);
+
+    const payload = await service.getR3GuidePayload(ALIAS);
+
+    expect(payload?.related[2].content).toBe(
+      '<p>Voir la fiche technique Arbre à came.</p>',
+    );
+    expect(payload?.bodySections[0].html).toBe(
+      '<p class="text-sm mb-3">📖 Avant de démonter, consultez la fiche technique Arbre à came pour connaître les spécifications.</p>',
+    );
+  });
+
+  it('drapeau allumé, garde en panne : contenu des articles inchangé, rien en cache', async () => {
+    const { service, r4Consolidation, cache } = await setup(true);
+    r4Consolidation.getSnapshot.mockResolvedValue({
+      enabled: true,
+      redirects: new Map(),
+      degraded: true,
+    });
+
+    const payload = await service.getR3GuidePayload(ALIAS);
+
+    expect(payload?.related).toEqual(RELATED);
+    expect(payload?.adjacent).toEqual(ADJACENT);
+    expect(await cache.get(`r3-guide:v4:r6c0.r4c1:${ALIAS}`)).toBeNull();
+  });
+
+  it('payloads v3 cachés ignorés : la clé v4 est recalculée avec la règle', async () => {
+    const { service, cache, dataService } = await setup(true);
+    await cache.set(
+      `r3-guide:v3:r6c0.r4c1:${ALIAS}`,
+      { related: clone(RELATED) },
+      60,
+    );
+
+    const payload = await service.getR3GuidePayload(ALIAS);
+
+    expect(dataService.getRelatedArticles).toHaveBeenCalledTimes(1);
+    expect(JSON.stringify(payload)).not.toContain(
+      REF('courroie-de-distribution'),
+    );
   });
 });

@@ -104,7 +104,7 @@
         "backend/src/modules/blog/utils"
       ],
       "files_count": 43,
-      "loc_total": 15451,
+      "loc_total": 15637,
       "has_barrel": false
     },
     "bot-guard": {
