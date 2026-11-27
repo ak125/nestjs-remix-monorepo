@@ -1,0 +1,1065 @@
+{
+  "schemaVersion": "1.0.0",
+  "_contract": "Qualification des alertes code scanning ouvertes de sévérité critique et élevée (mandat CE, département 19 Risk et Audit). Par alerte : numéro, règle, sévérité, verdict (a_corriger | faux_positif | voulu), raison courte et, pour a_corriger, le mandat de correction proposé. AUCUN détail d'exploitation ici (ni chemin, ni paramètre, ni charge) : le dépôt est public. Une alerte absente de ce fichier n'est pas qualifiée. Fermer une alerte reste un acte du mainteneur.",
+  "repo": "ak125/nestjs-remix-monorepo",
+  "alerts_read_at": "2026-11-18T13:03:26Z",
+  "qualified_on": "2026-11-18",
+  "alerts": [
+    {
+      "number": 4,
+      "rule": "js/command-line-injection",
+      "severity": "critical",
+      "verdict": "a_corriger",
+      "raison": "faille confirmée à la lecture du code ; détail hors dépôt, dans le rapport du mandat",
+      "mandat_propose": "CE-C2"
+    },
+    {
+      "number": 5,
+      "rule": "js/command-line-injection",
+      "severity": "critical",
+      "verdict": "a_corriger",
+      "raison": "faille confirmée à la lecture du code ; détail hors dépôt, dans le rapport du mandat",
+      "mandat_propose": "CE-C2"
+    },
+    {
+      "number": 6,
+      "rule": "js/command-line-injection",
+      "severity": "critical",
+      "verdict": "a_corriger",
+      "raison": "faille confirmée à la lecture du code ; détail hors dépôt, dans le rapport du mandat",
+      "mandat_propose": "CE-C2"
+    },
+    {
+      "number": 7,
+      "rule": "js/command-line-injection",
+      "severity": "critical",
+      "verdict": "a_corriger",
+      "raison": "faille confirmée à la lecture du code ; détail hors dépôt, dans le rapport du mandat",
+      "mandat_propose": "CE-C2"
+    },
+    {
+      "number": 8,
+      "rule": "js/command-line-injection",
+      "severity": "critical",
+      "verdict": "a_corriger",
+      "raison": "faille confirmée à la lecture du code ; détail hors dépôt, dans le rapport du mandat",
+      "mandat_propose": "CE-C2"
+    },
+    {
+      "number": 54,
+      "rule": "js/request-forgery",
+      "severity": "critical",
+      "verdict": "a_corriger",
+      "raison": "faille confirmée à la lecture du code ; détail hors dépôt, dans le rapport du mandat",
+      "mandat_propose": "CE-C2"
+    },
+    {
+      "number": 55,
+      "rule": "js/request-forgery",
+      "severity": "critical",
+      "verdict": "a_corriger",
+      "raison": "faille confirmée à la lecture du code ; détail hors dépôt, dans le rapport du mandat",
+      "mandat_propose": "CE-C2"
+    },
+    {
+      "number": 56,
+      "rule": "js/request-forgery",
+      "severity": "critical",
+      "verdict": "a_corriger",
+      "raison": "faille confirmée à la lecture du code ; détail hors dépôt, dans le rapport du mandat",
+      "mandat_propose": "CE-C2"
+    },
+    {
+      "number": 72,
+      "rule": "js/type-confusion-through-parameter-tampering",
+      "severity": "critical",
+      "verdict": "faux_positif",
+      "raison": "aucune décision d'accès ne dépend de la valeur signalée"
+    },
+    {
+      "number": 73,
+      "rule": "js/type-confusion-through-parameter-tampering",
+      "severity": "critical",
+      "verdict": "faux_positif",
+      "raison": "aucune décision d'accès ne dépend de la valeur signalée"
+    },
+    {
+      "number": 74,
+      "rule": "js/type-confusion-through-parameter-tampering",
+      "severity": "critical",
+      "verdict": "faux_positif",
+      "raison": "aucune décision d'accès ne dépend de la valeur signalée"
+    },
+    {
+      "number": 75,
+      "rule": "js/type-confusion-through-parameter-tampering",
+      "severity": "critical",
+      "verdict": "faux_positif",
+      "raison": "aucune décision d'accès ne dépend de la valeur signalée"
+    },
+    {
+      "number": 76,
+      "rule": "js/type-confusion-through-parameter-tampering",
+      "severity": "critical",
+      "verdict": "faux_positif",
+      "raison": "aucune décision d'accès ne dépend de la valeur signalée"
+    },
+    {
+      "number": 77,
+      "rule": "js/type-confusion-through-parameter-tampering",
+      "severity": "critical",
+      "verdict": "faux_positif",
+      "raison": "aucune décision d'accès ne dépend de la valeur signalée"
+    },
+    {
+      "number": 78,
+      "rule": "js/type-confusion-through-parameter-tampering",
+      "severity": "critical",
+      "verdict": "faux_positif",
+      "raison": "aucune décision d'accès ne dépend de la valeur signalée"
+    },
+    {
+      "number": 79,
+      "rule": "js/type-confusion-through-parameter-tampering",
+      "severity": "critical",
+      "verdict": "faux_positif",
+      "raison": "aucune décision d'accès ne dépend de la valeur signalée"
+    },
+    {
+      "number": 80,
+      "rule": "js/type-confusion-through-parameter-tampering",
+      "severity": "critical",
+      "verdict": "faux_positif",
+      "raison": "code non servi : module branché nulle part"
+    },
+    {
+      "number": 81,
+      "rule": "js/type-confusion-through-parameter-tampering",
+      "severity": "critical",
+      "verdict": "faux_positif",
+      "raison": "code non servi : module branché nulle part"
+    },
+    {
+      "number": 82,
+      "rule": "js/type-confusion-through-parameter-tampering",
+      "severity": "critical",
+      "verdict": "faux_positif",
+      "raison": "code non servi : module branché nulle part"
+    },
+    {
+      "number": 83,
+      "rule": "js/type-confusion-through-parameter-tampering",
+      "severity": "critical",
+      "verdict": "faux_positif",
+      "raison": "code non servi : module branché nulle part"
+    },
+    {
+      "number": 84,
+      "rule": "js/type-confusion-through-parameter-tampering",
+      "severity": "critical",
+      "verdict": "faux_positif",
+      "raison": "code non servi : module branché nulle part"
+    },
+    {
+      "number": 85,
+      "rule": "js/type-confusion-through-parameter-tampering",
+      "severity": "critical",
+      "verdict": "faux_positif",
+      "raison": "code non servi : module branché nulle part"
+    },
+    {
+      "number": 86,
+      "rule": "js/type-confusion-through-parameter-tampering",
+      "severity": "critical",
+      "verdict": "faux_positif",
+      "raison": "code non servi : module branché nulle part"
+    },
+    {
+      "number": 87,
+      "rule": "js/type-confusion-through-parameter-tampering",
+      "severity": "critical",
+      "verdict": "faux_positif",
+      "raison": "aucune décision d'accès ne dépend de la valeur signalée"
+    },
+    {
+      "number": 14,
+      "rule": "js/insufficient-password-hash",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "fichier de test, hors du code servi"
+    },
+    {
+      "number": 15,
+      "rule": "js/insufficient-password-hash",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "fichier de test, hors du code servi"
+    },
+    {
+      "number": 18,
+      "rule": "js/missing-rate-limiting",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "service interne sans port publié, appelé par le seul backend"
+    },
+    {
+      "number": 19,
+      "rule": "js/incomplete-url-substring-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "aucune décision d'accès ne dépend de la valeur signalée"
+    },
+    {
+      "number": 20,
+      "rule": "js/incomplete-url-substring-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "aucune décision d'accès ne dépend de la valeur signalée"
+    },
+    {
+      "number": 21,
+      "rule": "js/incomplete-url-substring-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "aucune décision d'accès ne dépend de la valeur signalée"
+    },
+    {
+      "number": 23,
+      "rule": "js/double-escaping",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 24,
+      "rule": "js/double-escaping",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 25,
+      "rule": "js/double-escaping",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 26,
+      "rule": "js/double-escaping",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 27,
+      "rule": "js/double-escaping",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 28,
+      "rule": "js/bad-tag-filter",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 29,
+      "rule": "js/bad-tag-filter",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 30,
+      "rule": "js/incomplete-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "valeur d'origine interne (code, configuration ou base), non fournie par un tiers"
+    },
+    {
+      "number": 31,
+      "rule": "js/incomplete-multi-character-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "script d'outillage lancé à la main, hors du code servi"
+    },
+    {
+      "number": 32,
+      "rule": "js/incomplete-multi-character-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 33,
+      "rule": "js/incomplete-multi-character-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 34,
+      "rule": "js/incomplete-multi-character-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 35,
+      "rule": "js/incomplete-multi-character-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 36,
+      "rule": "js/incomplete-multi-character-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 37,
+      "rule": "js/incomplete-multi-character-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 40,
+      "rule": "js/incomplete-multi-character-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 41,
+      "rule": "js/incomplete-multi-character-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 43,
+      "rule": "js/incomplete-multi-character-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "fichier de test, hors du code servi"
+    },
+    {
+      "number": 44,
+      "rule": "js/incomplete-multi-character-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 47,
+      "rule": "js/incomplete-multi-character-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 49,
+      "rule": "js/incomplete-multi-character-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 50,
+      "rule": "js/incomplete-multi-character-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 51,
+      "rule": "js/weak-cryptographic-algorithm",
+      "severity": "high",
+      "verdict": "voulu",
+      "raison": "algorithme de l'ancienne méthode de signature de la passerelle de paiement, conservée en option non par défaut"
+    },
+    {
+      "number": 52,
+      "rule": "js/weak-cryptographic-algorithm",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "fichier de test, hors du code servi"
+    },
+    {
+      "number": 57,
+      "rule": "js/insecure-randomness",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "identifiant de corrélation ou de mesure, pas un secret d'accès"
+    },
+    {
+      "number": 60,
+      "rule": "js/insecure-randomness",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "identifiant de corrélation ou de mesure, pas un secret d'accès"
+    },
+    {
+      "number": 62,
+      "rule": "js/insecure-randomness",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "identifiant de corrélation ou de mesure, pas un secret d'accès"
+    },
+    {
+      "number": 63,
+      "rule": "js/insecure-randomness",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "identifiant de corrélation ou de mesure, pas un secret d'accès"
+    },
+    {
+      "number": 65,
+      "rule": "js/path-injection",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "entrée validée ou bornée avant usage (liste blanche, format ancré ou longueur bornée)"
+    },
+    {
+      "number": 70,
+      "rule": "js/path-injection",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "entrée validée ou bornée avant usage (liste blanche, format ancré ou longueur bornée)"
+    },
+    {
+      "number": 71,
+      "rule": "js/path-injection",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "entrée validée ou bornée avant usage (liste blanche, format ancré ou longueur bornée)"
+    },
+    {
+      "number": 88,
+      "rule": "js/reflected-xss",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "réponse servie avec un type de contenu non HTML et l'en-tête nosniff, non interprétée comme une page"
+    },
+    {
+      "number": 89,
+      "rule": "js/reflected-xss",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "réponse servie avec un type de contenu non HTML et l'en-tête nosniff, non interprétée comme une page"
+    },
+    {
+      "number": 90,
+      "rule": "js/reflected-xss",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "réponse servie avec un type de contenu non HTML et l'en-tête nosniff, non interprétée comme une page"
+    },
+    {
+      "number": 91,
+      "rule": "js/reflected-xss",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "réponse servie avec un type de contenu non HTML et l'en-tête nosniff, non interprétée comme une page"
+    },
+    {
+      "number": 92,
+      "rule": "js/reflected-xss",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "réponse servie avec un type de contenu non HTML et l'en-tête nosniff, non interprétée comme une page"
+    },
+    {
+      "number": 93,
+      "rule": "js/polynomial-redos",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "entrée validée ou bornée avant usage (liste blanche, format ancré ou longueur bornée)"
+    },
+    {
+      "number": 94,
+      "rule": "js/polynomial-redos",
+      "severity": "high",
+      "verdict": "a_corriger",
+      "raison": "faille confirmée à la lecture du code ; détail hors dépôt, dans le rapport du mandat",
+      "mandat_propose": "CE-C4"
+    },
+    {
+      "number": 97,
+      "rule": "js/polynomial-redos",
+      "severity": "high",
+      "verdict": "a_corriger",
+      "raison": "faille confirmée à la lecture du code ; détail hors dépôt, dans le rapport du mandat",
+      "mandat_propose": "CE-C4"
+    },
+    {
+      "number": 99,
+      "rule": "js/polynomial-redos",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "atteignable seulement par un administrateur authentifié, sans capacité nouvelle pour lui"
+    },
+    {
+      "number": 100,
+      "rule": "js/polynomial-redos",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "atteignable seulement par un administrateur authentifié, sans capacité nouvelle pour lui"
+    },
+    {
+      "number": 101,
+      "rule": "js/insecure-temporary-file",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "script d'outillage lancé à la main, hors du code servi"
+    },
+    {
+      "number": 102,
+      "rule": "js/insecure-temporary-file",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "script d'outillage lancé à la main, hors du code servi"
+    },
+    {
+      "number": 103,
+      "rule": "js/insecure-temporary-file",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "service interne sans port publié, appelé par le seul backend"
+    },
+    {
+      "number": 112,
+      "rule": "js/remote-property-injection",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "écriture dans un objet local à la requête, sans effet sur un objet partagé"
+    },
+    {
+      "number": 113,
+      "rule": "js/remote-property-injection",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "écriture dans un objet local à la requête, sans effet sur un objet partagé"
+    },
+    {
+      "number": 114,
+      "rule": "js/remote-property-injection",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "écriture dans un objet local à la requête, sans effet sur un objet partagé"
+    },
+    {
+      "number": 115,
+      "rule": "js/remote-property-injection",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "écriture dans un objet local à la requête, sans effet sur un objet partagé"
+    },
+    {
+      "number": 116,
+      "rule": "js/remote-property-injection",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "écriture dans un objet local à la requête, sans effet sur un objet partagé"
+    },
+    {
+      "number": 117,
+      "rule": "js/remote-property-injection",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "code non servi : module branché nulle part"
+    },
+    {
+      "number": 122,
+      "rule": "js/user-controlled-bypass",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "le cas signalé est traité comme un échec du contrôle, pas comme un contournement"
+    },
+    {
+      "number": 124,
+      "rule": "js/file-system-race",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "script d'outillage lancé à la main, hors du code servi"
+    },
+    {
+      "number": 127,
+      "rule": "js/file-system-race",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "script d'outillage lancé à la main, hors du code servi"
+    },
+    {
+      "number": 128,
+      "rule": "js/file-system-race",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "script d'outillage lancé à la main, hors du code servi"
+    },
+    {
+      "number": 129,
+      "rule": "js/file-system-race",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "service interne sans port publié, appelé par le seul backend"
+    },
+    {
+      "number": 136,
+      "rule": "js/double-escaping",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 137,
+      "rule": "js/incomplete-multi-character-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 138,
+      "rule": "js/incomplete-multi-character-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 139,
+      "rule": "js/double-escaping",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 140,
+      "rule": "js/double-escaping",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 141,
+      "rule": "js/double-escaping",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 142,
+      "rule": "js/incomplete-multi-character-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 143,
+      "rule": "js/incomplete-multi-character-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 144,
+      "rule": "js/incomplete-multi-character-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 145,
+      "rule": "js/incomplete-multi-character-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 146,
+      "rule": "js/incomplete-multi-character-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 147,
+      "rule": "js/incomplete-multi-character-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 148,
+      "rule": "js/incomplete-multi-character-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 151,
+      "rule": "js/path-injection",
+      "severity": "high",
+      "verdict": "a_corriger",
+      "raison": "faille confirmée à la lecture du code ; détail hors dépôt, dans le rapport du mandat",
+      "mandat_propose": "CE-C3"
+    },
+    {
+      "number": 152,
+      "rule": "js/path-injection",
+      "severity": "high",
+      "verdict": "a_corriger",
+      "raison": "faille confirmée à la lecture du code ; détail hors dépôt, dans le rapport du mandat",
+      "mandat_propose": "CE-C3"
+    },
+    {
+      "number": 153,
+      "rule": "js/path-injection",
+      "severity": "high",
+      "verdict": "a_corriger",
+      "raison": "faille confirmée à la lecture du code ; détail hors dépôt, dans le rapport du mandat",
+      "mandat_propose": "CE-C3"
+    },
+    {
+      "number": 154,
+      "rule": "js/path-injection",
+      "severity": "high",
+      "verdict": "a_corriger",
+      "raison": "faille confirmée à la lecture du code ; détail hors dépôt, dans le rapport du mandat",
+      "mandat_propose": "CE-C3"
+    },
+    {
+      "number": 157,
+      "rule": "js/path-injection",
+      "severity": "high",
+      "verdict": "a_corriger",
+      "raison": "faille confirmée à la lecture du code ; détail hors dépôt, dans le rapport du mandat",
+      "mandat_propose": "CE-C3"
+    },
+    {
+      "number": 158,
+      "rule": "js/path-injection",
+      "severity": "high",
+      "verdict": "a_corriger",
+      "raison": "faille confirmée à la lecture du code ; détail hors dépôt, dans le rapport du mandat",
+      "mandat_propose": "CE-C3"
+    },
+    {
+      "number": 161,
+      "rule": "js/file-system-race",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "répertoire détenu par le service, aucun tiers local sur l'hôte"
+    },
+    {
+      "number": 173,
+      "rule": "js/path-injection",
+      "severity": "high",
+      "verdict": "a_corriger",
+      "raison": "faille confirmée à la lecture du code ; détail hors dépôt, dans le rapport du mandat",
+      "mandat_propose": "CE-C3"
+    },
+    {
+      "number": 174,
+      "rule": "js/path-injection",
+      "severity": "high",
+      "verdict": "a_corriger",
+      "raison": "faille confirmée à la lecture du code ; détail hors dépôt, dans le rapport du mandat",
+      "mandat_propose": "CE-C3"
+    },
+    {
+      "number": 175,
+      "rule": "js/path-injection",
+      "severity": "high",
+      "verdict": "a_corriger",
+      "raison": "faille confirmée à la lecture du code ; détail hors dépôt, dans le rapport du mandat",
+      "mandat_propose": "CE-C3"
+    },
+    {
+      "number": 177,
+      "rule": "js/incomplete-multi-character-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 178,
+      "rule": "js/incomplete-multi-character-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 179,
+      "rule": "js/remote-property-injection",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "entrée validée ou bornée avant usage (liste blanche, format ancré ou longueur bornée)"
+    },
+    {
+      "number": 180,
+      "rule": "js/path-injection",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "entrée validée ou bornée avant usage (liste blanche, format ancré ou longueur bornée)"
+    },
+    {
+      "number": 181,
+      "rule": "js/path-injection",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "entrée validée ou bornée avant usage (liste blanche, format ancré ou longueur bornée)"
+    },
+    {
+      "number": 182,
+      "rule": "js/path-injection",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "entrée validée ou bornée avant usage (liste blanche, format ancré ou longueur bornée)"
+    },
+    {
+      "number": 183,
+      "rule": "js/path-injection",
+      "severity": "high",
+      "verdict": "a_corriger",
+      "raison": "faille confirmée à la lecture du code ; détail hors dépôt, dans le rapport du mandat",
+      "mandat_propose": "CE-C1"
+    },
+    {
+      "number": 184,
+      "rule": "js/path-injection",
+      "severity": "high",
+      "verdict": "a_corriger",
+      "raison": "faille confirmée à la lecture du code ; détail hors dépôt, dans le rapport du mandat",
+      "mandat_propose": "CE-C1"
+    },
+    {
+      "number": 185,
+      "rule": "js/path-injection",
+      "severity": "high",
+      "verdict": "a_corriger",
+      "raison": "faille confirmée à la lecture du code ; détail hors dépôt, dans le rapport du mandat",
+      "mandat_propose": "CE-C1"
+    },
+    {
+      "number": 186,
+      "rule": "js/path-injection",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "entrée validée ou bornée avant usage (liste blanche, format ancré ou longueur bornée)"
+    },
+    {
+      "number": 187,
+      "rule": "js/path-injection",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "entrée validée ou bornée avant usage (liste blanche, format ancré ou longueur bornée)"
+    },
+    {
+      "number": 188,
+      "rule": "js/path-injection",
+      "severity": "high",
+      "verdict": "a_corriger",
+      "raison": "faille confirmée à la lecture du code ; détail hors dépôt, dans le rapport du mandat",
+      "mandat_propose": "CE-C3"
+    },
+    {
+      "number": 189,
+      "rule": "js/path-injection",
+      "severity": "high",
+      "verdict": "a_corriger",
+      "raison": "faille confirmée à la lecture du code ; détail hors dépôt, dans le rapport du mandat",
+      "mandat_propose": "CE-C3"
+    },
+    {
+      "number": 193,
+      "rule": "js/user-controlled-bypass",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "le cas signalé est traité comme un échec du contrôle, pas comme un contournement"
+    },
+    {
+      "number": 194,
+      "rule": "js/file-system-race",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "répertoire détenu par le service, aucun tiers local sur l'hôte"
+    },
+    {
+      "number": 195,
+      "rule": "js/file-system-race",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "répertoire détenu par le service, aucun tiers local sur l'hôte"
+    },
+    {
+      "number": 198,
+      "rule": "js/path-injection",
+      "severity": "high",
+      "verdict": "a_corriger",
+      "raison": "faille confirmée à la lecture du code ; détail hors dépôt, dans le rapport du mandat",
+      "mandat_propose": "CE-C3"
+    },
+    {
+      "number": 199,
+      "rule": "js/file-system-race",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "répertoire détenu par le service, aucun tiers local sur l'hôte"
+    },
+    {
+      "number": 203,
+      "rule": "js/incomplete-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "valeur d'origine interne (code, configuration ou base), non fournie par un tiers"
+    },
+    {
+      "number": 205,
+      "rule": "js/path-injection",
+      "severity": "high",
+      "verdict": "a_corriger",
+      "raison": "faille confirmée à la lecture du code ; détail hors dépôt, dans le rapport du mandat",
+      "mandat_propose": "CE-C3"
+    },
+    {
+      "number": 206,
+      "rule": "js/polynomial-redos",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "valeur d'origine interne (code, configuration ou base), non fournie par un tiers"
+    },
+    {
+      "number": 207,
+      "rule": "js/polynomial-redos",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "valeur d'origine interne (code, configuration ou base), non fournie par un tiers"
+    },
+    {
+      "number": 208,
+      "rule": "js/file-system-race",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "répertoire détenu par le service, aucun tiers local sur l'hôte"
+    },
+    {
+      "number": 211,
+      "rule": "js/incomplete-multi-character-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 212,
+      "rule": "js/incomplete-multi-character-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 213,
+      "rule": "js/path-injection",
+      "severity": "high",
+      "verdict": "a_corriger",
+      "raison": "faille confirmée à la lecture du code ; détail hors dépôt, dans le rapport du mandat",
+      "mandat_propose": "CE-C3"
+    },
+    {
+      "number": 216,
+      "rule": "js/incomplete-multi-character-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 217,
+      "rule": "js/incomplete-multi-character-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 218,
+      "rule": "js/incomplete-multi-character-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 220,
+      "rule": "js/incomplete-multi-character-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 221,
+      "rule": "js/regex/missing-regexp-anchor",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "aucune décision d'accès ne dépend de la valeur signalée"
+    },
+    {
+      "number": 230,
+      "rule": "js/polynomial-redos",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "entrée validée ou bornée avant usage (liste blanche, format ancré ou longueur bornée)"
+    },
+    {
+      "number": 233,
+      "rule": "js/file-system-race",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "répertoire détenu par le service, aucun tiers local sur l'hôte"
+    },
+    {
+      "number": 629,
+      "rule": "js/incomplete-multi-character-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    },
+    {
+      "number": 648,
+      "rule": "js/insecure-randomness",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "identifiant de corrélation ou de mesure, pas un secret d'accès"
+    },
+    {
+      "number": 649,
+      "rule": "js/insecure-randomness",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "identifiant de corrélation ou de mesure, pas un secret d'accès"
+    },
+    {
+      "number": 650,
+      "rule": "js/insecure-randomness",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "identifiant de corrélation ou de mesure, pas un secret d'accès"
+    },
+    {
+      "number": 660,
+      "rule": "js/clear-text-storage-of-sensitive-data",
+      "severity": "high",
+      "verdict": "voulu",
+      "raison": "données de reprise du tunnel conservées dans le navigateur du client lui-même ; ni identifiant de connexion ni donnée de paiement"
+    },
+    {
+      "number": 675,
+      "rule": "js/incomplete-multi-character-sanitization",
+      "severity": "high",
+      "verdict": "faux_positif",
+      "raison": "mise en forme d'un contenu éditorial interne (comptage, comparaison, balises meta, texte échappé au rendu), pas une barrière de sécurité"
+    }
+  ]
+}
