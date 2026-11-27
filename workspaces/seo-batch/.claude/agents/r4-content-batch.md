@@ -4,6 +4,7 @@ disable-model-invocation: true
 description: "[NEUTRALISÉ 2026-10-05 → seo-content-loop, ADR-031/046] Corps opératoire retiré. Cet agent lisait le RAG (/opt/automecanik/rag/knowledge/) puis ÉDITAIT EN PLACE des fiches R4 Reference déjà servies (__seo_reference, is_published=true) via MCP Supabase — direction RAG→source-de-contenu interdite. La vérité contenu vient du WIKI (RAW→WIKI→projection). Méthode canon : skill seo-content-loop (NO-RAG)."
 tools:
   - Read
+  - REPL
 role: R4_REFERENCE
 ---
 
