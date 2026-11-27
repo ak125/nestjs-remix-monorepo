@@ -9,6 +9,8 @@
 # sans PR. Écrit un manifeste de récupération (SHAs) avant toute suppression.
 # Retire enfin, dans les worktrees gérés restants, les caches d'outils marqués
 # CACHEDIR.TAG et inactifs (passe 3) : jamais le worktree, jamais un fichier suivi.
+# Retire aussi les node_modules autonomes (racine, dossiers de 1er niveau, packages/*) des worktrees
+# gérés qui n'ont pas servi depuis IDLE_NM_DAYS jours (passe 4) : le reste du worktree reste.
 #
 # Périmètre : seuls les worktrees des sessions Claude ($PRUNE_ROOTS, mêmes préfixes que
 # dedup-worktree-node-modules.sh) sont candidats, y compris ceux créés dans le scratchpad d'une
@@ -26,13 +28,17 @@
 #   PRUNE_ROOTS     préfixes de chemin des worktrees gérés, séparés par « : »
 #                   (défaut: <dépôt>/.claude/worktrees/:$HOME/worktrees/claude-:${TMPDIR:-/tmp}/claude-<uid>/)
 #   CACHE_IDLE_MIN  minutes sans écriture exigées avant de retirer un cache (défaut: 1440)
+#   IDLE_NM_DAYS    jours sans usage (index git, node_modules/.package-lock.json) exigés avant de
+#                   retirer les node_modules d'un worktree (défaut: 7 ; entier ≥ 1)
+#   PR_LIMIT        nombre maximal de PR lues (défaut: 5000) ; plafond atteint = avertissement
 #   CRON_REPORT_MAX_AGE_S  silence au-delà duquel le hook SessionStart signale le cron arrêté
 #                   (défaut: 93600 = passage quotidien + 2 h de marge)
 #
 # Observabilité : chaque exécution --apply enregistre son issue via cron_report
 # (scripts/cron/lib-supabase-report.sh), lue par le hook SessionStart : error si le script
-# s'arrête (état des PR illisible, outil absent, arrêt imprévu) ; warn si une suppression a été
-# refusée (FAIL, CACHE-FAIL) ou si le fetch a échoué ; ok sinon. Un essai à blanc n'enregistre
+# s'arrête (état des PR illisible, outil absent, réglage invalide, arrêt imprévu) ; warn si une
+# suppression a été refusée (FAIL, CACHE-FAIL, NM-FAIL), si le fetch a échoué ou si le plafond
+# PR_LIMIT est atteint ; ok sinon. Un essai à blanc n'enregistre
 # rien : lancé à la main, il masquerait l'état du cron. Avant, l'issue n'allait que dans
 # /tmp/prune-merged-worktrees.log, sans lecteur (MAILTO sans MTA).
 #
@@ -56,28 +62,31 @@ count_log() { # count_log <regex> -> nombre de lignes du manifeste qui correspon
   if [[ -n "$LOG" && -f "$LOG" ]]; then grep -cE "$1" "$LOG" || true; else echo 0; fi
 }
 report_outcome() {
-  local rc=$? status=ok summary removed branches caches cache_mb fails fetch_warn metrics
+  local rc=$? status=ok summary removed branches caches cache_mb nms nm_mb fails fetch_warn pr_cap metrics
   if [[ -n "$PRSTATE" ]]; then rm -f "$PRSTATE"; fi
   [[ $APPLY -eq 1 ]] || return 0
   removed="$(count_log '^REMOVED ')"
   branches="$(count_log '^BRANCH-DEL ')"
   caches="$(count_log '^CACHE-REMOVED ')"
-  cache_mb=0
+  nms="$(count_log '^NM-REMOVED ')"
+  cache_mb=0; nm_mb=0
   if [[ -n "$LOG" && -f "$LOG" ]]; then
     cache_mb="$(awk '$1 == "CACHE-REMOVED" { s += $2 } END { print s + 0 }' "$LOG")"
+    nm_mb="$(awk '$1 == "NM-REMOVED" { s += $2 } END { print s + 0 }' "$LOG")"
   fi
-  fails="$(count_log '^(FAIL|CACHE-FAIL) ')"
+  fails="$(count_log '^(FAIL|CACHE-FAIL|NM-FAIL) ')"
   fetch_warn="$(count_log '^WARN +fetch ')"
-  summary="worktrees retirés=$removed  branches supprimées=$branches  caches retirés=$caches (${cache_mb} Mo)"
+  pr_cap="$(count_log '^WARN +gh pr list ')"
+  summary="worktrees retirés=$removed  branches supprimées=$branches  caches retirés=$caches (${cache_mb} Mo)  node_modules retirés=$nms (${nm_mb} Mo)"
   if [[ "$rc" -ne 0 ]]; then
     status=error
     summary="arrêt en erreur (code $rc)${FAILURE:+ : $FAILURE} — $summary"
-  elif [[ "$fails" -gt 0 || "$fetch_warn" -gt 0 ]]; then
+  elif [[ "$fails" -gt 0 || "$fetch_warn" -gt 0 || "$pr_cap" -gt 0 ]]; then
     status=warn
-    summary="$fails suppression(s) refusée(s), fetch en échec=$fetch_warn — $summary — voir ${LOG:-le journal}"
+    summary="$fails suppression(s) refusée(s), fetch en échec=$fetch_warn, plafond PR atteint=$pr_cap — $summary — voir ${LOG:-le journal}"
   fi
-  metrics="$(printf '{"worktrees_removed":%d,"branches_deleted":%d,"caches_removed":%d,"cache_mb":%d,"fails":%d,"fetch_failed":%d}' \
-    "$removed" "$branches" "$caches" "$cache_mb" "$fails" "$fetch_warn")"
+  metrics="$(printf '{"worktrees_removed":%d,"branches_deleted":%d,"caches_removed":%d,"cache_mb":%d,"node_modules_removed":%d,"node_modules_mb":%d,"fails":%d,"fetch_failed":%d,"pr_limit_reached":%d}' \
+    "$removed" "$branches" "$caches" "$cache_mb" "$nms" "$nm_mb" "$fails" "$fetch_warn" "$pr_cap")"
   if command -v cron_report >/dev/null 2>&1; then
     cron_report "$LOG_TAG" "$status" "$(( $(date +%s) - START ))" "$metrics" "$summary"
   else
@@ -90,6 +99,7 @@ REPO="${REPO:-ak125/nestjs-remix-monorepo}"
 LOG_DIR="${LOG_DIR:-/tmp}"
 RECENT_MIN="${RECENT_MIN:-180}"
 CACHE_IDLE_MIN="${CACHE_IDLE_MIN:-1440}"
+IDLE_NM_DAYS="${IDLE_NM_DAYS:-7}"
 # untracked jetables : ne bloquent pas la suppression d'un worktree par ailleurs propre
 ALLOW='^(\.playwright-mcp|node_modules|\.turbo|dist|build|coverage)(/|$)'
 # ignorés régénérables : `git worktree remove` supprime les fichiers ignorés sans --force et
@@ -107,6 +117,10 @@ MAIN_REF=refs/remotes/origin/main
 for bin in git gh jq; do
   command -v "$bin" >/dev/null 2>&1 || { FAILURE="'$bin' requis mais absent"; echo "FATAL: $FAILURE" >&2; exit 2; }
 done
+# Réglage lu avant toute action : 0 ou une valeur non numérique retirerait tout node_modules.
+if ! [[ "$IDLE_NM_DAYS" =~ ^[1-9][0-9]*$ ]]; then
+  FAILURE="IDLE_NM_DAYS invalide (entier ≥ 1 attendu) — rien n'est fait"; echo "FATAL: $FAILURE" >&2; exit 2
+fi
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 cd "$REPO_ROOT"
@@ -141,11 +155,17 @@ else
 fi
 
 # --- État PR batché : 1 seul appel ; sans état PR lisible, rien n'est supprimé ---
-if ! gh pr list --repo "$REPO" --state all --json number,state,headRefName,headRefOid --limit 1000 > "$PRSTATE" \
+# Plafond au-dessus du nombre total de PR du dépôt (1969 le 2026-11-17) : avec 1000, les PR
+# les plus anciennes sortaient de la fenêtre et leurs branches passaient « sans PR ».
+PR_LIMIT="${PR_LIMIT:-5000}"
+if ! gh pr list --repo "$REPO" --state all --json number,state,headRefName,headRefOid --limit "$PR_LIMIT" > "$PRSTATE" \
    || ! jq -e 'type == "array"' "$PRSTATE" >/dev/null 2>&1; then
   FAILURE="état des PR illisible (gh pr list) — aucune suppression"
   echo "FATAL   $FAILURE" | tee -a "$LOG" >&2
   exit 1
+fi
+if [[ "$(jq 'length' "$PRSTATE")" -ge "$PR_LIMIT" ]]; then
+  echo "WARN    gh pr list : plafond de $PR_LIMIT PR atteint — les PR plus anciennes sont lues comme « sans PR » (conservées)" | tee -a "$LOG"
 fi
 
 pr_info() { # $1=branch -> "STATE<TAB>headRefOid" (la PR la plus récente gagne ; NO-PR sinon)
@@ -186,6 +206,28 @@ in_use_pid() { # $1=path -> PID sur stdout si occupé
   return 1
 }
 
+# Passe 4 : répertoire courant, fichier ouvert, exécutable ou bibliothèque chargée dans le worktree
+# (même contrôle que dedup-worktree-node-modules.sh). On lit la SORTIE, jamais le code retour : sous
+# pipefail, le awk qui s'arrête au premier résultat coupe find/cat (SIGPIPE) et find sort en 1 sur
+# les processus illisibles d'autres utilisateurs. Chemin illisible = occupé.
+busy() { # $1=path
+  local rp hit
+  rp="$(realpath -e -- "$1" 2>/dev/null)" || return 0
+  hit="$( { find /proc/[0-9]*/exe /proc/[0-9]*/cwd /proc/[0-9]*/fd/ -maxdepth 1 -printf '%l\n' 2>/dev/null
+            cat /proc/[0-9]*/maps 2>/dev/null | awk 'NF>=6{print $6}'; } \
+          | awk -v p="$rp" '$0==p || index($0, p"/")==1 {print "x"; exit}' || true)"
+  [[ -n "$hit" ]]
+}
+
+# Dossiers node_modules réels : racine, workspaces de premier niveau, packages/* ; jamais un lien.
+nm_dirs() { # $1=path
+  local p
+  for p in "$1/node_modules" "$1"/*/node_modules "$1"/packages/*/node_modules; do
+    [[ -d "$p" && ! -L "$p" ]] && printf '%s\n' "$p"
+  done
+  return 0
+}
+
 # Activité récente : dossier racine, index et reflog HEAD du worktree (un commit ou un
 # `git add` récents ne modifient pas la date du dossier racine).
 last_activity() { # $1=path -> epoch
@@ -215,6 +257,8 @@ list_worktrees() {
 
 CUR="$(git symbolic-ref --short HEAD 2>/dev/null || echo '')"
 NOW="$(date +%s)"
+# Worktrees que la passe 1 retirerait (essai à blanc) : la passe 4 ne les compte pas une 2e fois.
+declare -A P1_WOULD=()
 
 # ============================================================
 # PASSE 1 — worktrees
@@ -286,6 +330,7 @@ while IFS= read -r -d '' path && IFS= read -r -d '' ref && IFS= read -r -d '' de
     fi
   else
     echo "WOULD-REMOVE $st ${jet:+(+untracked jetables)} $br @ $sha  $path" | tee -a "$LOG"
+    P1_WOULD["$path"]=1
   fi
 done < <(list_worktrees)
 
@@ -385,8 +430,83 @@ while IFS= read -r -d '' path && IFS= read -r -d '' ref && IFS= read -r -d '' de
   done
 done < <(list_worktrees)
 
+# ============================================================
+# PASSE 4 — node_modules autonomes des worktrees inactifs
+# ============================================================
+# Un `npm ci` laisse dans le worktree des node_modules (racine et workspaces). La passe 1
+# ne les retire qu'avec le worktree, une fois la PR fusionnée ou fermée ; ceux d'une PR ouverte,
+# sans PR ou conservés s'accumulent (43 inactifs depuis 3 jours sur DEV le 2026-11-17, disque à
+# 90 %). Seuls ces dossiers partent ; `npm ci` les réinstalle. Conditions, toutes
+# requises : worktree géré (jamais le checkout principal, Codex, pont Hermes), non verrouillé,
+# sans attribution de mission, qu'aucune exécution de la passe 1 ne retire déjà ; aucun processus
+# n'y a son répertoire courant, un fichier ouvert ou une bibliothèque chargée ; l'index git du
+# worktree et le node_modules/.package-lock.json de chaque dossier (à défaut, la date du dossier)
+# n'ont pas été écrits depuis IDLE_NM_DAYS jours ; chaque dossier est réel (ni lien, ni sous un
+# parent lien), ignoré par git, sans fichier suivi, hors dépôt imbriqué, tout à cet utilisateur.
+# Taille journalisée : `du` du dossier seul ; un fichier lié physiquement à un autre worktree
+# (dedup-worktree-node-modules.sh) y compte, mais n'est libéré qu'avec sa dernière copie.
+echo "--- Passe 4 : node_modules des worktrees inactifs depuis ${IDLE_NM_DAYS} j ---" | tee -a "$LOG"
+nm_n=0; nm_mb=0
+while IFS= read -r -d '' path && IFS= read -r -d '' ref && IFS= read -r -d '' det && IFS= read -r -d '' locked; do
+  [[ "$path" == "$REPO_ROOT" || ! -d "$path" ]] && continue
+  mapfile -t nms < <(nm_dirs "$path")
+  [[ ${#nms[@]} -gt 0 ]] || continue
+  label="${ref#refs/heads/}"; [[ -n "$label" ]] || label="(HEAD détachée)"
+  if ! managed "$path/"; then echo "NM-KEEP other-manager(${#nms[@]}) $label  $path" | tee -a "$LOG"; continue; fi
+  if [[ -n "${P1_WOULD[$path]:-}" ]]; then echo "NM-KEEP worktree-would-remove $label  $path" | tee -a "$LOG"; continue; fi
+  if [[ "$locked" == "1" ]]; then echo "NM-KEEP locked(${#nms[@]}) $label  $path" | tee -a "$LOG"; continue; fi
+  gd="$(git -C "$path" rev-parse --absolute-git-dir 2>/dev/null || true)"
+  if [[ -z "$gd" || -e "$gd/agent-claim.json" ]]; then echo "NM-KEEP claimed-or-unreadable(${#nms[@]}) $label  $path" | tee -a "$LOG"; continue; fi
+  if busy "$path"; then echo "NM-KEEP in-use(${#nms[@]}) $label  $path" | tee -a "$LOG"; continue; fi
+  # Dernier usage = la plus récente des dates ; une date illisible n'est jamais lue comme ancienne.
+  last=""
+  if t="$(stat -c %Y -- "$gd/index" 2>/dev/null)"; then
+    last=$t
+    for d in "${nms[@]}"; do
+      f="$d/.package-lock.json"; [[ -f "$f" && ! -L "$f" ]] || f="$d"
+      if ! t="$(stat -c %Y -- "$f" 2>/dev/null)"; then last=""; break; fi
+      (( t > last )) && last=$t
+    done
+  fi
+  if [[ -z "$last" ]]; then echo "NM-KEEP date-unreadable $label  $path" | tee -a "$LOG"; continue; fi
+  now="$(date +%s)"; idle_d=$(( (now - last) / 86400 ))
+  if (( now - last < IDLE_NM_DAYS * 86400 )); then echo "NM-KEEP recent(${idle_d}j) $label  $path" | tee -a "$LOG"; continue; fi
+  rp_wt="$(realpath -e -- "$path" 2>/dev/null || true)"
+  for d in "${nms[@]}"; do
+    rel="${d#"$path"/}"
+    # Un parent lien (ex. backend -> checkout principal) ferait retirer le node_modules d'ailleurs.
+    if [[ -z "$rp_wt" || "$(realpath -e -- "$d" 2>/dev/null)" != "$rp_wt/$rel" ]]; then
+      echo "NM-KEEP symlinked-path $d" | tee -a "$LOG"; continue
+    fi
+    p="${d%/*}"; inner=0
+    while [[ "$p" != "$path" ]]; do [[ -e "$p/.git" ]] && inner=1; p="${p%/*}"; done
+    if [[ $inner -eq 1 ]]; then echo "NM-KEEP nested-repo $d" | tee -a "$LOG"; continue; fi
+    # Suivi ou non ignoré = conservé ; erreur de lecture = conservé. stderr non journalisé.
+    if ! nm_ls="$(git --no-optional-locks -C "$path" ls-files -- ":(literal)$rel" 2>/dev/null)" || [[ -n "$nm_ls" ]]; then
+      echo "NM-KEEP tracked-or-unreadable $d" | tee -a "$LOG"; continue
+    fi
+    if ! git --no-optional-locks -C "$path" check-ignore -q -- "$rel/" 2>/dev/null; then
+      echo "NM-KEEP not-ignored $d" | tee -a "$LOG"; continue
+    fi
+    if ! foreign="$(find "$d" ! -user "$(id -u)" -print -quit 2>/dev/null)" || [[ -n "$foreign" ]]; then
+      echo "NM-KEEP foreign-owner $d" | tee -a "$LOG"; continue
+    fi
+    mb="$(du -sm -- "$d" 2>/dev/null | cut -f1)"; mb="${mb:-0}"
+    if [[ $APPLY -eq 1 ]]; then
+      # Revérifié juste avant le retrait : les passes précédentes ont pu durer.
+      if busy "$path"; then echo "NM-KEEP in-use(au retrait) $d" | tee -a "$LOG"; continue; fi
+      rm -rf --one-file-system -- "$d" 2>/dev/null || true
+      if [[ -e "$d" ]]; then echo "NM-FAIL $d (retrait incomplet — npm ci le réinstalle)" | tee -a "$LOG"; continue; fi
+      echo "NM-REMOVED ${mb} Mo $d ($label, inactif ${idle_d} j)" | tee -a "$LOG"
+    else
+      echo "WOULD-REMOVE-NM ${mb} Mo $d ($label, inactif ${idle_d} j)" | tee -a "$LOG"
+    fi
+    nm_n=$((nm_n+1)); nm_mb=$((nm_mb+mb))
+  done
+done < <(list_worktrees)
+
 # --- Bilan ---
 wt_removed="$(grep -cE '^(REMOVED|WOULD-REMOVE) ' "$LOG" || true)"
-echo "=== Bilan : worktrees ciblés=$wt_removed  branches ciblées=$del  caches ciblés=$cache_n (${cache_mb} Mo)  manifeste=$LOG ==="| tee -a "$LOG"
+echo "=== Bilan : worktrees ciblés=$wt_removed  branches ciblées=$del  caches ciblés=$cache_n (${cache_mb} Mo)  node_modules ciblés=$nm_n (${nm_mb} Mo)  manifeste=$LOG ==="| tee -a "$LOG"
 [[ $APPLY -eq 0 ]] && echo "(dry-run — relancer avec --apply pour exécuter)"
 exit 0
