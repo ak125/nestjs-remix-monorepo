@@ -51,17 +51,12 @@ describe('ActionRecommender V1A.0', () => {
     });
   });
 
-  test('commerce sequence: piece > entretien_pack > devis > guide', () => {
+  test('commerce sequence: piece > guide (mandat GE, F02)', () => {
     const result = svc.recommend(mkIntent(), mkPack(), true);
-    expect(result.map((a) => a.type)).toEqual([
-      'piece',
-      'entretien_pack',
-      'devis',
-      'guide',
-    ]);
+    expect(result.map((a) => a.type)).toEqual(['piece', 'guide']);
   });
 
-  test('urgence sequence: appel > human_resolution > garage > devis', () => {
+  test('urgence sequence: appel > human_resolution (mandat GE, F02)', () => {
     const result = svc.recommend(
       mkIntent({
         value: 'urgence',
@@ -72,15 +67,10 @@ describe('ActionRecommender V1A.0', () => {
       mkPack(),
       true,
     );
-    expect(result.map((a) => a.type)).toEqual([
-      'appel',
-      'human_resolution',
-      'garage',
-      'devis',
-    ]);
+    expect(result.map((a) => a.type)).toEqual(['appel', 'human_resolution']);
   });
 
-  test('safety_rail override: human_resolution > assistant_diagnostic > appel > faq', () => {
+  test('safety_rail override: human_resolution > assistant_diagnostic > appel (mandat GE, F02)', () => {
     const result = svc.recommend(
       mkIntent({
         value: 'education',
@@ -96,7 +86,6 @@ describe('ActionRecommender V1A.0', () => {
       'human_resolution',
       'assistant_diagnostic',
       'appel',
-      'faq',
     ]);
   });
 
@@ -134,6 +123,22 @@ describe('ActionRecommender V1A.0', () => {
     const result = svc.recommend(mkIntent(), mkPack(), true);
     const piece = result.find((a) => a.type === 'piece');
     expect(piece?.target).toBe('/pieces/plaquette-de-frein-402.html');
+  });
+
+  test('guide target is the served conseils index (mandat GE, F02)', () => {
+    const result = svc.recommend(mkIntent(), mkPack(), true);
+    expect(result.find((a) => a.type === 'guide')?.target).toBe(
+      '/blog-pieces-auto/conseils',
+    );
+  });
+
+  test('appel and human_resolution lead to the contact page (mandat GE, F02)', () => {
+    const result = svc.recommend(
+      mkIntent({ value: 'urgence' }),
+      mkPack(),
+      true,
+    );
+    expect(result.map((a) => a.target)).toEqual(['/contact', '/contact']);
   });
 
   test('a missing gamme uses the existing catalogue destination', () => {

@@ -6,19 +6,20 @@
  * BACKEND est SoT unique : frontend ne tri ni ne filtre les actions.
  * Aucune logique métier dans le frontend.
  *
- * Séquences canon par intent (priority 1 → N) :
- *   urgence       : appel → human_resolution → garage → devis
- *   garage        : garage → devis → appel → guide
- *   maintenance   : guide → entretien_pack → piece → devis
- *   commerce      : piece → entretien_pack → devis → guide
- *   devis         : devis → piece → garage → appel
- *   education     : assistant_diagnostic → faq → guide → devis
- *   reassurance   : faq → guide → entretien_pack → piece
- *   safety_rail ON: (override) human_resolution → assistant_diagnostic → appel → faq
+ * Séquences par intent (priority 1 → N), réduites aux actions servies
+ * (mandat GE, F02) :
+ *   urgence       : appel → human_resolution
+ *   garage        : appel → guide
+ *   maintenance   : guide → piece
+ *   commerce      : piece → guide
+ *   devis         : piece → appel
+ *   education     : assistant_diagnostic → guide
+ *   reassurance   : guide → piece
+ *   safety_rail ON: (override) human_resolution → assistant_diagnostic → appel
  *
  * Overrides déterministes :
  *   - vehicle_ctx.absent → demote `piece` après `assistant_diagnostic`
- *   - catalog allowed_output_mode = 'none' → drop `piece` and `entretien_pack`
+ *   - catalog allowed_output_mode = 'none' → drop `piece`
  */
 import { Injectable } from '@nestjs/common';
 import { buildGammeUrl } from '../../../common/utils/url-builder.utils';
@@ -34,16 +35,29 @@ import type { IntentResult } from './intent-classifier.service';
 
 type EvidencePackInner = EvidencePack['evidence_pack'];
 
-const SEQUENCES: Record<DiagnosticIntent | 'safety_rail', ActionType[]> = {
-  urgence: ['appel', 'human_resolution', 'garage', 'devis'],
-  garage: ['garage', 'devis', 'appel', 'guide'],
-  maintenance: ['guide', 'entretien_pack', 'piece', 'devis'],
-  commerce: ['piece', 'entretien_pack', 'devis', 'guide'],
-  devis: ['devis', 'piece', 'garage', 'appel'],
-  education: ['assistant_diagnostic', 'faq', 'guide', 'devis'],
-  reassurance: ['faq', 'guide', 'entretien_pack', 'piece'],
-  safety_rail: ['human_resolution', 'assistant_diagnostic', 'appel', 'faq'],
-};
+/**
+ * Actions proposées seulement si une page servie fait ce que dit leur libellé
+ * (mandat GE, F02). `devis`, `garage`, `entretien_pack` et `faq` visaient
+ * /devis, /garages-proches, /entretien et /faq, en 404 sur DEV le 27 nov. :
+ * elles restent dans ActionTypeEnum (contrat, analytics, sessions stockées)
+ * mais ne sont plus proposées tant qu'aucune page ne les sert.
+ */
+type ServedActionType = Exclude<
+  ActionType,
+  'devis' | 'garage' | 'entretien_pack' | 'faq'
+>;
+
+const SEQUENCES: Record<DiagnosticIntent | 'safety_rail', ServedActionType[]> =
+  {
+    urgence: ['appel', 'human_resolution'],
+    garage: ['appel', 'guide'],
+    maintenance: ['guide', 'piece'],
+    commerce: ['piece', 'guide'],
+    devis: ['piece', 'appel'],
+    education: ['assistant_diagnostic', 'guide'],
+    reassurance: ['guide', 'piece'],
+    safety_rail: ['human_resolution', 'assistant_diagnostic', 'appel'],
+  };
 
 const TYPE_TO_TARGET_ROLE: Record<ActionType, TargetRole> = {
   piece: 'R2',
@@ -89,11 +103,9 @@ export class ActionRecommenderService {
       sequence = this.demotePieceWhenVehicleAbsent(sequence);
     }
 
-    // Override #2 : si catalog allowed_output_mode = 'none', drop `piece` et `entretien_pack`
+    // Override #2 : si catalog allowed_output_mode = 'none', drop `piece`
     if (pack.catalog_guard.allowed_output_mode === 'none') {
-      sequence = sequence.filter(
-        (a) => a !== 'piece' && a !== 'entretien_pack',
-      );
+      sequence = sequence.filter((a) => a !== 'piece');
     }
 
     return sequence.map((type, idx) =>
@@ -107,27 +119,29 @@ export class ActionRecommenderService {
     );
   }
 
-  private demotePieceWhenVehicleAbsent(sequence: ActionType[]): ActionType[] {
+  private demotePieceWhenVehicleAbsent(
+    sequence: ServedActionType[],
+  ): ServedActionType[] {
     const pieceIdx = sequence.indexOf('piece');
     if (pieceIdx === -1) return sequence;
 
     const assistantIdx = sequence.indexOf('assistant_diagnostic');
     // Si assistant pas présent, append `assistant_diagnostic` puis garder piece à la fin
     if (assistantIdx === -1) {
-      const next: ActionType[] = sequence.filter((a) => a !== 'piece');
+      const next: ServedActionType[] = sequence.filter((a) => a !== 'piece');
       next.push('assistant_diagnostic', 'piece');
       return next;
     }
 
     // Sinon, retirer piece et le ré-insérer juste après assistant_diagnostic
-    const next: ActionType[] = sequence.filter((a) => a !== 'piece');
+    const next: ServedActionType[] = sequence.filter((a) => a !== 'piece');
     const newAssistantIdx = next.indexOf('assistant_diagnostic');
     next.splice(newAssistantIdx + 1, 0, 'piece');
     return next;
   }
 
   private buildAction(params: {
-    type: ActionType;
+    type: ServedActionType;
     priority: number;
     intent: IntentResult;
     pack: EvidencePackInner;
@@ -160,8 +174,9 @@ export class ActionRecommenderService {
   /**
    * Stable target par action type.
    * `piece` utilise `pg_id` + `gamme_slug` depuis SuggestedGamme (DB-driven, pas hardcodé).
+   * Chaque cible est une page servie 200 sur DEV le 27 nov. (mandat GE, F02).
    */
-  private buildTarget(type: ActionType, pack: EvidencePackInner): string {
+  private buildTarget(type: ServedActionType, pack: EvidencePackInner): string {
     switch (type) {
       case 'piece': {
         const gamme = pack.catalog_guard.suggested_gammes?.[0];
@@ -171,24 +186,17 @@ export class ActionRecommenderService {
         // No resolved gamme: use the existing home catalogue section.
         return '/#catalogue';
       }
-      case 'devis':
-        return '/devis';
       case 'appel':
         return '/contact';
-      case 'garage':
-        return '/garages-proches';
-      case 'guide': {
-        const slug = pack.catalog_guard.suggested_gammes?.[0]?.gamme_slug;
-        return slug ? `/conseil/${slug}` : '/conseil';
-      }
-      case 'entretien_pack':
-        return '/entretien';
-      case 'faq':
-        return '/faq';
+      case 'guide':
+        // Index des conseils : un conseil par gamme n'existe pas pour toutes
+        // les gammes (alias inconnu = 404), l'index est servi.
+        return '/blog-pieces-auto/conseils';
       case 'assistant_diagnostic':
         return '/diagnostic-auto';
       case 'human_resolution':
-        return '/devis-humain';
+        // Page de contact du support (téléphone et formulaire).
+        return '/contact';
     }
   }
 

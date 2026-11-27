@@ -20,7 +20,7 @@ export const HumanEscalationSchema = z.object({
    * `true` si intent ∈ {urgence, garage} OR `safety_rail = true`.
    */
   priority_boost: z.boolean(),
-  /** Stable target (tel:+33... ou /devis-humain). Frontend résout */
+  /** Stable target (tel:+33... ou /contact). Frontend résout */
   target: z.string().min(1),
   /** Enum codes — explicabilité du priority_boost */
   reason_codes: z.array(DiagnosticReasonCodeEnum).min(1),

@@ -5,7 +5,7 @@
  * Frontend = renderer pur, n'altère JAMAIS l'ordre ni la composition.
  *
  * `target` = STABLE IDs only (route params `:gamme_id`, `tel:+...`, `mailto:...`,
- * `/devis-humain`). JAMAIS de slug literal hardcodé backend.
+ * `/contact`). JAMAIS de slug literal hardcodé backend.
  */
 import { z } from 'zod';
 import { DiagnosticReasonCodeEnum } from './diagnostic-reason-code';
