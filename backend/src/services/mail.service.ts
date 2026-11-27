@@ -347,7 +347,7 @@ export class MailService {
         </a>
       </p>
       <p style="color:#9ca3af;font-size:12px;text-align:center;margin-top:24px;">
-        Vous recevez cet e-mail car vous avez accepté de recevoir nos messages et un panier est enregistré sur votre compte Automecanik.<br/>
+        Vous recevez cet e-mail car un panier est enregistré sur votre compte Automecanik.<br/>
         <a href="${unsubscribeUrl}" style="color:#9ca3af;">Ne plus recevoir ces rappels</a>
       </p>
       <img src="${trackingPixelUrl}" width="1" height="1" alt="" style="display:none;" />`;

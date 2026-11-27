@@ -210,3 +210,46 @@ describe('MailService.sendAbandonedCartEmail — texte sans urgence', () => {
     expect(html).toContain('Ne plus recevoir ces rappels');
   });
 });
+
+/**
+ * Pied du mail : la relance ne demande plus de consentement marketing
+ * (décision 61 précisée par Marwane le 27-11-2026). Le pied ne peut donc plus
+ * affirmer un accord du client ; le lien et les en-têtes de désinscription
+ * restent.
+ */
+describe('MailService.sendAbandonedCartEmail — pied sans consentement affirmé', () => {
+  beforeEach(() => sendMail.mockReset());
+
+  it.each(['1h', '24h'] as const)('étape %s', async (step) => {
+    sendMail.mockResolvedValue({ messageId: 'm1' });
+    const mail = new MailService({
+      get: (key: string) =>
+        key === 'GMAIL_APP_PASSWORD' ? 'app-password' : undefined,
+    } as unknown as ConfigService);
+    const unsubscribeUrl = 'https://example.invalid/api/cart/unsubscribe/t';
+
+    await mail.sendAbandonedCartEmail({
+      to: 'client@example.invalid',
+      firstName: 'Client',
+      subject: 'Votre panier',
+      items: [{ product_name: 'Disque', quantity: 1, price: 10 }],
+      subtotal: 10,
+      recoveryUrl: 'https://example.invalid/panier/recover/t',
+      unsubscribeUrl,
+      trackingPixelUrl: 'https://example.invalid/api/cart/track/open/t',
+      step,
+    });
+
+    const sent = sendMail.mock.calls[0][0];
+    const html = String(sent.html);
+    expect(html).toContain(
+      'Vous recevez cet e-mail car un panier est enregistré sur votre compte Automecanik.',
+    );
+    expect(html).not.toMatch(/accept[ée]|consent|votre accord/i);
+    expect(html).toContain(`<a href="${unsubscribeUrl}"`);
+    expect(sent.headers).toEqual({
+      'List-Unsubscribe': `<${unsubscribeUrl}>`,
+      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+    });
+  });
+});

@@ -42641,7 +42641,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 213,
+      "loc": 256,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/abandoned-cart-cadence.test.ts",
       "risk": "low",
