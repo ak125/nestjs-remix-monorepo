@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 # Test du hook PreToolUse pretool-supabase-guard.sh (contrat : base en lecture seule
-# pour les agents, .claude/skills/amk-supabase-postgres-best-practices/SKILL.md).
+# pour les agents, .claude/skills/amk-supabase-postgres-best-practices/SKILL.md) et du
+# matcher qui le déclenche dans les 4 settings.json suivis (racine et 3 workspaces).
 # Aucun appel réel : le hook reçoit une enveloppe JSON sur stdin et rend un code de
 # sortie ; aucune base, aucun réseau, aucun fichier temporaire.
-# SIMULATION : ni Claude Code ni son exécuteur de hooks ne sont exercés ; l'enveloppe est
-# celle documentée (code.claude.com/docs/en/hooks).
+# SIMULATION : ni Claude Code ni son exécuteur de hooks ne sont exercés ; l'enveloppe et
+# la lecture du matcher sont celles documentées (code.claude.com/docs/en/hooks).
 # Usage : bash scripts/claude-hooks/pretool-supabase-guard.test.sh
-#   HOOK_ROOT=<racine> : éprouver une autre version du hook (ex. le commit de base).
+#   HOOK_ROOT=<racine> : éprouver une autre version du hook et des 4 settings.json
+#   (ex. le commit de base).
 set -uo pipefail
 HERE="${HOOK_ROOT:-$(cd "$(dirname "$0")/../.." && pwd)}"
 HOOK="$HERE/scripts/claude-hooks/pretool-supabase-guard.sh"
@@ -111,6 +113,51 @@ BIG="SELECT 1 /* $(head -c 1000000 /dev/zero | tr '\0' 'x') */"
 check "SELECT de 1 Mo (commentaire)"       0 "$(run "$(env_of mcp__supabase__execute_sql "$BIG")")"
 BIG2="SELECT 1 /* $(head -c 1000000 /dev/zero | tr '\0' 'x') */; DELETE FROM pieces"
 check "DELETE derrière 1 Mo"               2 "$(run "$(env_of mcp__supabase__execute_sql "$BIG2")")"
+
+echo "== matcher de la garde : tout serveur MCP dont le nom contient supabase ou Supabase"
+# Le matcher de l'entrée PreToolUse qui lance ce hook est lu dans chaque settings.json, puis
+# évalué par Node selon la règle documentée (code.claude.com/docs/en/hooks, « Matcher
+# patterns ») : "*" ou "" = tout ; seulement lettres, chiffres, _, -, espace, virgule et | =
+# liste de noms exacts ; tout autre caractère = expression régulière JavaScript non ancrée
+# (RegExp.prototype.test, donc sensible à la casse).
+# Attrapés : execute_sql et apply_migration, les deux seuls outils dont ce hook sait lire
+# l'argument (tool_input.query). Un autre outil attrapé serait refusé en échec fermé.
+SETTINGS=(.claude/settings.json workspaces/marketing/.claude/settings.json workspaces/seo-batch/.claude/settings.json workspaces/wiki/.claude/settings.json)
+CAUGHT=(mcp__supabase__execute_sql mcp__supabase__apply_migration
+  mcp__claude_ai_Supabase__execute_sql mcp__claude_ai_Supabase__apply_migration
+  mcp__plugin_supabase_supabase__execute_sql mcp__plugin_supabase_supabase__apply_migration
+  mcp__plugin_autre_supabase__execute_sql)
+IGNORED=(mcp__supabase__list_tables mcp__plugin_supabase_supabase__list_tables mcp__plugin_supabase_supabase__authenticate)
+# Une seule entrée lance ce hook, et son matcher est une chaîne ; sinon « illisible ».
+matcher_of() {
+  jq -er '[.hooks.PreToolUse[]? | select(any(.hooks[]?; (.command // "") | test("pretool-supabase-guard\\.sh")))]
+    | if length == 1 and (.[0].matcher | type) == "string" then .[0].matcher else error("matcher") end' "$1" 2>/dev/null \
+    || echo "illisible"
+}
+matches() {
+  node -e '
+const [matcher, name] = process.argv.slice(1);
+let hit;
+if (matcher === "" || matcher === "*") hit = true;
+else if (/^[A-Za-z0-9_\- ,|]+$/.test(matcher)) hit = matcher.split(/[|,]/).map((s) => s.trim()).includes(name);
+else hit = new RegExp(matcher).test(name);
+process.stdout.write(hit ? "attrapé" : "ignoré");' -- "$1" "$2" 2>/dev/null || echo "erreur"
+}
+FIRST=""
+for f in "${SETTINGS[@]}"; do
+  M=$(matcher_of "$HERE/$f")
+  [[ -n "$FIRST" ]] || FIRST="$M"
+  check "$f : une seule entrée lance la garde, matcher en chaîne" "lisible" "$([[ "$M" == "illisible" ]] && echo illisible || echo lisible)"
+  check "$f : matcher identique à celui de la racine" "$FIRST" "$M"
+  for t in "${CAUGHT[@]}"; do check "$f : $t" "attrapé" "$(matches "$M" "$t")"; done
+  for t in "${IGNORED[@]}"; do check "$f : $t" "ignoré" "$(matches "$M" "$t")"; done
+done
+
+echo "== noms du serveur du plugin passés à la garde (enveloppe de ses outils : project_id, query, name)"
+env_plugin() { printf '%s' "$2" | jq -cRs --arg t "mcp__plugin_supabase_supabase__$1" '{tool_name: $t, tool_input: {project_id: "ref", name: "m", query: .}}'; }
+check "plugin : execute_sql d'un SELECT"   0 "$(run "$(env_plugin execute_sql "SELECT piece_id FROM pieces LIMIT 1")")"
+check "plugin : execute_sql d'un UPDATE"   2 "$(run "$(env_plugin execute_sql "UPDATE pieces SET piece_name = 'x' WHERE piece_id = 1")")"
+check "plugin : apply_migration"           2 "$(run "$(env_plugin apply_migration "SELECT 1")")"
 
 echo
 if [[ $FAIL -eq 0 ]]; then echo "VERT — $N cas"; else echo "ROUGE — au moins un cas en échec sur $N"; fi

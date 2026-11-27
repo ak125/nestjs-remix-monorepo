@@ -28,7 +28,7 @@
         ]
       },
       {
-        "matcher": "mcp__supabase__apply_migration|mcp__supabase__execute_sql|mcp__claude_ai_Supabase__apply_migration|mcp__claude_ai_Supabase__execute_sql",
+        "matcher": "mcp__.*[Ss]upabase.*__(apply_migration|execute_sql)",
         "hooks": [
           {
             "type": "command",
