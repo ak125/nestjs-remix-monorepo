@@ -80,6 +80,13 @@ export interface UpdateOrderData {
 }
 
 /**
+ * Refus adressé au client quand le tarif en vigueur ferait payer plus que ce que
+ * son panier affichait (ligne ou total, port compris).
+ */
+const PRIX_DU_PANIER_CHANGE =
+  "Le prix d'un article de votre panier a changé. Retirez-le du panier puis ajoutez-le de nouveau pour voir le prix à jour.";
+
+/**
  * Calcule un fingerprint canonique serveur pour une commande.
  * Montants en centimes entiers, lignes triées, SHA256 complet.
  */
@@ -333,27 +340,14 @@ export class OrdersService extends SupabaseBaseService {
         );
       }
 
-      // Prix et consigne : ceux du tarif en vigueur, jamais ceux de la requête.
-      const lignes = await this.lignesAuTarifEnVigueur(orderData.orderLines);
+      // Prix, consigne et port : ceux du tarif en vigueur, jamais ceux de la
+      // requête ; total plafonné par celui que le panier affichait.
+      const { lignes, shippingCost } = await this.montantsAuTarifEnVigueur(
+        orderData.orderLines,
+      );
 
       // Générer numéro unique de commande
       const orderNumber = await this.generateOrderNumber();
-
-      // Calculer frais de port basé sur le poids réel (Colissimo 2026)
-      const subtotalForShipping = lignes.reduce(
-        (sum, line) => sum + line.quantity * line.unitPrice,
-        0,
-      );
-      const orderItems = lignes.map((line) => ({
-        productId: line.productId,
-        quantity: line.quantity,
-      }));
-      const totalWeightG =
-        await this.shippingCalculator.getCartItemsWeight(orderItems);
-      const shippingCost = this.shippingCalculator.calculateByWeight(
-        totalWeightG,
-        subtotalForShipping,
-      );
 
       // Calculer totaux
       // ✅ Phase 5: Les prix sont TTC, donc taxRate = 0 (pas de TVA supplémentaire)
@@ -592,6 +586,12 @@ export class OrdersService extends SupabaseBaseService {
    * ne sert qu'à refuser la commande quand le tarif en vigueur le dépasse : le
    * client ne paie jamais plus que ce que son panier affichait.
    *
+   * Le contrôle porte sur chaque ligne (prix et consigne), puis sur le total,
+   * port compris : le port se calcule sur le sous-total du tarif en vigueur, et
+   * une baisse de prix peut faire repasser la commande sous le seuil du port
+   * offert. Le total annoncé est celui que le panier affichait pour ces lignes,
+   * recalculé avec la même règle de port.
+   *
    * Ne relit pas le panier (invariant F2). Aucun prix de repli : un article
    * sans tarif vendable refuse la commande, une lecture en échec remonte.
    *
@@ -600,6 +600,13 @@ export class OrdersService extends SupabaseBaseService {
   async lignesAuTarifEnVigueur(
     lines: CreateOrderData['orderLines'],
   ): Promise<CreateOrderData['orderLines']> {
+    return (await this.montantsAuTarifEnVigueur(lines)).lignes;
+  }
+
+  /** Lignes et port au tarif en vigueur : voir `lignesAuTarifEnVigueur`. */
+  private async montantsAuTarifEnVigueur(
+    lines: CreateOrderData['orderLines'],
+  ): Promise<{ lignes: CreateOrderData['orderLines']; shippingCost: number }> {
     if (!Array.isArray(lines)) {
       throw new BadRequestException('Lignes de commande invalides.');
     }
@@ -635,7 +642,7 @@ export class OrdersService extends SupabaseBaseService {
       ...new Set(demandes.map((d) => d.pieceId)),
     ]);
 
-    return demandes.map(({ line, pieceId, annonceCentimes }) => {
+    const lignes = demandes.map(({ line, pieceId, annonceCentimes }) => {
       const tarif = tarifs.get(pieceId);
       const prixCentimes = Math.round(Number(tarif?.pri_vente_ttc_n) * 100);
       if (!tarif || !Number.isFinite(prixCentimes) || prixCentimes <= 0) {
@@ -649,9 +656,7 @@ export class OrdersService extends SupabaseBaseService {
         Math.round(Number(tarif.pri_consigne_ttc_n) * 100) || 0,
       );
       if (prixCentimes + consigneCentimes > annonceCentimes) {
-        throw new ConflictException(
-          "Le prix d'un article de votre panier a changé. Retirez-le du panier puis ajoutez-le de nouveau pour voir le prix à jour.",
-        );
+        throw new ConflictException(PRIX_DU_PANIER_CHANGE);
       }
       return {
         ...line,
@@ -661,6 +666,44 @@ export class OrdersService extends SupabaseBaseService {
         has_consigne: consigneCentimes > 0,
       };
     });
+
+    // Port au poids réel (grille Colissimo), gratuité selon le sous-total : la
+    // même règle sert au sous-total du tarif en vigueur (port débité) et à celui
+    // des prix annoncés (port que le panier affichait).
+    const totalWeightG = await this.shippingCalculator.getCartItemsWeight(
+      lignes.map((l) => ({ productId: l.productId, quantity: l.quantity })),
+    );
+    const sousTotal = (ls: CreateOrderData['orderLines']) =>
+      ls.reduce((sum, l) => sum + l.quantity * l.unitPrice, 0);
+    const shippingCost = this.shippingCalculator.calculateByWeight(
+      totalWeightG,
+      sousTotal(lignes),
+    );
+    const portAnnonce = this.shippingCalculator.calculateByWeight(
+      totalWeightG,
+      sousTotal(lines),
+    );
+
+    const totalCentimes =
+      lignes.reduce(
+        (sum, l) =>
+          sum +
+          l.quantity * Math.round((l.unitPrice + (l.consigne_unit ?? 0)) * 100),
+        0,
+      ) + Math.round(shippingCost * 100);
+    const totalAnnonceCentimes =
+      demandes.reduce(
+        (sum, d) => sum + d.line.quantity * d.annonceCentimes,
+        0,
+      ) + Math.round(portAnnonce * 100);
+    if (totalCentimes > totalAnnonceCentimes) {
+      this.logger.warn(
+        `Commande refusée : total au tarif en vigueur ${totalCentimes} c > total annoncé ${totalAnnonceCentimes} c (port ${Math.round(shippingCost * 100)} c, annoncé ${Math.round(portAnnonce * 100)} c)`,
+      );
+      throw new ConflictException(PRIX_DU_PANIER_CHANGE);
+    }
+
+    return { lignes, shippingCost };
   }
 
   /**
