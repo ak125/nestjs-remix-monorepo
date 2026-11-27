@@ -49,7 +49,6 @@ describe('AbandonedCartService — cadence 1 h puis 24 h, puis plus rien', () =>
       }),
     };
     const data = {
-      hasMarketingConsent: jest.fn().mockResolvedValue(true),
       findRecentByCstId: jest.fn().mockResolvedValue(null),
       getCustomerEmail: jest
         .fn()
@@ -121,7 +120,6 @@ describe('AbandonedCartService.sendSequenceEmail — drapeau et étapes', () => 
         expires_at: '2999-01-01T00:00:00Z',
       }),
       isUnsubscribedByCstId: jest.fn().mockResolvedValue(false),
-      hasMarketingConsent: jest.fn().mockResolvedValue(true),
       updateEmailSent: jest.fn().mockResolvedValue(undefined),
     };
     const mail = {

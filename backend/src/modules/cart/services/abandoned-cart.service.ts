@@ -23,6 +23,12 @@ const ABANDON_THRESHOLD_MS = 60 * 60 * 1000;
  * courent depuis le constat d'abandon, posé à `ABANDON_THRESHOLD_MS`.
  * La colonne `email_72h_sent_at` reste en base pour l'historique ; aucune
  * étape `72h` n'est plus programmée ni envoyée.
+ *
+ * Base de la relance : décision 61, précisée par Marwane le 27-11-2026, qui
+ * retire la condition « après la base légale établie par le 18 ». La relance
+ * n'exige donc pas de consentement marketing (`cst_marketing_consent_at`) ;
+ * un refus l'arrête : lien ou en-tête List-Unsubscribe (statut
+ * `unsubscribed`, clé `cart:unsubscribed:<cst_id>`, base en repli).
  */
 export const ABANDONED_CART_SEQUENCE = [
   { step: '1h', delayMs: 0 },
@@ -146,11 +152,8 @@ export class AbandonedCartService implements OnModuleInit {
         const isUnsubscribed = await this.cacheService.get(unsubKey);
         if (isUnsubscribed) continue;
 
-        // No reminder without explicit marketing consent (ADR-036)
-        const consented = await this.abandonedCartData.hasMarketingConsent(
-          candidate.userId,
-        );
-        if (!consented) continue;
+        // Pas de consentement marketing exigé (décision 61 précisée le
+        // 27-11-2026) : seul un refus enregistré écarte le client.
 
         // Check if already captured recently
         const existing = await this.abandonedCartData.findRecentByCstId(
@@ -271,17 +274,6 @@ export class AbandonedCartService implements OnModuleInit {
     }
     if (isUnsubscribed) {
       this.logger.log(`User ${record.cst_id} unsubscribed — skipping`);
-      return false;
-    }
-
-    // Consent may have been withdrawn since detection (ADR-036)
-    const consented = await this.abandonedCartData.hasMarketingConsent(
-      record.cst_id,
-    );
-    if (!consented) {
-      this.logger.log(
-        `User ${record.cst_id} has no marketing consent — skipping ${step} email`,
-      );
       return false;
     }
 
