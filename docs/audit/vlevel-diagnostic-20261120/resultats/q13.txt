@@ -1,0 +1,5 @@
+== Q13 vehicules de __cross_gamme_car_new par gamme (total, niveau 1 = cartes R1)
+cgc_pg_id | total | niveau1
+13 | 3915 | 20
+7 | 5398 | 19
+(2 rows)

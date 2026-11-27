@@ -1,0 +1,32 @@
+== Q5b types 1.5 dCi des Clio III
+type_id | type_modele_id | type_name | type_alias | type_power_ps | type_power_kw | type_fuel | type_year_from | type_year_to | type_display
+77069 | 11387 | 1.5 dCi | 1-5-dci | 75 | 55 | Diesel | 2010 | 2014 | 1
+77070 | 11387 | 1.5 dCi (SR1H) | 1-5-dci | 88 | 65 | Diesel | 2010 | 2014 | 1
+26627 | 140004 | 1.5 dCi | 1-5-dci | 64 | 47 | Diesel | 2005 | 2012 | 1
+30141 | 140004 | 1.5 dCi | 1-5-dci | 65 | 48 | Diesel | 2005 | 2010 | 0
+19051 | 140004 | 1.5 dCi | 1-5-dci | 68 | 50 | Diesel | 2005 | 2012 | 1
+34744 | 140004 | 1.5 dCi | 1-5-dci | 75 | 55 | Diesel | 2010 | 2014 | 1
+28839 | 140004 | 1.5 dCi | 1-5-dci | 82 | 60 | Diesel | 2007 | 2012 | 0
+19052 | 140004 | 1.5 dCi | 1-5-dci | 86 | 63 | Diesel | 2005 | 2012 | 1
+34746 | 140004 | 1.5 dCi | 1-5-dci | 88 | 65 | Diesel | 2010 | 2014 | 1
+20078 | 140004 | 1.5 dCi (BR1C, CR1C) | 1-5-dci-br1c-cr1c | 103 | 76 | Diesel | 2005 | 2012 | 0
+19053 | 140004 | 1.5 dCi | 1-5-dci | 106 | 78 | Diesel | 2005 | 2014 | 1
+34749 | 140005 | 1.5 dCi | 1-5-dci | 65 | 48 | Diesel | 2007 | 2012 | 1
+23455 | 140005 | 1.5 dCi | 1-5-dci | 68 | 50 | Diesel | 2007 | 2012 | 1
+34745 | 140005 | 1.5 dCi | 1-5-dci | 75 | 55 | Diesel | 2010 | 2012 | 1
+23456 | 140005 | 1.5 dCi | 1-5-dci | 86 | 63 | Diesel | 2007 | 2012 | 1
+34747 | 140005 | 1.5 dCi | 1-5-dci | 88 | 65 | Diesel | 2010 | 2012 | 1
+23457 | 140005 | 1.5 dCi | 1-5-dci | 103 | 76 | Diesel | 2007 | 2012 | 1
+23458 | 140005 | 1.5 dCi (KR0H, KR1S) | 1-5-dci-kr0h-kr1s | 106 | 78 | Diesel | 2008 | 2012 | 0
+(18 rows)
+== Q5c codes moteur (auto_type_motor_code si present)
+table_name | column_name
+auto_type_motor_code | tmc_type_id
+auto_type_motor_code | tmc_code
+auto_type_motor_fuel | tmf_id
+auto_type_motor_fuel | tmf_motor
+auto_type_motor_fuel | tmf_engine
+auto_type_motor_fuel | tmf_fuel
+auto_type_motor_fuel | tmf_sort
+auto_type_motor_fuel | tmf_display
+(8 rows)

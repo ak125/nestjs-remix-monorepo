@@ -1,0 +1,38 @@
+== Q2a __seo_keywords par source x v_level
+src | vl | count | with_type_id | min | max | min | max
+google-ads-kp | (null) | 1959 | 0 | 2026-04-22 | 2026-04-24 | 2026-04-23 | 2026-06-08
+google-ads-kp | V2 | 99 | 91 | 2026-04-21 | 2026-04-24 | 2026-04-23 | 2026-06-08
+google-ads-kp | V3 | 342 | 303 | 2026-04-21 | 2026-04-24 | 2026-04-23 | 2026-06-08
+google-ads-kp | V4 | 8181 | 66 | 2026-04-12 | 2026-06-18 | 2026-04-12 | 2026-06-18
+google-paa | (null) | 34 | 0 | 2026-03-30 | 2026-03-30 | 2026-04-02 | 2026-04-02
+keyword-engine | (null) | 1045 | 175 | 2026-02-10 | 2026-04-24 | 2026-02-10 | 2026-06-18
+keyword-engine | V2 | 24 | 24 | 2026-02-10 | 2026-04-24 | 2026-02-10 | 2026-06-18
+keyword-engine | V3 | 245 | 242 | 2026-02-10 | 2026-04-24 | 2026-02-10 | 2026-06-18
+keyword-engine | V4 | 848 | 784 | 2026-02-10 | 2026-02-10 | 2026-02-10 | 2026-06-18
+keyword-engine | V5 | 1201 | 1201 | 2026-02-10 | 2026-04-23 | 2026-02-10 | 2026-06-07
+(10 rows)
+== Q2b __seo_keywords par type x v_level
+coalesce | coalesce | count | count
+generic | (null) | 2647 | 0
+generic | V2 | 12 | 8
+generic | V3 | 26 | 24
+generic | V4 | 7711 | 27
+vehicle | (null) | 391 | 175
+vehicle | V2 | 111 | 107
+vehicle | V3 | 561 | 521
+vehicle | V4 | 1318 | 823
+vehicle | V5 | 1201 | 1201
+(9 rows)
+== Q2c __seo_type_vlevel par source x v_level
+coalesce | coalesce | count | n_pg | min | max
+catalog | V4 | 4908 | 11 | 2026-02-01 18:14:30.589922+00 | 2026-04-23 17:41:48.102952+00
+champion | V2 | 239 | 16 | 2026-02-01 18:14:30.457461+00 | 2026-04-24 15:50:01.345733+00
+sibling | V5 | 1062 | 3 | 2026-04-23 14:58:15.734861+00 | 2026-04-23 17:41:48.102952+00
+variant | V3 | 267 | 11 | 2026-02-01 18:14:30.457581+00 | 2026-04-23 17:41:48.102952+00
+(4 rows)
+== Q2d gammes couvertes
+t | count
+kw | 25
+tv | 16
+kw_and_tv | 16
+(3 rows)
