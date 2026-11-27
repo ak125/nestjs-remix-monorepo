@@ -90,8 +90,9 @@ devient une archive.
 - Skills : lire le `SKILL.md` pertinent et ses références requises, pas un pack entier.
   Les revues ne sont pas systématiques ; les validations imposées restent applicables.
   `code-auto-review` sert une demande explicite de relecture/correction.
-- Reprise : lire `tail -n 80 log.md` si la tâche dépend de l'historique. Une timeline
-  ou une mémoire ne remplace pas l'état du checkout.
+- Reprise : `git log`, les PR et le rapport du mandat concerné. `log.md` est figé
+  depuis le 2026-10-26 (historique, ne plus y écrire). Une timeline ou une mémoire
+  ne remplace pas l'état du checkout.
 - Workspaces et chargement Claude/Codex/Hermes :
   `.claude/knowledge/workspaces.md`. Rôles Paperclip : `agents/*/AGENTS.md`,
   à consulter seulement pour le rôle concerné ; UUID dans leur registre.

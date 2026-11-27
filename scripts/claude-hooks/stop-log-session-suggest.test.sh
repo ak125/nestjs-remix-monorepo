@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Test du hook Stop stop-log-session-suggest.sh sur fixtures jetables : origine nue +
-# clone + faux `gh` (aucun appel réseau). Les attendus sont ceux du correctif : une
-# suggestion sur stderr, aucune écriture ni aucun commit. Lancé contre une version
+# clone + faux `gh` (aucun appel réseau). Les attendus sont ceux du correctif : aucune
+# suggestion /log-session (log.md figé depuis le 2026-10-26), aucune écriture ni aucun commit. Lancé contre une version
 # antérieure (HOOK=<copie>), les lignes en ÉCHEC montrent l'écriture ou le commit.
 #
 # « Aucune écriture » = empreinte identique avant/après le hook du dépôt de fixture
@@ -109,27 +109,28 @@ fixes() {  # deux commits de correction de plus : seuil du compagnon atteint (2 
 MARKER=.claude/.session-log-state/last-claude-md-suggest-head
 OPEN7='[{"number":7,"state":"OPEN"}]'
 
-echo "== T1 PR ouverte : suggestion seule, aucune écriture"
+echo "== T1 PR ouverte : aucune suggestion /log-session, aucune écriture"
 setup; S0="$(snap)"; rc=$(run "$W" FAKE_GH_PRS="$OPEN7")
 check "T1 code de sortie" 0 "$rc"
 check "T1 aucun commit" 0 "$(new_commits)"
 check "T1 aucune écriture (empreinte inchangée)" "$S0" "$(snap)"
-check "T1 suggestion /log-session sur stderr" 1 "$(suggested)"
-check "T1 PR citée dans le brouillon" 1 "$(command grep -c 'PR #7 |' "$FIX/err")"
+check "T1 aucune suggestion /log-session (log.md figé)" 0 "$(suggested)"
+check "T1 aucun brouillon (PR non citée)" 0 "$(command grep -c 'PR #7 |' "$FIX/err")"
 check "T1 stdout vide" "" "$(cat "$FIX/out")"
 
 echo "== T2 PR fusionnée (squash : branche toujours « en avance » sur origin/main)"
-setup; S0="$(snap)"; rc=$(run "$W" FAKE_GH_PRS='[{"number":7,"state":"MERGED"}]')
+setup; fixes; S0="$(snap)"; rc=$(run "$W" FAKE_GH_PRS='[{"number":7,"state":"MERGED"}]')
 check "T2 aucun commit après la tête de PR" 0 "$(new_commits)"
 check "T2 aucune écriture" "$S0" "$(snap)"
 check "T2 aucune suggestion" 0 "$(suggested)"
 check "T2 raison sur stderr" 1 "$(command grep -c 'fusionnée ou fermée' "$FIX/err")"
+check "T2 compagnon non appelé (seuil atteint)" 0 "$(md_suggested)"
 
 echo "== T3 branche réutilisée : ancienne PR fusionnée + nouvelle PR ouverte"
 setup; S0="$(snap)"; rc=$(run "$W" FAKE_GH_PRS='[{"number":7,"state":"MERGED"},{"number":9,"state":"OPEN"}]')
 check "T3 aucun commit" 0 "$(new_commits)"
 check "T3 aucune écriture" "$S0" "$(snap)"
-check "T3 PR ouverte citée" 1 "$(command grep -c 'PR #9 |' "$FIX/err")"
+check "T3 aucun brouillon (PR ouverte non citée)" 0 "$(command grep -c 'PR #9 |' "$FIX/err")"
 
 echo "== T4 un autre chemin est déjà indexé"
 setup; echo "à moi" > "$W/autre.txt"; git -C "$W" add autre.txt; S0="$(snap)"
@@ -158,12 +159,13 @@ check "T6b aucune écriture" "$S0" "$(snap)"
 check "T6b aucune archive" "absente" "$([ -e "$W/$ARCH" ] && echo présente || echo absente)"
 
 echo "== T7 gh en échec : état de PR inconnu, aucune suggestion"
-setup; S0="$(snap)"; rc=$(run "$W" FAKE_GH_FAIL=1)
+setup; fixes; S0="$(snap)"; rc=$(run "$W" FAKE_GH_FAIL=1)
 check "T7 code de sortie" 0 "$rc"
 check "T7 aucun commit" 0 "$(new_commits)"
 check "T7 aucune écriture" "$S0" "$(snap)"
 check "T7 état de PR inconnu signalé sur stderr" 1 "$(command grep -c 'état de PR inconnu' "$FIX/err")"
 check "T7 aucune suggestion" 0 "$(suggested)"
+check "T7 compagnon non appelé (seuil atteint)" 0 "$(md_suggested)"
 
 echo "== T8 session hors dépôt git"
 if command grep -q '|| echo /opt/automecanik/app' "$HOOK_SRC"; then
@@ -183,10 +185,11 @@ echo "== T9 sur main en avance sur origin/main : ni commit ni suggestion (compor
 setup; git -C "$W" switch -q main
 echo local > "$W/local.txt"; git -C "$W" add local.txt; git -C "$W" commit -qm "local sur main"; H0="$(git -C "$W" rev-parse HEAD)"
 check "T9 témoin : main en avance avant le hook (seule la protection de branche l'arrête)" 1 "$(git -C "$W" rev-list --count refs/remotes/origin/main..HEAD)"
-S0="$(snap)"; rc=$(run "$W" FAKE_GH_PRS="$OPEN7")
+fixes; S0="$(snap)"; rc=$(run "$W" FAKE_GH_PRS="$OPEN7")
 check "T9 aucun commit sur main" 0 "$(new_commits)"
 check "T9 aucune écriture" "$S0" "$(snap)"
 check "T9 aucune suggestion" 0 "$(suggested)"
+check "T9 compagnon non appelé (seuil atteint)" 0 "$(md_suggested)"
 
 echo "== T10 un autre chemin est indexé PENDANT l'exécution du hook"
 setup; rc=$(run "$W" FAKE_GH_PRS="$OPEN7" FAKE_GH_STAGE=1)
@@ -195,7 +198,7 @@ check "T10 log.md intact" "" "$(git -C "$W" status --porcelain -- log.md)"
 check "T10 le chemin du tiers reste indexé, hors de tout commit" "A  tiers.txt" "$(git -C "$W" status --porcelain -- tiers.txt)"
 
 echo "== T11 branche déjà poussée, PR ouverte : rien à pousser, aucune suggestion"
-setup; git -C "$W" push -q -f -u origin feat/x 2>/dev/null
+setup; fixes; git -C "$W" push -q -f -u origin feat/x 2>/dev/null
 check "T11 témoin : HEAD = origin/feat/x avant le hook" "$H0" "$(git -C "$W" rev-parse refs/remotes/origin/feat/x)"
 S0="$(snap)"; rc=$(run "$W" FAKE_GH_PRS="$OPEN7")
 check "T11 code de sortie" 0 "$rc"
@@ -203,17 +206,18 @@ check "T11 aucun commit après la tête poussée" 0 "$(new_commits)"
 check "T11 aucune écriture" "$S0" "$(snap)"
 check "T11 raison sur stderr" 1 "$(command grep -c 'déjà dans origin/feat/x' "$FIX/err")"
 check "T11 aucune suggestion" 0 "$(suggested)"
+check "T11 compagnon non appelé (seuil atteint)" 0 "$(md_suggested)"
 
-echo "== T12 commit local après le push : suggestion, aucune écriture"
+echo "== T12 commit local après le push : aucune suggestion /log-session, aucune écriture"
 setup; git -C "$W" push -q -f -u origin feat/x 2>/dev/null
 echo "suite" > "$W/suite.txt"; git -C "$W" add suite.txt; git -C "$W" commit -qm "feat: suite non poussée"; H0="$(git -C "$W" rev-parse HEAD)"
 S0="$(snap)"; rc=$(run "$W" FAKE_GH_PRS="$OPEN7")
 check "T12 aucun commit" 0 "$(new_commits)"
 check "T12 aucune écriture" "$S0" "$(snap)"
-check "T12 suggestion /log-session" 1 "$(suggested)"
+check "T12 aucune suggestion /log-session" 0 "$(suggested)"
 
 echo "== T13 branche distante en avance (commit poussé d'ailleurs) : aucune suggestion"
-setup; git -C "$W" push -q -f -u origin feat/x 2>/dev/null
+setup; fixes; git -C "$W" push -q -f -u origin feat/x 2>/dev/null
 git clone -q -b feat/x "$FIX/origin.git" "$FIX/other$n" 2>/dev/null
 echo "projection" > "$FIX/other$n/proj.txt"; git -C "$FIX/other$n" add proj.txt
 git -C "$FIX/other$n" -c core.hooksPath="$FIX/no-hooks" commit -qm "chore: projection"; git -C "$FIX/other$n" push -q origin feat/x 2>/dev/null
@@ -223,13 +227,15 @@ S0="$(snap)"; rc=$(run "$W" FAKE_GH_PRS="$OPEN7")
 check "T13 aucun commit" 0 "$(new_commits)"
 check "T13 aucune écriture" "$S0" "$(snap)"
 check "T13 aucune suggestion" 0 "$(suggested)"
+check "T13 compagnon non appelé (seuil atteint)" 0 "$(md_suggested)"
 
 echo "== T14 log.md déjà modifié (entrée en cours) : aucune suggestion, modification conservée"
-setup; printf '\n## en cours\n' >> "$W/log.md"; S0="$(snap)"
+setup; fixes; printf '\n## en cours\n' >> "$W/log.md"; S0="$(snap)"
 rc=$(run "$W" FAKE_GH_PRS="$OPEN7")
 check "T14 aucun commit" 0 "$(new_commits)"
 check "T14 aucune écriture" "$S0" "$(snap)"
 check "T14 aucune suggestion" 0 "$(suggested)"
+check "T14 compagnon non appelé (seuil atteint)" 0 "$(md_suggested)"
 
 echo "== T15 compagnon réel, ≥ 2 corrections, aucun dossier de marqueur : suggestion, rien créé"
 setup; fixes; S0="$(snap)"; rc=$(run "$W" FAKE_GH_PRS="$OPEN7")
@@ -238,7 +244,7 @@ check "T15 aucun commit" 0 "$(new_commits)"
 check "T15 aucune écriture (empreinte inchangée, .git compris)" "$S0" "$(snap)"
 check "T15 dossier .claude/ non créé" "absent" "$([ -e "$W/.claude" ] && echo présent || echo absent)"
 check "T15 suggestion du compagnon sur stderr" 1 "$(md_suggested)"
-check "T15 suggestion /log-session sur stderr" 1 "$(suggested)"
+check "T15 aucune suggestion /log-session" 0 "$(suggested)"
 check "T15 compagnon du dépôt de session jamais appelé depuis T1" 0 "$(repo_companion_calls)"
 check "T15 stdout vide" "" "$(cat "$FIX/out")"
 
@@ -254,13 +260,13 @@ setup; fixes; mkdir -p "$W/.claude/.session-log-state"; echo "$H0" > "$W/$MARKER
 S0="$(snap)"; rc=$(run "$W" FAKE_GH_PRS="$OPEN7")
 check "T17 aucune écriture" "$S0" "$(snap)"
 check "T17 aucune suggestion du compagnon" 0 "$(md_suggested)"
-check "T17 suggestion /log-session" 1 "$(suggested)"
+check "T17 aucune suggestion /log-session" 0 "$(suggested)"
 
-echo "== T18 CLAUDE_HOOKS_DISABLE=1 : compagnon muet, suggestion /log-session émise (comportement réel)"
+echo "== T18 CLAUDE_HOOKS_DISABLE=1 : compagnon muet, aucune suggestion /log-session"
 setup; fixes; S0="$(snap)"; rc=$(run "$W" FAKE_GH_PRS="$OPEN7" CLAUDE_HOOKS_DISABLE=1)
 check "T18 aucune écriture" "$S0" "$(snap)"
 check "T18 aucune suggestion du compagnon" 0 "$(md_suggested)"
-check "T18 suggestion /log-session toujours émise" 1 "$(suggested)"
+check "T18 aucune suggestion /log-session" 0 "$(suggested)"
 
 echo "== T19 compagnon lancé seul (autre usage) : marqueur écrit comme avant"
 setup; fixes
