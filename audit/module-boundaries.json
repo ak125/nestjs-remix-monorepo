@@ -132,7 +132,7 @@
         "backend/src/modules/cart/services"
       ],
       "files_count": 22,
-      "loc_total": 4268,
+      "loc_total": 4241,
       "has_barrel": false
     },
     "catalog": {
@@ -970,8 +970,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 444,
-      "loc_total": 88513,
+      "files_count": 445,
+      "loc_total": 88617,
       "has_barrel": true
     },
     "upload": {

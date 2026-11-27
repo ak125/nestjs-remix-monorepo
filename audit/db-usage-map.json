@@ -12446,14 +12446,14 @@
     },
     {
       "file": "backend/src/modules/cart/services/abandoned-cart-data.service.ts",
-      "line": 255,
+      "line": 236,
       "form": "IDENT",
       "resolved_table": "__abandoned_cart_emails",
       "refusal": null
     },
     {
       "file": "backend/src/modules/cart/services/abandoned-cart-data.service.ts",
-      "line": 282,
+      "line": 263,
       "form": "IDENT",
       "resolved_table": "__abandoned_cart_emails",
       "refusal": null
