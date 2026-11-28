@@ -11,30 +11,11 @@
 -- =====================================================
 
 WITH probe_targets AS (
-  -- Charger les target_url depuis le Prompt Registry (workspaces/ai-probe/prompts.yaml)
-  -- V1 : staticement listé ici. À automatiser quand le registry sera plus stable.
-  SELECT unnest(ARRAY[
-    '/symptomes-auto/fumee-noire/clio-3',
-    '/symptomes-auto/turbo-hs/1-5-dci',
-    '/symptomes-auto/tremblements-freinage',
-    '/symptomes-auto/voyant-esp-allume',
-    '/symptomes-auto/bruit-coupelle-amortisseur',
-    '/symptomes-auto/fumee-blanche-demarrage-diesel',
-    '/conseils-entretien/distribution/peugeot-207-1-4-hdi',
-    '/conseils-entretien/huile-moteur/citroen-c4-picasso-hdi',
-    '/conseils-entretien/vidange/renault-megane-1-5-dci',
-    '/conseils-entretien/plaquettes-frein-usure',
-    '/pieces/filtration/filtre-a-gasoil/renault/clio-3/1-5-dci',
-    '/pieces/freinage/plaquettes/peugeot/208/1-4-hdi',
-    '/pieces/suspension/amortisseurs/renault/clio-3',
-    '/pieces/echappement/vanne-egr/renault/megane/1-5-dci',
-    '/pieces/freinage/disques/peugeot/308',
-    '/comparatif/oscaro-vs-mister-auto',
-    '/comparatif/huile-5w30-vs-5w40',
-    '/local/garage/citroen/lyon',
-    '/local/specialiste/turbo-diesel/marseille',
-    '/conseils-entretien/tutoriel/changer-filtre-air'
-  ]) AS target_url
+  -- Seulement les target_url NON NULL qualifiées dans prompts.yaml.
+  -- 2026-11-28 : aucune cible servie vérifiée ; ancienne liste hypothétique retirée.
+  -- Liste vide = analyse indisponible, PAS zéro opportunité observée.
+  -- Remplir après qualification documentée dans un cycle ; ne pas inventer de chemin.
+  SELECT unnest(ARRAY[]::text[]) AS target_url
 ),
 gsc_signals AS (
   -- __seo_gsc_daily : (date, page, query, device, clicks, impressions, ctr, position)
