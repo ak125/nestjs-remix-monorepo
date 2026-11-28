@@ -4,7 +4,12 @@
 >
 > Idées gstack traduites en **pointers** vers les mécanismes AutoMecanik **déjà existants**.
 > Ce fichier n'autorise aucune action, ne remplace aucun gate et ne peut jamais assouplir un
-> guard existant. La vérité reste **vault / registry / DB / RAW→WIKI**.
+> guard existant. La gouvernance en vigueur est dans le **monorepo** :
+> [journal des principes](../governance/journal-des-principes.md) et contrats de département
+> de l'[AI Operating Map](../../.spec/00-canon/ai-registry/agent-operating-map.yaml),
+> selon [CLAUDE.md — Gouvernance](../../CLAUDE.md#gouvernance) (décisions 72/73).
+> Le vault est une archive explicative, sans autorité normative propre. Les registres
+> et les données métier gardent leurs périmètres respectifs ; la chaîne reste RAW → WIKI → projections/DB → consommateurs.
 
 ## 1. Phases — `DISCOVER → DECIDE → PLAN → PATCH → VERIFY → HANDOFF`
 
@@ -75,9 +80,11 @@ cassé ? `DONE` sur-déclaré alors que `PARTIAL` ?
 ## 6. Mémoire & routing — pointers
 
 - Mémoire = aide au rappel, **jamais** source de vérité — couches `MEMORY.md` / `CLAUDE.md` /
-  vault / WIKI / DB / RAG : voir [agent-doc-search.md](../rules/agent-doc-search.md).
+  gouvernance du monorepo / archive vault / WIKI / DB / RAG : voir [agent-doc-search.md](../rules/agent-doc-search.md).
 - L'[agent-operating-map.yaml](../../.spec/00-canon/ai-registry/agent-operating-map.yaml)
-  est une carte de référence non normative, pas un orchestrateur ni une preuve de capacités.
+  porte les contrats de département en vigueur, vérifiés par schéma en CI (décision 72).
+  Ses autres champs descriptifs ne prouvent pas une capacité active ; la carte n'est pas
+  un orchestrateur. Ne pas confondre ces contrats avec les projections générées du registry.
   [role-matrix.md](../../.spec/00-canon/role-matrix.md) décrit les rôles SEO ;
   [departments-map](../../audit/automecanik-departments-map.md) décrit les responsabilités.
   Leurs périmètres ne se confondent pas avec les outils et permissions réellement disponibles.
@@ -155,5 +162,6 @@ skills cités ne s'appliquent que lorsque le skill pertinent est effectivement u
 
 ---
 
-_Non-canon. Pour toute règle qui fait foi, voir la source pointée (vault · `.spec/00-canon/` ·
-guards · skills). Ce fichier ne crée aucune autorité._
+_Non-canon. Pour toute règle qui fait foi, suivre les sources en vigueur désignées par
+[CLAUDE.md — Gouvernance](../../CLAUDE.md#gouvernance). Le vault conserve l'historique ;
+les guards et skills restent soumis au mandat et aux contrats applicables. Ce fichier ne crée aucune autorité._

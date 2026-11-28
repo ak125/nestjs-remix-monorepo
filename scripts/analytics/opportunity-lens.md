@@ -4,7 +4,15 @@ Query SQL analytique manuelle pour identifier les pages à fort potentiel d'amé
 
 ## Scope V1
 
-Limité aux URLs présentes dans `workspaces/ai-probe/prompts.yaml` (20 prompts au moment du V1). Pas de scan exhaustif GSC. À faire évoluer si le volume probe augmente.
+Limité aux `target_url` **non nulles et qualifiées** de `workspaces/ai-probe/prompts.yaml`.
+Le corpus contient 20 prompts, mais aucune cible servie n'est actuellement vérifiée.
+La liste SQL est donc vide : l'analyse est **indisponible**, pas un constat de zéro
+opportunité ni d'absence de signal GSC. Ne pas exécuter pour produire un bilan vide.
+
+Avant une analyse, qualifier les cibles selon le README AI Probe, puis reporter uniquement
+ces URL dans `probe_targets`. Le test du registre contrôle l'égalité des deux listes.
+Les anciennes URL hypothétiques restent dans le tableau historique du README AI Probe.
+Pas de scan exhaustif GSC, de génération d'URL ou d'automatisation supplémentaire.
 
 ## Exécution
 
